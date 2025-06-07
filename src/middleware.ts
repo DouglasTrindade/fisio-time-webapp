@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
 
-const protectedRoutes = ["/user-info"];
+const protectedRoutes = ["/api/users"];
 
-const middleware = async (request: NextRequest) => {
+export const middleware = async (request: NextRequest) => {
   const session = await auth();
 
   const { pathname } = request.nextUrl;
@@ -20,4 +20,6 @@ const middleware = async (request: NextRequest) => {
   return NextResponse.next();
 };
 
-export default middleware;
+export const config = {
+  matcher: "/api/:path*",
+};
