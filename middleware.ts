@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/auth";
+import authConfig from "./auth.config";
+import NextAuth from "next-auth";
 
 const protectedRoutes = ["/api/users"];
 
-export const middleware = async (request: NextRequest) => {
+const { auth } = NextAuth(authConfig);
+
+export default auth(async function middleware(request: NextRequest) {
   const session = await auth();
 
   const { pathname } = request.nextUrl;
@@ -18,7 +21,7 @@ export const middleware = async (request: NextRequest) => {
   }
 
   return NextResponse.next();
-};
+});
 
 export const config = {
   matcher: "/api/:path*",

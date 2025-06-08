@@ -17,6 +17,7 @@ export const SignIn = () => {
       password: "",
     },
   });
+  const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: SignInSchema) => {
     const result = await signIn("credentials", {
@@ -29,7 +30,7 @@ export const SignIn = () => {
       toast.error("Login inválido");
     } else {
       toast.success("Login bem-sucedido!");
-      window.location.href = "/dashboard";
+      console.log("usuário logado com sucesso");
     }
   };
 
@@ -40,8 +41,8 @@ export const SignIn = () => {
         className="space-y-4 max-w-sm mx-auto"
       >
         <SignInFields />
-        <Button type="submit" className="w-full">
-          Entrar
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? "Entrando..." : "Entrar"}
         </Button>
       </form>
     </Form>

@@ -4,7 +4,12 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   images: {
-    domains: ["avatars.githubusercontent.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+    ],
   },
 };
 
