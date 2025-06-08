@@ -4,15 +4,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpSchema } from "./Schema";
 import { SignUpFields } from "./Fields";
-import { Form } from "@/components/ui/form";
+import { Form, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-// import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { SignUpAction } from "@/actions/SignUp";
 
 export const SignUp = () => {
-  // const router = useRouter();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -28,10 +29,11 @@ export const SignUp = () => {
     startTransition(() => {
       SignUpAction(data).then((res) => {
         if (res?.error) {
-          toast.error("Erro ao registrar");
+          setError(res?.error);
         } else {
           toast.success("Cadastro realizado com sucesso!");
           form.reset();
+          router.push("/sign-in");
         }
       });
     });
@@ -41,7 +43,7 @@ export const SignUp = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <SignUpFields />
-
+        {error && <FormMessage>{error}</FormMessage>}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Cadastrando..." : "Cadastrar"}
         </Button>

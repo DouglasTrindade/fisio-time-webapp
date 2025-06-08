@@ -1,39 +1,39 @@
 "use server";
 
-import * as z from "zod";
-import bcrypt from "bcryptjs";
+import { SignUpSchema, signUpSchema } from "@/app/(auth)/domain/SignUp/Schema";
 import { prisma } from "@/lib/prisma";
-import { signUpSchema } from "@/app/(auth)/domain/SignUp/Schema";
+import bcrypt from "bcryptjs";
+import { AuthError } from "next-auth";
 
-export const SignUpAction = async (data: z.infer<typeof signUpSchema>) => {
+export const SignUpAction = async (values: SignUpSchema) => {
   try {
-    const validatedData = signUpSchema.parse(data);
-    const { email, name, password } = validatedData;
+    const { data, success } = signUpSchema.safeParse(values);
 
-    const userExists = await prisma.user.findUnique({ where: { email } });
-    if (userExists) {
-      return { error: "E-mail já está em uso" };
-    }
+    if (!success) return { error: "Invalid data" };
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const lowerCaseEmail = email.toLowerCase();
-
-    await prisma.user.create({
-      data: {
-        name,
-        email: lowerCaseEmail,
-        password: hashedPassword,
+    const user = await prisma.user.findUnique({
+      where: {
+        email: data.email,
       },
     });
 
-    return { success: "Usuário registrado com sucesso" };
-  } catch (error) {
-    console.error("Erro no SignUpAction:", error);
-    if (error instanceof z.ZodError) {
-      return { error: "Erro de validação" };
-    }
+    if (user) return { error: "User already exists" };
 
-    return { error: "Erro interno no servidor" };
+    const passwordHash = await bcrypt.hash(data.password, 10);
+
+    await prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: passwordHash,
+      },
+    });
+
+    return { success: true };
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return { error: err.cause?.err?.message };
+    }
+    return { error: "error 500" };
   }
 };

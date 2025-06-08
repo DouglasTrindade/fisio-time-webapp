@@ -1,13 +1,13 @@
 "use client";
 
-import { logout } from "../../../actions/SignIn";
+import { SignOut } from "@/actions/SignOut";
 
 export const SignOutButton = () => {
   return (
     <button
       type="button"
       className="py-2 px-3 bg-purple-700 cursor-pointer rounded"
-      onClick={() => logout()}
+      onClick={() => SignOut()}
     >
       Sign Out
     </button>

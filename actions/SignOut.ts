@@ -1,5 +1,5 @@
-import { signOut } from "../auth";
+import { signOut } from "@/auth";
 
-export const logout = async () => {
-  await signOut({ redirectTo: "/" });
+export const SignOut = async () => {
+  await signOut({ redirectTo: "/sign-in" });
 };
