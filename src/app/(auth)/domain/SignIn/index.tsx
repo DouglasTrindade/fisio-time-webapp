@@ -2,14 +2,18 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { SignInFields } from "./Fields";
 import { signInSchema, SignInSchema } from "./Schema";
+// import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { SignInAction } from "@/actions/SignIn";
 
 export const SignIn = () => {
+  // const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -17,21 +21,18 @@ export const SignIn = () => {
       password: "",
     },
   });
-  const { isSubmitting } = form.formState;
 
-  const onSubmit = async (values: SignInSchema) => {
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: values.email,
-      password: values.password,
+  const onSubmit = (data: SignInSchema) => {
+    startTransition(() => {
+      SignInAction(data).then((res) => {
+        if (res?.error) {
+          toast.error(res.error);
+        } else {
+          toast.success("Login realizado com sucesso!");
+          // router.push("/dashboard");
+        }
+      });
     });
-
-    if (result?.error) {
-      toast.error("Login inválido");
-    } else {
-      toast.success("Login bem-sucedido!");
-      console.log("usuário logado com sucesso");
-    }
   };
 
   return (
@@ -41,8 +42,8 @@ export const SignIn = () => {
         className="space-y-4 max-w-sm mx-auto"
       >
         <SignInFields />
-        <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? "Entrando..." : "Entrar"}
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? "Entrando..." : "Entrar"}
         </Button>
       </form>
     </Form>
