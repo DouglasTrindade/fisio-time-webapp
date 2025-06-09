@@ -9,7 +9,7 @@ const DashboardPage = async () => {
   }
 
   return (
-    <div className="container">
+    <div>
       <pre>{JSON.stringify(session, null, 2)}</pre>
       <SignOutButton />
     </div>
