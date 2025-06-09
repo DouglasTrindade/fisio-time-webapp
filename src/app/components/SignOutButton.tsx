@@ -1,15 +1,16 @@
 "use client";
 
-import { SignOut } from "@/actions/SignOut";
+import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
 
-export const SignOutButton = () => {
+export function SignOutButton() {
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/sign-in" });
+  };
+
   return (
-    <button
-      type="button"
-      className="py-2 px-3 bg-purple-700 cursor-pointer rounded"
-      onClick={() => SignOut()}
-    >
+    <Button onClick={handleSignOut} className="bg-red-500">
       Sign Out
-    </button>
+    </Button>
   );
-};
+}

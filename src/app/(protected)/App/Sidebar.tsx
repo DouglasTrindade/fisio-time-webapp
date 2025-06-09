@@ -23,6 +23,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
 
 const data = {
   user: {
@@ -156,7 +157,9 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>Logo</SidebarHeader>
+      <SidebarHeader className="flex items-center">
+        <Image src="/logo.png" width={100} height={100} alt="logo" />
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
