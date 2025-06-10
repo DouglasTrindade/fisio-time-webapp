@@ -41,12 +41,19 @@ export const SignUp = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <SignUpFields />
         {error && <FormMessage>{error}</FormMessage>}
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button
+          type="submit"
+          className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
+          disabled={isPending}
+        >
           {isPending ? "Cadastrando..." : "Cadastrar"}
         </Button>
+        <div className="flex justify-center font-semibold">
+          <a href="/sign-in">Já possuo uma conta</a>
+        </div>
       </form>
     </Form>
   );
