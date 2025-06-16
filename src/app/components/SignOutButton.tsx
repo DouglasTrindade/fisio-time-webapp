@@ -1,16 +1,21 @@
 "use client";
+import * as React from "react";
 
-import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 
-export function SignOutButton() {
+export interface SignOutButtonProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function SignOutButton({ children, className }: SignOutButtonProps) {
   const handleSignOut = () => {
     signOut({ callbackUrl: "/sign-in" });
   };
 
   return (
-    <Button onClick={handleSignOut} className="bg-red-500">
-      Sign Out
-    </Button>
+    <span onClick={handleSignOut} className={className}>
+      {children}
+    </span>
   );
 }
