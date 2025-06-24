@@ -1,7 +1,7 @@
 import GitHub from "next-auth/providers/github";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { signInSchema } from "./src/app/(auth)/domain/SignIn/Schema";
+import { signInSchema } from "./app/(auth)/domain/SignIn/Schema";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
