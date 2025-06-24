@@ -1,17 +1,12 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-const publicRoutes = ["/", "/sign-in", "/sign-up"];
-const protectedRoutes = ["/dashboard"];
+const publicRoutes = ["/sign-in", "/sign-up"];
+const protectedRoutes = ["/dashboard", "/agendamentos"];
 
-export default async function middleware(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const session = await auth();
-
-  console.log("Session in middleware:", session);
-
-  const isLoggedIn = !!session?.user;
+  const isLoggedIn = !!req.auth;
 
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
@@ -29,7 +24,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api|trpc).*)"],
