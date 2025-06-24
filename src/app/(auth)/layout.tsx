@@ -30,17 +30,17 @@ export default function AuthLayout({
         }}
       >
         <div className="w-full md:w-3/4 flex items-center justify-center md:justify-end h-full min-h-screen">
-          <Card className="bg-transparent backdrop-blur-sm shadow-2xl w-[400px]">
-            <CardHeader>
+          <Card className="bg-transparent backdrop-blur-sm shadow-2xl py-12 max-w-[475px] w-full">
+            <CardHeader className="place-content-center">
               <Image
                 src="/logo.png"
                 alt="logo"
-                width={600}
-                height={600}
+                width={175}
+                height={175}
                 priority={true}
               />
             </CardHeader>
-            <CardContent>{children}</CardContent>
+            <CardContent className="px-12">{children}</CardContent>
           </Card>
         </div>
       </div>

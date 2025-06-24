@@ -38,15 +38,22 @@ export const SignIn = () => {
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4 max-w-sm mx-auto"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <SignInFields />
         {error && <FormMessage>{error}</FormMessage>}
-        <Button type="submit" disabled={isPending} className="w-full">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
+        >
           {isPending ? "Entrando..." : "Entrar"}
         </Button>
+        <div className="flex justify-center font-semibold">
+          <span className="me-2">Não tem uma conta?</span>
+          <a href="/sign-up" className="text-blue-600 visited:text-purple-600">
+            Cadastre-se
+          </a>
+        </div>
       </form>
     </Form>
   );

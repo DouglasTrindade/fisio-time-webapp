@@ -1,15 +1,20 @@
 "use client";
 
-import { SignOut } from "@/actions/SignOut";
+import { signOut } from "next-auth/react";
 
-export const SignOutButton = () => {
+export interface SignOutButtonProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function SignOutButton({ children, className }: SignOutButtonProps) {
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/sign-in", redirect: true });
+  };
+
   return (
-    <button
-      type="button"
-      className="py-2 px-3 bg-purple-700 cursor-pointer rounded"
-      onClick={() => SignOut()}
-    >
-      Sign Out
-    </button>
+    <span onClick={handleSignOut} className={className}>
+      {children}
+    </span>
   );
-};
+}
