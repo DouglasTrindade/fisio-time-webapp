@@ -1,18 +1,15 @@
 "use client";
 
-import { useBreadcrumb } from "../context";
-import { ChevronRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 
-export const Breadcrumb = () => {
-  const { items } = useBreadcrumb();
+export const Breadcrumbs = () => {
+  const pathname = usePathname();
+  const segments = pathname.split("/");
 
   return (
-    <nav className="text-sm text-muted-foreground">
-      {items.map((item, index) => (
-        <span key={index}>
-          {item}
-          {index < items.length - 1 && <ChevronRight />}
-        </span>
+    <nav>
+      {segments.map((segment, index) => (
+        <span key={index}>{segment}</span>
       ))}
     </nav>
   );

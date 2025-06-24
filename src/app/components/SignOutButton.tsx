@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 
 import { signOut } from "next-auth/react";
 
@@ -9,8 +8,8 @@ export interface SignOutButtonProps {
 }
 
 export function SignOutButton({ children, className }: SignOutButtonProps) {
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/sign-in" });
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/sign-in", redirect: true });
   };
 
   return (
