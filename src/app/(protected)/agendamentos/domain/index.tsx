@@ -1,7 +1,11 @@
+import { KanbanBoard } from "./Kanban";
+
 export const Appointments = () => {
   return (
     <div>
-      <div>agendamentos</div>
+      <div>
+        <KanbanBoard />
+      </div>
     </div>
   );
 };
