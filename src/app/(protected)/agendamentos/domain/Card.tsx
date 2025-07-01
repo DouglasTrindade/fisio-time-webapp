@@ -25,9 +25,9 @@ export function Card({ appointment }: Props) {
       {...listeners}
       {...attributes}
       style={style}
-      className="p-3 bg-gray-100 rounded shadow text-sm cursor-move transition-all"
+      className="p-3 bg-gray-800 rounded shadow text-sm cursor-move transition-all"
     >
-      <p className="font-medium">{appointment.name}</p>
+      <p className="font-medium ">{appointment.name}</p>
       <p className="text-xs text-gray-600">{appointment.phone}</p>
     </div>
   );

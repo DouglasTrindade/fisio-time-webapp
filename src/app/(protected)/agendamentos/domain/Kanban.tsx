@@ -58,7 +58,7 @@ export function KanbanBoard() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex flex-wrap gap-6 justify-center p-4">
+      <div className="grid grid-cols-2 gap-3">
         <KanbanColumn
           id="waiting"
           label="Aguardando"
@@ -70,7 +70,6 @@ export function KanbanBoard() {
           appointments={columns.attended}
         />
       </div>
-
       <DragOverlay>
         {activeAppointment && <Card appointment={activeAppointment} />}
       </DragOverlay>
