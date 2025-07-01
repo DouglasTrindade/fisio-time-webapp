@@ -13,10 +13,10 @@ export function Card({ appointment }: Props) {
     id: appointment.id,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    zIndex: transform ? 50 : "auto",
-    position: transform ? "relative" : "static",
+  const style: React.CSSProperties = {
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
+    zIndex: 999,
+    position: "relative",
   };
 
   return (
