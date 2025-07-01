@@ -1,3 +1,5 @@
+"use client";
+
 import { KanbanBoard } from "./Kanban";
 
 export const Appointments = () => {
