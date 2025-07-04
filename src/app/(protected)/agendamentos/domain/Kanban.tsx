@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -15,12 +15,19 @@ export function KanbanBoard() {
   const [columns, setColumns] = useState<
     Record<AppointmentStatus, Appointment[]>
   >({
-    waiting: [
-      { id: "1", name: "João da Silva", phone: "(11) 99999-1234" },
-      { id: "2", name: "Maria Oliveira", phone: "(11) 98888-5678" },
-    ],
+    waiting: [],
     attended: [],
   });
+
+  useEffect(() => {
+    setColumns({
+      waiting: [
+        { id: "1", name: "João da Silva", phone: "(11) 99999-1234" },
+        { id: "2", name: "Maria Oliveira", phone: "(11) 98888-5678" },
+      ],
+      attended: [],
+    });
+  }, []);
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -61,12 +68,12 @@ export function KanbanBoard() {
       <div className="grid grid-cols-2 gap-3">
         <KanbanColumn
           id="waiting"
-          label="Aguardando"
+          label="Pacientes Hoje"
           appointments={columns.waiting}
         />
         <KanbanColumn
           id="attended"
-          label="Atendidos"
+          label="Pacientes Atendidos"
           appointments={columns.attended}
         />
       </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import { LayoutDashboard } from "lucide-react";
-import { Calendar, Settings } from "lucide-react";
+import { Calendar, Settings, Users, LayoutDashboard } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavUser } from "./NavUser";
 import {
@@ -34,6 +33,11 @@ const data = {
       title: "Agendamentos",
       url: "/agendamentos",
       icon: Calendar,
+    },
+    {
+      title: "Pacientes",
+      url: "/pacientes",
+      icon: Users,
     },
     {
       title: "Settings",
