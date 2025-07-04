@@ -1,8 +1,13 @@
-"use client"
+"use client";
 
-import { TableCell, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,33 +17,37 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
-import { useState } from "react"
-import type { Patient } from "@/types/patient"
-import { useDeletePatient } from "@/hooks/usePatients"
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import type { Patient } from "@/types/patient";
+import { useDeletePatient } from "@/hooks/usePatients";
 
 interface PatientListItemProps {
-  patient: Patient
-  onEdit: (id: string) => void
+  patient: Patient;
+  onEdit: (id: string) => void;
 }
 
 export function PatientListItem({ patient, onEdit }: PatientListItemProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const deletePatient = useDeletePatient()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const deletePatient = useDeletePatient();
 
   const handleDelete = async () => {
-    await deletePatient.mutateAsync(patient.id)
-    setShowDeleteDialog(false)
-  }
+    await deletePatient.mutateAsync(patient.id);
+    setShowDeleteDialog(false);
+  };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string | null) => {
+    if (!date) return "-";
+
+    const dateObj = typeof date === "string" ? new Date(date) : date;
+
     return new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(new Date(date))
-  }
+    }).format(dateObj);
+  };
 
   return (
     <>
@@ -60,7 +69,10 @@ export function PatientListItem({ patient, onEdit }: PatientListItemProps) {
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-destructive">
+              <DropdownMenuItem
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive"
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
               </DropdownMenuItem>
@@ -74,12 +86,14 @@ export function PatientListItem({ patient, onEdit }: PatientListItemProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o paciente <strong>{patient.name}</strong>? Esta ação não pode ser
-              desfeita.
+              Tem certeza que deseja excluir o paciente{" "}
+              <strong>{patient.name}</strong>? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletePatient.isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={deletePatient.isPending}>
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deletePatient.isPending}
@@ -91,5 +105,5 @@ export function PatientListItem({ patient, onEdit }: PatientListItemProps) {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }
