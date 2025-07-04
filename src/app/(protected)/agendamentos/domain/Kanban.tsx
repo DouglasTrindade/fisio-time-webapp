@@ -68,12 +68,12 @@ export function KanbanBoard() {
       <div className="grid grid-cols-2 gap-3">
         <KanbanColumn
           id="waiting"
-          label="Aguardando"
+          label="Pacientes Hoje"
           appointments={columns.waiting}
         />
         <KanbanColumn
           id="attended"
-          label="Atendidos"
+          label="Pacientes Atendidos"
           appointments={columns.attended}
         />
       </div>
