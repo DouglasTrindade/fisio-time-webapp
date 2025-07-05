@@ -99,7 +99,6 @@ export function Patients() {
         </Dialog>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-4 items-center">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -127,7 +126,6 @@ export function Patients() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
