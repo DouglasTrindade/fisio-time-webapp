@@ -50,7 +50,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
           name: values.name,
           phone: values.phone,
           email: values.email || undefined,
-          birthDate: values.birthDate || undefined,
+          birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
           notes: values.notes || undefined,
         },
       });

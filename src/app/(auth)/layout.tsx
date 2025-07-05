@@ -1,4 +1,3 @@
-import { Toaster } from "sonner";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
@@ -18,8 +17,6 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <Toaster />
       <div
         className={`w-screen h-full min-h-screen flex ${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{
@@ -44,6 +41,5 @@ export default function AuthLayout({
           </Card>
         </div>
       </div>
-    </>
   );
 }

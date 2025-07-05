@@ -30,7 +30,7 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
       name: values.name,
       phone: values.phone,
       email: values.email || undefined,
-      birthDate: values.birthDate,
+      birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
       notes: values.notes || undefined,
     });
 

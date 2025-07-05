@@ -181,7 +181,7 @@ export function Patients() {
         </Table>
       </div>
 
-      {data && data.pagination.totalPages > 1 && (
+      {data && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Mostrando {(data.pagination.page - 1) * data.pagination.limit + 1} a{" "}

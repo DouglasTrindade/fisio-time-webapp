@@ -11,10 +11,11 @@ import type { ApiResponse, Patient } from "@/types/patient";
 
 export async function GET(
   _request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Patient>>> {
   try {
-    const { id } = patientParamsSchema.parse(context.params);
+    const params = await context.params;
+    const { id } = patientParamsSchema.parse(params);
 
     const patient = await prisma.patient.findUnique({ where: { id } });
 
@@ -32,10 +33,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Patient>>> {
   try {
-    const { id } = patientParamsSchema.parse(await context.params);
+    const params = await context.params;
+    const { id } = patientParamsSchema.parse(params);
     const body = await validateJsonBody(request, updatePatientSchema);
 
     const existingPatient = await prisma.patient.findUnique({ where: { id } });
@@ -87,10 +89,11 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
-    const { id } = patientParamsSchema.parse(context.params);
+    const params = await context.params;
+    const { id } = patientParamsSchema.parse(params);
 
     const existingPatient = await prisma.patient.findUnique({
       where: { id },
