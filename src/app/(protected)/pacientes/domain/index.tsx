@@ -1,18 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { usePatients } from "@/hooks/usePatients"
-import type { PatientFilters } from "@/types/patient"
-import { PatientsNew } from "./New"
-import { PatientsEdit } from "./Edit"
-import { PatientListItem } from "./ListItem"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { usePatients } from "@/hooks/usePatients";
+import type { PatientFilters } from "@/types/patient";
+import { PatientsNew } from "./New";
+import { PatientsEdit } from "./Edit";
+import { PatientListItem } from "./ListItem";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function Patients() {
   const [filters, setFilters] = useState<PatientFilters>({
@@ -21,37 +40,37 @@ export function Patients() {
     search: "",
     sortBy: "createdAt",
     sortOrder: "desc",
-  })
+  });
 
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false)
-  const [editingPatientId, setEditingPatientId] = useState<string | null>(null)
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
 
-  const { data, isLoading, error } = usePatients(filters)
+  const { data, isLoading, error } = usePatients(filters);
 
   const handleSearch = (search: string) => {
-    setFilters((prev) => ({ ...prev, search, page: 1 }))
-  }
+    setFilters((prev) => ({ ...prev, search, page: 1 }));
+  };
 
   const handlePageChange = (page: number) => {
-    setFilters((prev) => ({ ...prev, page }))
-  }
+    setFilters((prev) => ({ ...prev, page }));
+  };
 
   const handleSortChange = (sortBy: string) => {
-    const [field, order] = sortBy.split("-")
+    const [field, order] = sortBy.split("-");
     setFilters((prev) => ({
       ...prev,
-      sortBy: field as any,
+      sortBy: field as PatientFilters["sortBy"],
       sortOrder: order as "asc" | "desc",
       page: 1,
-    }))
-  }
+    }));
+  };
 
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-destructive">Erro ao carregar pacientes</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -59,7 +78,9 @@ export function Patients() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Pacientes</h1>
-          <p className="text-muted-foreground">{data?.pagination.total || 0} pacientes cadastrados</p>
+          <p className="text-muted-foreground">
+            {data?.pagination.total || 0} pacientes cadastrados
+          </p>
         </div>
 
         <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
@@ -73,7 +94,7 @@ export function Patients() {
             <DialogHeader>
               <DialogTitle>Novo Paciente</DialogTitle>
             </DialogHeader>
-            <PatientsNew  onClose={() => setIsNewDialogOpen(false)} />
+            <PatientsNew onClose={() => setIsNewDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -90,7 +111,10 @@ export function Patients() {
           />
         </div>
 
-        <Select value={`${filters.sortBy}-${filters.sortOrder}`} onValueChange={handleSortChange}>
+        <Select
+          value={`${filters.sortBy}-${filters.sortOrder}`}
+          onValueChange={handleSortChange}
+        >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
@@ -139,24 +163,33 @@ export function Patients() {
             ) : data?.data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8">
-                  {filters.search ? "Nenhum paciente encontrado" : "Nenhum paciente cadastrado"}
+                  {filters.search
+                    ? "Nenhum paciente encontrado"
+                    : "Nenhum paciente cadastrado"}
                 </TableCell>
               </TableRow>
             ) : (
               data?.data.map((patient) => (
-                <PatientListItem key={patient.id} patient={patient} onEdit={(id) => setEditingPatientId(id)} />
+                <PatientListItem
+                  key={patient.id}
+                  patient={patient}
+                  onEdit={(id) => setEditingPatientId(id)}
+                />
               ))
             )}
           </TableBody>
         </Table>
       </div>
 
-      {data && data.pagination.totalPages > 1 && (
+      {data && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Mostrando {(data.pagination.page - 1) * data.pagination.limit + 1} a{" "}
-            {Math.min(data.pagination.page * data.pagination.limit, data.pagination.total)} de {data.pagination.total}{" "}
-            pacientes
+            {Math.min(
+              data.pagination.page * data.pagination.limit,
+              data.pagination.total
+            )}{" "}
+            de {data.pagination.total} pacientes
           </p>
 
           <div className="flex items-center gap-2">
@@ -188,15 +221,21 @@ export function Patients() {
       )}
 
       {editingPatientId && (
-        <Dialog open={!!editingPatientId} onOpenChange={() => setEditingPatientId(null)}>
+        <Dialog
+          open={!!editingPatientId}
+          onOpenChange={() => setEditingPatientId(null)}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Editar Paciente</DialogTitle>
             </DialogHeader>
-            <PatientsEdit patientId={editingPatientId} onClose={() => setEditingPatientId(null)} />
+            <PatientsEdit
+              patientId={editingPatientId}
+              onClose={() => setEditingPatientId(null)}
+            />
           </DialogContent>
         </Dialog>
       )}
     </div>
-  )
+  );
 }

@@ -1,30 +1,24 @@
-"use client"
+"use client";
 
-import React, { useEffect } from "react"
-
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useQuery } from "@tanstack/react-query"
-import { Form } from "@/components/ui/form"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { patientSchema, type PatientSchema } from "./Schema"
-import { Fields } from "./Fields"
-import { useUpdatePatient } from "@/hooks/usePatients"
-import { getPatientById } from "@/actions/Patients"
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { patientSchema, type PatientSchema } from "./Schema";
+import { Fields } from "./Fields";
+import { useUpdatePatient, usePatient } from "@/hooks/usePatients";
 
 interface PatientsEditProps {
-  patientId: string
-  onClose?: () => void
+  patientId: string;
+  onClose?: () => void;
 }
 
 export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
-  const updatePatient = useUpdatePatient()
+  const updatePatient = useUpdatePatient();
 
-  const { data: patientData, isLoading } = useQuery({
-    queryKey: ["patient", patientId],
-    queryFn: () => getPatientById(patientId),
-  })
+  const { data: patientData, isLoading, error } = usePatient(patientId);
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
@@ -34,32 +28,37 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
       email: "",
       notes: "",
     },
-  })
+  });
 
-useEffect(() => {
-    if (patientData?.success && patientData.data) {
-      const patient = patientData.data
+  useEffect(() => {
+    if (patientData) {
       form.reset({
-        name: patient.name,
-        phone: patient.phone,
-        email: patient.email || "",
-        birthDate: patient.birthDate || undefined,
-        notes: patient.notes || "",
-      })
+        name: patientData.name,
+        phone: patientData.phone,
+        email: patientData.email || "",
+        birthDate: patientData.birthDate || undefined,
+        notes: patientData.notes || "",
+      });
     }
-  }, [patientData, form])
+  }, [patientData, form]);
 
   async function onSubmit(values: PatientSchema) {
-    await updatePatient.mutateAsync({
-      id: patientId,
-      name: values.name,
-      phone: values.phone,
-      email: values.email || undefined,
-      birthDate: values?.birthDate,
-      notes: values.notes || undefined,
-    })
+    try {
+      await updatePatient.mutateAsync({
+        id: patientId,
+        data: {
+          name: values.name,
+          phone: values.phone,
+          email: values.email || undefined,
+          birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
+          notes: values.notes || undefined,
+        },
+      });
 
-    onClose?.()
+      onClose?.();
+    } catch (error) {
+      console.error("Erro ao atualizar paciente:", error);
+    }
   }
 
   if (isLoading) {
@@ -70,7 +69,15 @@ useEffect(() => {
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-20 w-full" />
       </div>
-    )
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-destructive">Erro ao carregar dados do paciente</p>
+      </div>
+    );
   }
 
   return (
@@ -87,11 +94,15 @@ useEffect(() => {
           >
             Cancelar
           </Button>
-          <Button type="submit" className="flex-1" disabled={updatePatient.isPending}>
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={updatePatient.isPending}
+          >
             {updatePatient.isPending ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </div>
       </form>
     </Form>
-  )
-}
+  );
+};
