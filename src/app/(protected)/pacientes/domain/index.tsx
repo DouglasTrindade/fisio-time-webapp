@@ -33,7 +33,7 @@ import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function Patients() {
+export const Patients = () => {
   const [filters, setFilters] = useState<PatientFilters>({
     page: 1,
     limit: 10,
@@ -41,7 +41,6 @@ export function Patients() {
     sortBy: "createdAt",
     sortOrder: "desc",
   });
-
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
 
@@ -64,14 +63,6 @@ export function Patients() {
       page: 1,
     }));
   };
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-destructive">Erro ao carregar pacientes</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">

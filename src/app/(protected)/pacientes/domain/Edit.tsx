@@ -72,14 +72,6 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-destructive">Erro ao carregar dados do paciente</p>
-      </div>
-    );
-  }
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

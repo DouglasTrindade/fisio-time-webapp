@@ -28,7 +28,7 @@ interface PatientListItemProps {
   onEdit: (id: string) => void;
 }
 
-export function PatientListItem({ patient, onEdit }: PatientListItemProps) {
+export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deletePatient = useDeletePatient();
 

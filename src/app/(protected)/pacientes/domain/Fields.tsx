@@ -5,12 +5,13 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { PatientSchema } from "./Schema"
+import { DateTime } from "luxon"
 
 interface FieldsProps {
   form: UseFormReturn<PatientSchema>
 }
 
-export function Fields({ form }: FieldsProps) {
+export const Fields = ({ form }: FieldsProps) => {
   return (
     <>
       <FormField
@@ -65,8 +66,23 @@ export function Fields({ form }: FieldsProps) {
               <Input
                 type="date"
                 {...field}
-                value={field.value ? field.value.toString().split("T")[0] : ""}
-                onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                value={
+                  field.value instanceof Date
+                    ? DateTime.fromJSDate(field.value).toISODate() || ""
+                    : field.value || ""
+                }
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value) {
+
+                    const luxonDate = DateTime.fromISO(value)
+                    if (luxonDate.isValid) {
+                      field.onChange(luxonDate.toJSDate())
+                    }
+                  } else {
+                    field.onChange(undefined)
+                  }
+                }}
               />
             </FormControl>
             <FormMessage />
