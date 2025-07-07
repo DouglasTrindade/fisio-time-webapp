@@ -2,8 +2,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { patientService } from "@/services/api";
-import type { PatientFilters, PatientCreateInput } from "@/types/patient";
+import { patientService } from "@/app/utils/services/api";
+import type { PatientFilters, PatientCreateInput } from "@/app/utils/types/patient";
 
 export function usePatients(filters: PatientFilters = {}) {
   return useQuery({

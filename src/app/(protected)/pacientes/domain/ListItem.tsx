@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Patient } from "@/types/patient";
-import { useDeletePatient } from "@/hooks/usePatients";
+import type { Patient } from "@/app/utils/types/patient";
+import { useDeletePatient } from "@/app/utils/hooks/usePatients";
 
 interface PatientListItemProps {
   patient: Patient;

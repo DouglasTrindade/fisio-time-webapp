@@ -17,29 +17,29 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <div
-        className={`w-screen h-full min-h-screen flex ${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{
-          backgroundImage: "url('/bg-auth.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <div className="w-full md:w-3/4 flex items-center justify-center md:justify-end h-full min-h-screen">
-          <Card className="bg-transparent backdrop-blur-sm shadow-2xl py-12 max-w-[475px] w-full">
-            <CardHeader className="place-content-center">
-              <Image
-                src="/logo.png"
-                alt="logo"
-                width={175}
-                height={175}
-                priority={true}
-              />
-            </CardHeader>
-            <CardContent className="px-12">{children}</CardContent>
-          </Card>
-        </div>
+    <div
+      className={`w-screen h-full min-h-screen flex ${geistSans.variable} ${geistMono.variable} antialiased`}
+      style={{
+        backgroundImage: "url('/bg-auth.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="w-full md:w-3/4 flex items-center justify-center md:justify-end h-full min-h-screen">
+        <Card className="bg-transparent backdrop-blur-sm shadow-2xl py-12 max-w-[475px] w-full">
+          <CardHeader className="place-content-center">
+            <Image
+              src="/logo.png"
+              alt="logo"
+              width={175}
+              height={175}
+              priority={true}
+            />
+          </CardHeader>
+          <CardContent className="px-12">{children}</CardContent>
+        </Card>
       </div>
+    </div>
   );
 }

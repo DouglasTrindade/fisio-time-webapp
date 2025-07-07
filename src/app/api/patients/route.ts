@@ -8,7 +8,7 @@ import {
   getPaginationParams,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, PaginatedResponse, Patient } from "@/types/patient";
+import type { ApiResponse, PaginatedResponse, Patient } from "@/app/utils/types/patient";
 
 export async function GET(
   request: NextRequest

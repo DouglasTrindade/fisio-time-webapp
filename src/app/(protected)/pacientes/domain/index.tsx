@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { usePatients } from "@/hooks/usePatients";
-import type { PatientFilters } from "@/types/patient";
+import { usePatients } from "@/app/utils/hooks/usePatients";
+import type { PatientFilters } from "@/app/utils/types/patient";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";

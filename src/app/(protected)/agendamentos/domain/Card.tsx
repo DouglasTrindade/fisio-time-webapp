@@ -2,7 +2,7 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import type { Appointment } from "@/types/appointment";
+import type { Appointment } from "@/app/utils/types/appointment";
 
 type Props = {
   appointment: Appointment;

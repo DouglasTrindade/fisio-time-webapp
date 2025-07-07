@@ -6,7 +6,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { patientSchema, type PatientSchema } from "./Schema";
 import { Fields } from "./Fields";
-import { useCreatePatient } from "@/hooks/usePatients";
+import { useCreatePatient } from "@/app/utils/hooks/usePatients";
 
 interface PatientsNewProps {
   onClose?: () => void;

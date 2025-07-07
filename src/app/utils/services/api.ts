@@ -8,7 +8,7 @@ import type {
   ApiResponse,
   PatientApiData,
   PatientApiInput,
-} from "@/types/patient";
+} from "@/app/utils/types/patient";
 
 const API_BASE_URL = "/api";
 

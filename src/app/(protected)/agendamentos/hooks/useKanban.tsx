@@ -5,7 +5,7 @@ import {
   PointerSensor,
   DragEndEvent,
 } from "@dnd-kit/core";
-import type { Appointment, AppointmentStatus } from "@/types/appointment";
+import type { Appointment, AppointmentStatus } from "@/app/utils/types/appointment";
 
 type ColumnsState = Record<AppointmentStatus, Appointment[]>;
 

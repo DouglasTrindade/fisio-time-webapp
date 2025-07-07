@@ -8,7 +8,7 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
-import { SignOutButton } from "@/app/components/SignOutButton";
+import { SignOutButton } from "@/components/SignOutButton";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

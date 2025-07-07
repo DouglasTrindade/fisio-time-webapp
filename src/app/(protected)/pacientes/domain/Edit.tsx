@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { patientSchema, type PatientSchema } from "./Schema";
 import { Fields } from "./Fields";
-import { useUpdatePatient, usePatient } from "@/hooks/usePatients";
+import { useUpdatePatient, usePatient } from "@/app/utils/hooks/usePatients";
 
 interface PatientsEditProps {
   patientId: string;

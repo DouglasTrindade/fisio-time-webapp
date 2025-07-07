@@ -9,7 +9,7 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { Card } from "./Card";
-import type { Appointment, AppointmentStatus } from "@/types/appointment";
+import type { Appointment, AppointmentStatus } from "@/app/utils/types/appointment";
 
 export function KanbanBoard() {
   const [columns, setColumns] = useState<
