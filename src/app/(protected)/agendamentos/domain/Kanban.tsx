@@ -65,7 +65,7 @@ export function KanbanBoard() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 h-full">
         <KanbanColumn
           id="waiting"
           label="Pacientes Hoje"
