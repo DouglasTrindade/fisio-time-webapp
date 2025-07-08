@@ -5,7 +5,7 @@ import type React from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "next-auth/react";
-import { PatientProvider } from '@/context/PatientContext'
+import { PatientProvider } from '@/contexts/PatientContext'
 import { Toaster } from "sonner"
 import { useState } from "react"
 
