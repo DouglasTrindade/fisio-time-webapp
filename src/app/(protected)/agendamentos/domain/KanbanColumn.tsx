@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import type { AppointmentStatus, Appointment } from "@/app/utils/types/appointment";
-import { Card } from "./Card";
+import { KanBanCard } from "./Card";
 
 type Props = {
   id: AppointmentStatus;
@@ -22,7 +22,7 @@ export function KanbanColumn({ id, label, appointments }: Props) {
       <h2 className="font-bold text-lg mb-4">{label}</h2>
       <div className="space-y-3">
         {appointments.map((appointment) => (
-          <Card key={appointment.id} appointment={appointment} />
+          <KanBanCard key={appointment.id} appointment={appointment} />
         ))}
       </div>
     </div>

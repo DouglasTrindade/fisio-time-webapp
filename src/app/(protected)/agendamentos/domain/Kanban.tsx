@@ -8,10 +8,11 @@ import {
   DragStartEvent,
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
-import { Card } from "./Card";
+import { KanBanCard } from "./Card";
 import type { Appointment, AppointmentStatus } from "@/app/utils/types/appointment";
 
-export function KanbanBoard() {
+export const KanbanBoard = () => {
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [columns, setColumns] = useState<
     Record<AppointmentStatus, Appointment[]>
   >({
@@ -22,14 +23,17 @@ export function KanbanBoard() {
   useEffect(() => {
     setColumns({
       waiting: [
-        { id: "1", name: "João da Silva", phone: "(11) 99999-1234" },
-        { id: "2", name: "Maria Oliveira", phone: "(11) 98888-5678" },
+        { id: "1", name: "João da Silva", phone: "(11) 99999-1234", time: '15:00' },
+        { id: "2", name: "Maria Oliveira", phone: "(11) 98888-5678", time: '12:00' },
+        { id: "4", name: "Antonio Neto", phone: "(11) 93333-3342", time: '09:00' },
       ],
-      attended: [],
+      attended: [
+        { id: "3", name: "Felipe Costa", phone: "(11) 92233-1234", time: '08:00' },
+        { id: "4", name: "Gustavo Alves", phone: "(11) 96662-3342", time: '11:00' },
+      ],
     });
   }, []);
 
-  const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -78,7 +82,7 @@ export function KanbanBoard() {
         />
       </div>
       <DragOverlay>
-        {activeAppointment && <Card appointment={activeAppointment} />}
+        {activeAppointment && <KanBanCard appointment={activeAppointment} />}
       </DragOverlay>
     </DndContext>
   );

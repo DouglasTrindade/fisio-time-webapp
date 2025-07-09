@@ -4,4 +4,5 @@ export interface Appointment {
   id: string;
   name: string;
   phone: string;
+  time: string;
 }
