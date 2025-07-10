@@ -17,8 +17,8 @@ model User {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   accounts      Account[]
-  appointments  Appointment[]
   sessions      Session[]
+  appointments  Appointment[]
 }
 
 model Patient {
