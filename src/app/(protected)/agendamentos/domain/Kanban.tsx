@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -9,31 +9,25 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanBanCard } from "./Card";
+import { useAppointmentContext } from "@/contexts/AppointmentContext";
+import { useAppointments, useUpdateAppointmentStatus } from "@/app/utils/hooks/useAppointments";
 import type { Appointment, AppointmentStatus } from "@/app/utils/types/appointment";
 
 export const KanbanBoard = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [columns, setColumns] = useState<
-    Record<AppointmentStatus, Appointment[]>
-  >({
-    waiting: [],
-    attended: [],
-  });
+  const { selectedDate, getAppointmentsByDate } = useAppointmentContext();
+  const { mutate: updateAppointmentStatus } = useUpdateAppointmentStatus();
 
-  useEffect(() => {
-    setColumns({
-      waiting: [
-        { id: "1", name: "João da Silva", phone: "(11) 99999-1234", time: '15:00' },
-        { id: "2", name: "Maria Oliveira", phone: "(11) 98888-5678", time: '12:00' },
-        { id: "4", name: "Antonio Neto", phone: "(11) 93333-3342", time: '09:00' },
-      ],
-      attended: [
-        { id: "3", name: "Felipe Costa", phone: "(11) 92233-1234", time: '08:00' },
-        { id: "4", name: "Gustavo Alves", phone: "(11) 96662-3342", time: '11:00' },
-      ],
-    });
-  }, []);
+  const { data: appointments, isLoading } = useAppointments(selectedDate || undefined);
 
+  const columns = useMemo(() => {
+    if (!appointments) return { waiting: [], attended: [] };
+
+    const waiting = appointments.filter(apt => apt.status === 'waiting');
+    const attended = appointments.filter(apt => apt.status === 'attended');
+
+    return { waiting, attended };
+  }, [appointments]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -53,37 +47,65 @@ export const KanbanBoard = () => {
 
     if (!fromColumn || fromColumn === toColumn) return;
 
-    const item = columns[fromColumn].find((appt) => appt.id === active.id)!;
-
-    setColumns((prev) => ({
-      ...prev,
-      [fromColumn]: prev[fromColumn].filter((appt) => appt.id !== active.id),
-      [toColumn]: [...prev[toColumn], item],
-    }));
+    updateAppointmentStatus({
+      id: active.id as string,
+      status: toColumn
+    });
   };
 
-  const activeAppointment =
-    Object.values(columns)
-      .flat()
-      .find((appt) => appt.id === activeId) || null;
+  const activeAppointment = useMemo(() => {
+    if (!activeId || !appointments) return null;
+    return appointments.find((appt) => appt.id === activeId) || null;
+  }, [activeId, appointments]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return "Selecione uma data";
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   return (
-    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-2 gap-3 h-full">
-        <KanbanColumn
-          id="waiting"
-          label="Pacientes Hoje"
-          appointments={columns.waiting}
-        />
-        <KanbanColumn
-          id="attended"
-          label="Pacientes Atendidos"
-          appointments={columns.attended}
-        />
+    <div className="h-full">
+      <div className="flex flex-col mb-4 p-4 border rounded-lg">
+        <span className="text-lg font-semibold">
+          Agendamentos para {formatDate(selectedDate)}
+        </span>
+        <span className="text-sm text-gray-600">
+          {columns.waiting.length} pacientes aguardando • {columns.attended.length} pacientes atendidos
+        </span>
       </div>
-      <DragOverlay>
-        {activeAppointment && <KanBanCard appointment={activeAppointment} />}
-      </DragOverlay>
-    </DndContext>
+
+      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-2 gap-3">
+          <KanbanColumn
+            id="waiting"
+            label="Pacientes para Atender"
+            appointments={columns.waiting}
+            count={columns.waiting.length}
+          />
+          <KanbanColumn
+            id="attended"
+            label="Pacientes Atendidos"
+            appointments={columns.attended}
+            count={columns.attended.length}
+          />
+        </div>
+        <DragOverlay>
+          {activeAppointment && <KanBanCard appointment={activeAppointment} />}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
-}
+};

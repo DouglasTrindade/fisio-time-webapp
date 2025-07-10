@@ -31,20 +31,26 @@ model Patient {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
+
+  @@map("patients")
 }
 
 model Appointment {
-  id             String   @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String
   phone          String
   date           DateTime
-  status         Status   @default(confirmed)
+  time           String
+  status         AppointmentStatus @default(waiting)
+  notes          String?
   professionalId String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   patientId      String?
-  patient        Patient? @relation(fields: [patientId], references: [id])
-  professional   User     @relation(fields: [professionalId], references: [id])
+  patient        Patient?          @relation(fields: [patientId], references: [id])
+  professional   User              @relation(fields: [professionalId], references: [id])
+
+  @@map("appointments")
 }
 
 model Account {
@@ -83,7 +89,9 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-enum Status {
-  confirmed
-  canceled
+enum AppointmentStatus {
+  waiting
+  attended
+  cancelled
+  no_show
 }

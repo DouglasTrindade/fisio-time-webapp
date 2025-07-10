@@ -10,7 +10,7 @@ type Props = {
   appointments: Appointment[];
 };
 
-export function KanbanColumn({ id, label, appointments }: Props) {
+export const KanbanColumn = ({ id, label, appointments }: Props) => {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
