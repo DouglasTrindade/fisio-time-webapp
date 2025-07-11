@@ -44,7 +44,7 @@ export const Patients = () => {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
 
-  const { data, isLoading, error } = usePatients(filters);
+  const { data, isLoading } = usePatients(filters);
 
   const handleSearch = (search: string) => {
     setFilters((prev) => ({ ...prev, search, page: 1 }));

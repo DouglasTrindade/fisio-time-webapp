@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-async function main() {
-  console.log("🌱 Iniciando seed do banco de dados...")
+const main = async () => {
+  console.log("🌱 Iniciando seed do banco de dados...");
 
   const user = await prisma.user.upsert({
     where: { email: "joao@fisiotime.com" },
@@ -12,11 +12,11 @@ async function main() {
       id: "user_1",
       name: "Dr. João Silva",
       email: "joao@fisiotime.com",
-      password: "$2b$10$example", 
+      password: "$2b$10$example",
     },
-  })
+  });
 
-  console.log("👤 Usuário criado:", user.name)
+  console.log("👤 Usuário criado:", user.name);
 
   const patients = await Promise.all([
     prisma.patient.upsert({
@@ -55,9 +55,9 @@ async function main() {
         notes: "Reabilitação do joelho",
       },
     }),
-  ])
+  ]);
 
-  console.log(`👥 ${patients.length} pacientes criados`)
+  console.log(`👥 ${patients.length} pacientes criados`);
 
   const appointments = await Promise.all([
     prisma.appointment.upsert({
@@ -73,17 +73,17 @@ async function main() {
         patientId: "patient_1",
       },
     }),
-  ])
+  ]);
 
-  console.log(`📅 ${appointments.length} agendamentos criados`)
-  console.log("✅ Seed concluído com sucesso!")
-}
+  console.log(`📅 ${appointments.length} agendamentos criados`);
+  console.log("✅ Seed concluído com sucesso!");
+};
 
 main()
   .catch((e) => {
-    console.error("❌ Erro no seed:", e)
-    process.exit(1)
+    console.error("❌ Erro no seed:", e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });
