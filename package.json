@@ -37,6 +37,7 @@
     "@tabler/icons-react": "^3.34.0",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

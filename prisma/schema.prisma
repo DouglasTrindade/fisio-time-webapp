@@ -38,7 +38,8 @@ model Appointment {
   name           String
   phone          String
   date           DateTime
-  status         Status   @default(confirmed)
+  status         Status   @default(attended)
+  notes          String?
   professionalId String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -84,6 +85,6 @@ model VerificationToken {
 }
 
 enum Status {
-  confirmed
-  canceled
+  attended
+  waiting
 }
