@@ -12,7 +12,7 @@ export const Appointments = () => {
         <div>
           <h1 className="text-2xl font-bold">Agendamentos</h1>
           <p className="text-muted-foreground">
-            0 pacientes cadastrados
+            0 pacientes Agendados
           </p>
         </div>
 
