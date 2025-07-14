@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AppointmentCard } from "./Card";
+import { Calendar } from "./Calendar";
 
 export const Appointments = () => {
 
@@ -22,8 +23,13 @@ export const Appointments = () => {
         </Button>
       </div>
 
-      <div>
-        <AppointmentCard name="Douglas Trindade" date="11/07" phone="(84) 99624-2338" />
+      <div className="flex w-full">
+        {/* <div>
+          <AppointmentCard name="Douglas Trindade" date="11/07" phone="(84) 99624-2338" />
+        </div> */}
+        <div className="w-full">
+          <Calendar />
+        </div>
       </div>
     </div>
   );
