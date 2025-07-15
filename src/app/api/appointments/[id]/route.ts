@@ -1,139 +1,102 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  appointmentSchema,
-  AppointmentStatus,
-} from "@/app/utils/types/appointment";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  createApiResponse,
+  createApiError,
+  handleApiError,
+  validateJsonBody,
+} from "@/lib/api/utils";
+import { updateAppointmentSchema, appointmentParamsSchema } from "../validation";
+import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
+
+export async function GET(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+): Promise<NextResponse<ApiResponse<Appointment>>> {
+  try {
+    const { id } = appointmentParamsSchema.parse(await context.params);
+
+    const appointment = await prisma.appointment.findUnique({ where: { id } });
+
+    if (!appointment) {
+      return NextResponse.json(createApiError("Agendamento não encontrado"), {
+        status: 404,
+      });
+    }
+
+    return NextResponse.json(
+      createApiResponse({
+        ...appointment,
+        date: appointment.date.toISOString(),
+        createdAt: appointment.createdAt.toISOString(),
+        updatedAt: appointment.updatedAt.toISOString(),
+      })
+    );
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { params: Promise<{ id: string }> }
+): Promise<NextResponse<ApiResponse<Appointment>>> {
   try {
-    const body = await request.json();
-    const validatedData = appointmentSchema.parse(body);
-    const userId = body.userId;
+    const { id } = appointmentParamsSchema.parse(await context.params);
+    const body = await validateJsonBody(request, updateAppointmentSchema);
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 }
-      );
+    const existing = await prisma.appointment.findUnique({ where: { id } });
+
+    if (!existing) {
+      return NextResponse.json(createApiError("Agendamento não encontrado"), {
+        status: 404,
+      });
     }
 
-    const existingAppointment = await prisma.appointment.findFirst({
-      where: {
-        id: params.id,
-        userId: userId,
-      },
-      include: {
-        patient: true,
-      },
-    });
-
-    if (!existingAppointment) {
-      return NextResponse.json(
-        { error: "Agendamento não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    const conflictingAppointment = await prisma.appointment.findFirst({
-      where: {
-        userId: userId,
-        date: new Date(validatedData.date),
-        time: validatedData.time,
-        status: {
-          not: AppointmentStatus.CANCELLED,
-        },
-        id: {
-          not: params.id,
-        },
-      },
-    });
-
-    if (conflictingAppointment) {
-      return NextResponse.json(
-        { error: "Já existe um agendamento para este horário" },
-        { status: 409 }
-      );
-    }
-
-    const updatedPatient = await prisma.patient.update({
-      where: { id: existingAppointment.patientId },
+    const updated = await prisma.appointment.update({
+      where: { id },
       data: {
-        name: validatedData.patientName,
-        phone: validatedData.patientPhone,
-        email: validatedData.patientEmail || null,
+        name: body.name ?? undefined,
+        phone: body.phone ?? undefined,
+        date: body.date ? new Date(body.date) : undefined,
+        status: body.status ?? undefined,
+        notes: body.notes ?? undefined,
+        patientId: body.patientId ?? undefined,
       },
     });
 
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id: params.id },
-      data: {
-        title: `${validatedData.patientName} - Consulta`,
-        date: new Date(validatedData.date),
-        time: validatedData.time,
-        status: validatedData.status,
-        notes: validatedData.notes,
-      },
-      include: {
-        patient: true,
-      },
-    });
-
-    return NextResponse.json(updatedAppointment);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Dados inválidos", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Erro ao atualizar agendamento:", error);
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
+      createApiResponse({
+        ...updated,
+        date: updated.date.toISOString(),
+        createdAt: updated.createdAt.toISOString(),
+        updatedAt: updated.updatedAt.toISOString(),
+      }, "Agendamento atualizado com sucesso")
     );
+  } catch (error) {
+    return handleApiError(error);
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+): Promise<NextResponse<ApiResponse<null>>> {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId");
+    const { id } = appointmentParamsSchema.parse(await context.params);
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 }
-      );
+    const existing = await prisma.appointment.findUnique({ where: { id } });
+
+    if (!existing) {
+      return NextResponse.json(createApiError("Agendamento não encontrado"), {
+        status: 404,
+      });
     }
 
-    const existingAppointment = await prisma.appointment.findFirst({
-      where: {
-        id: params.id,
-        userId: userId,
-      },
-    });
+    await prisma.appointment.delete({ where: { id } });
 
-    if (!existingAppointment) {
-      return NextResponse.json(
-        { error: "Agendamento não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ message: "Agendamento cancelado com sucesso" });
+    return NextResponse.json(createApiResponse(null, "Agendamento excluído com sucesso"));
   } catch (error) {
-    console.error("Erro ao cancelar agendamento:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
