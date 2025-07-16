@@ -8,7 +8,7 @@ interface Appointment {
     phone: string;
     date: Date;
     time: string;
-    status: 'agendado' | 'confirmado' | 'cancelado' | 'concluido';
+    status: 'confirmed' | 'canceled' | 'rescheduled' | 'waiting';
     notes?: string;
 }
 
@@ -18,35 +18,32 @@ export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
     onDelete: (id: string) => void;
 }) => {
     const statusColors = {
-        agendado: 'bg-blue-100 text-blue-800',
-        confirmado: 'bg-green-100 text-green-800',
-        cancelado: 'bg-red-100 text-red-800',
-        concluido: 'bg-gray-100 text-gray-800'
+        confirmed: 'bg-green-100 text-green-800',
+        canceled: 'bg-red-100 text-red-800',
+        rescheduled: 'bg-yellow-100 text-yellow-800',
+        waiting: 'bg-blue-100 text-blue-800'
+    };
+
+    const statusLabels = {
+        confirmed: 'Confirmado',
+        canceled: 'Cancelado',
+        rescheduled: 'Reagendado',
+        waiting: 'Aguardando'
     };
 
     const formatTime = (time: string) => {
         return time.padStart(5, '0');
     };
 
-    const formatDateBr = (date: Date) => {
-        return date.toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit'
-        });
-    };
-
     return (
-        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
             <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-3">
-                    <div className="bg-zinc-900 text-white rounded-full px-3 py-1 text-sm font-semibold">
-                        {formatDateBr(appointment.date)}
-                    </div>
+                <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
-                        {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                        {statusLabels[appointment.status]}
                     </span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                     <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
                         Editar
                     </Button>
@@ -62,10 +59,12 @@ export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
                     <span className="font-semibold">{appointment.patientName}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-600">{appointment.phone}</span>
-                </div>
+                {appointment.phone && (
+                    <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">{appointment.phone}</span>
+                    </div>
+                )}
 
                 <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-600" />

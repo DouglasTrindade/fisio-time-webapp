@@ -1,27 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { formatDate } from "@fullcalendar/core";
 import { useAppointments } from "@/app/utils/hooks/useAppointments";
-import { AppointmentsModal } from "../Modal";
 import { Appointment } from "@/app/utils/types/appointment";
 
-export const Calendar = () => {
-    const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+interface CalendarProps {
+    onDateSelect: (date: Date) => void;
+}
 
-    const { data, refetch } = useAppointments();
-
+export const Calendar = ({ onDateSelect }: CalendarProps) => {
+    const { data } = useAppointments();
     const appointments = data?.data || [];
 
     const handleDateClick = (selectInfo: DateSelectArg) => {
-        setSelectedDate(selectInfo);
-        setIsDialogOpen(true);
+        onDateSelect(selectInfo.start);
+    };
+
+    const handleEventClick = (info: EventClickArg) => {
+        const appointment = info.event.extendedProps as Appointment;
+        alert(`Agendamento: ${info.event.title}\nHorário: ${new Date(appointment.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`);
     };
 
     const calendarEvents = appointments.map((appt: Appointment) => ({
@@ -44,48 +45,34 @@ export const Calendar = () => {
     }));
 
     return (
-        <>
-            <div className="w-full">
-                <FullCalendar
-                    height="75vh"
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    headerToolbar={{
-                        left: "prev,next today",
-                        center: "title",
-                        right: "dayGridMonth,timeGridWeek,timeGridDay",
-                    }}
-                    buttonText={{
-                        today: "Hoje",
-                        month: "Mês",
-                        week: "Semana",
-                        day: "Dia",
-                    }}
-                    locale="pt-br"
-                    initialView="dayGridMonth"
-                    editable={false}
-                    selectable={true}
-                    selectMirror={true}
-                    dayMaxEvents={true}
-                    select={handleDateClick}
-                    eventClick={(info: EventClickArg) => {
-                        alert(`Agendamento: ${info.event.title}`);
-                    }}
-                    events={calendarEvents}
-                    eventDisplay="block"
-                    dayHeaderFormat={{ weekday: "long" }}
-                    titleFormat={{ year: "numeric", month: "long" }}
-                />
-            </div>
-
-            <AppointmentsModal
-                open={isDialogOpen}
-                onClose={() => {
-                    setIsDialogOpen(false);
-                    refetch();
+        <div className="w-full">
+            <FullCalendar
+                height="75vh"
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                headerToolbar={{
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay",
                 }}
-                onDateClick={handleDateClick}
-                initialDate={selectedDate?.start.toISOString()}
+                buttonText={{
+                    today: "Hoje",
+                    month: "Mês",
+                    week: "Semana",
+                    day: "Dia",
+                }}
+                locale="pt-br"
+                initialView="dayGridMonth"
+                editable={false}
+                selectable={true}
+                selectMirror={true}
+                dayMaxEvents={true}
+                select={handleDateClick}
+                eventClick={handleEventClick}
+                events={calendarEvents}
+                eventDisplay="block"
+                dayHeaderFormat={{ weekday: "long" }}
+                titleFormat={{ year: "numeric", month: "long" }}
             />
-        </>
+        </div>
     );
 };
