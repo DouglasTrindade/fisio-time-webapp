@@ -7,9 +7,9 @@ export type AppointmentStatus =
 
 export interface Appointment {
   id: string;
-  name: string;
+  name?: string;
   phone: string;
-  date: string; 
+  date: string;
   status: AppointmentStatus;
   patientId: string | null;
   notes: string | null;
@@ -18,7 +18,7 @@ export interface Appointment {
 }
 
 export interface AppointmentCreateInput {
-  name: string;
+  name?: string;
   phone: string;
   date: string;
   status?: AppointmentStatus;
@@ -46,7 +46,7 @@ export interface PaginatedResponse<T> {
   };
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

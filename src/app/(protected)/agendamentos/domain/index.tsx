@@ -94,7 +94,7 @@ export const Appointments = () => {
                           hour: '2-digit',
                           minute: '2-digit'
                         }),
-                        status: appointment.status as any,
+                        status: appointment.status,
                         notes: appointment.notes
                       }}
                       onEdit={handleEditAppointment}

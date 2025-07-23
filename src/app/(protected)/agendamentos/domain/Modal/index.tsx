@@ -24,10 +24,9 @@ export const AppointmentsModal = ({
     const form = useForm<AppointmentForm>({
         resolver: zodResolver(appointmentSchema),
         defaultValues: {
-            name: "",
             phone: "",
             date: initialDate || "",
-            status: "confirmed",
+            status: "waiting",
             patientId: "",
             notes: "",
         },
@@ -36,13 +35,17 @@ export const AppointmentsModal = ({
     const { mutateAsync } = useCreateAppointment();
 
     const onSubmit = async (values: AppointmentForm) => {
+
         try {
             await mutateAsync(values);
             toast.success("Agendamento criado com sucesso!");
             form.reset();
             onClose();
-        } catch (error: any) {
-            toast.error(error?.message || "Erro ao criar agendamento");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.log(error);
+                toast.error("Erro ao criar agendamento");
+            }
         }
     };
 

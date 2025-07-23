@@ -54,6 +54,20 @@ export const Fields = ({ form }: FieldsProps) => {
 
             <FormField
                 control={form.control}
+                name="phone"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                            <Input placeholder="(11) 99999-9999" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
                 name="date"
                 render={({ field }) => (
                     <FormItem>
@@ -83,6 +97,48 @@ export const Fields = ({ form }: FieldsProps) => {
                 )}
             />
 
+            <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione o status" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="waiting">Aguardando</SelectItem>
+                                <SelectItem value="confirmed">Confirmado</SelectItem>
+                                <SelectItem value="attended">Atendido</SelectItem>
+                                <SelectItem value="canceled">Cancelado</SelectItem>
+                                <SelectItem value="rescheduled">Reagendado</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Observações</FormLabel>
+                        <FormControl>
+                            <Input
+                                placeholder="Observações adicionais"
+                                {...field}
+                                value={field.value || ""}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
         </>
     );
 };

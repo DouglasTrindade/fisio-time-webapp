@@ -1,16 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Phone, Clock, User, FileText } from "lucide-react";
-
-interface Appointment {
-    id: string;
-    title: string;
-    patientName: string;
-    phone: string;
-    date: Date;
-    time: string;
-    status: 'confirmed' | 'canceled' | 'rescheduled' | 'waiting';
-    notes?: string;
-}
+import { Appointment } from "@/app/utils/types/appointment";
 
 export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
     appointment: Appointment;
@@ -56,7 +46,7 @@ export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
             <div className="space-y-2">
                 <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-600" />
-                    <span className="font-semibold">{appointment.patientName}</span>
+                    <span className="font-semibold">{appointment.name}</span>
                 </div>
 
                 {appointment.phone && (
@@ -68,7 +58,7 @@ export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
 
                 <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-600">{formatTime(appointment.time)}</span>
+                    <span className="text-sm text-gray-600">{formatTime(appointment.date)}</span>
                 </div>
 
                 {appointment.notes && (

@@ -13,7 +13,6 @@ const API_BASE_URL = "/api";
 
 interface AppointmentApiData {
   id: string;
-  name: string;
   phone: string;
   date: string;
   status: AppointmentStatus;
@@ -24,7 +23,6 @@ interface AppointmentApiData {
 }
 
 interface AppointmentApiInput {
-  name: string;
   phone: string;
   date: string;
   status?: AppointmentStatus;
@@ -63,7 +61,9 @@ class AppointmentService {
     }
   }
 
-  private convertApiDataToAppointment(apiData: AppointmentApiData): Appointment {
+  private convertApiDataToAppointment(
+    apiData: AppointmentApiData
+  ): Appointment {
     return {
       ...apiData,
       date: apiData.date,
@@ -72,9 +72,10 @@ class AppointmentService {
     };
   }
 
-  private convertInputToApiInput(input: AppointmentCreateInput): AppointmentApiInput {
+  private convertInputToApiInput(
+    input: AppointmentCreateInput
+  ): AppointmentApiInput {
     return {
-      name: input.name,
       phone: input.phone,
       date: input.date,
       status: input.status,
@@ -97,7 +98,9 @@ class AppointmentService {
     const queryString = params.toString();
     const endpoint = `/appointments${queryString ? `?${queryString}` : ""}`;
 
-    const response = await this.request<PaginatedResponse<AppointmentApiData>>(endpoint);
+    const response = await this.request<PaginatedResponse<AppointmentApiData>>(
+      endpoint
+    );
 
     const convertedData = {
       ...response.data!,
@@ -108,7 +111,9 @@ class AppointmentService {
   }
 
   async getAppointmentById(id: string): Promise<Appointment> {
-    const response = await this.request<AppointmentApiData>(`/appointments/${id}`);
+    const response = await this.request<AppointmentApiData>(
+      `/appointments/${id}`
+    );
     return this.convertApiDataToAppointment(response.data!);
   }
 
@@ -129,17 +134,19 @@ class AppointmentService {
   ): Promise<Appointment> {
     const payload: Partial<AppointmentApiInput> = {};
 
-    if (data.name !== undefined) payload.name = data.name;
     if (data.phone !== undefined) payload.phone = data.phone;
     if (data.date !== undefined) payload.date = data.date;
     if (data.status !== undefined) payload.status = data.status;
     if (data.notes !== undefined) payload.notes = data.notes ?? "";
     if (data.patientId !== undefined) payload.patientId = data.patientId;
 
-    const response = await this.request<AppointmentApiData>(`/appointments/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
+    const response = await this.request<AppointmentApiData>(
+      `/appointments/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      }
+    );
 
     return this.convertApiDataToAppointment(response.data!);
   }
