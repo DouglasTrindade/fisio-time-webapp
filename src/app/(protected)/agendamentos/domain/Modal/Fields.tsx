@@ -24,6 +24,19 @@ export const Fields = ({ form }: FieldsProps) => {
 
     return (
         <>
+            {/* Campo hidden para o nome - será preenchido automaticamente */}
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormControl>
+                            <Input {...field} type="hidden" />
+                        </FormControl>
+                    </FormItem>
+                )}
+            />
+
             <FormField
                 control={form.control}
                 name="patientId"
@@ -31,7 +44,14 @@ export const Fields = ({ form }: FieldsProps) => {
                     <FormItem>
                         <FormLabel>Paciente</FormLabel>
                         <Select
-                            onValueChange={(value) => field.onChange(value)}
+                            onValueChange={(value) => {
+                                field.onChange(value);
+
+                                const selectedPatient = patients.find(patient => patient.id === value);
+                                if (selectedPatient) {
+                                    form.setValue('name', selectedPatient.name);
+                                }
+                            }}
                             defaultValue={field.value}
                         >
                             <FormControl>

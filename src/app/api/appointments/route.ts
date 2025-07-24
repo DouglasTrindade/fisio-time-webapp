@@ -93,7 +93,7 @@ export async function POST(
 
     const appointment = await prisma.appointment.create({
       data: {
-        name: body.name,
+        name: body.name || "",
         phone: body.phone,
         date: new Date(body.date),
         status: body.status || "waiting",

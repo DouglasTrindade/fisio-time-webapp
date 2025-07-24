@@ -12,7 +12,7 @@ export interface Appointment {
   date: string;
   status: AppointmentStatus;
   patientId: string | null;
-  notes: string | null;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }

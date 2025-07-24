@@ -17,7 +17,7 @@ model User {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   accounts      Account[]
-  appointments  Appointment[]
+  Appointment   Appointment[]
   sessions      Session[]
 }
 
@@ -44,7 +44,7 @@ model Appointment {
   updatedAt      DateTime @updatedAt
   patientId      String?
   patient        Patient? @relation(fields: [patientId], references: [id])
-  professional   User     @relation(fields: [professionalId], references: [id])
+  User           User     @relation(fields: [professionalId], references: [id])
 }
 
 model Account {
