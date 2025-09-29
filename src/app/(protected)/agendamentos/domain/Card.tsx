@@ -1,25 +1,73 @@
-import { IconPhone } from '@tabler/icons-react'
+import { Button } from "@/components/ui/button";
+import { Phone, Clock, User, FileText } from "lucide-react";
+import { Appointment } from "@/app/utils/types/appointment";
 
-interface AppointmentCardProps {
-    name: string;
-    date: string;
-    phone: string;
-    status: string
-}
+export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
+    appointment: Appointment;
+    onEdit: (appointment: Appointment) => void;
+    onDelete: (id: string) => void;
+}) => {
+    const statusColors = {
+        confirmed: 'bg-green-100 text-green-800',
+        canceled: 'bg-red-100 text-red-800',
+        rescheduled: 'bg-yellow-100 text-yellow-800',
+        waiting: 'bg-blue-100 text-blue-800'
+    };
 
-export const AppointmentCard = ({ name, date, phone, status }: AppointmentCardProps) => {
+    const statusLabels = {
+        confirmed: 'Confirmado',
+        canceled: 'Cancelado',
+        rescheduled: 'Reagendado',
+        waiting: 'Aguardando'
+    };
+
+    const formatTime = (time: string) => {
+        return time.padStart(5, '0');
+    };
+
     return (
-        <div className="flex gap-6 border rounded-lg pb-4 px-4">
-            <div className="flex pt-4">
-                <div className="border items-center bg-zinc-950 rounded-3xl font-semibold p-2">{date}</div>
-            </div>
-            <div className="pt-1">
-                <div className="text-lg font-bold">{name}</div>
-                <div className="flex items-center gap-1 text-xs">
-                    <IconPhone size={18} stroke={1} />
-                    {phone}
+        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
+                        {statusLabels[appointment.status]}
+                    </span>
+                </div>
+                <div className="flex gap-1">
+                    <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
+                        Editar
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => onDelete(appointment.id)}>
+                        Excluir
+                    </Button>
                 </div>
             </div>
+
+            <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-gray-600" />
+                    <span className="font-semibold">{appointment.name}</span>
+                </div>
+
+                {appointment.phone && (
+                    <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">{appointment.phone}</span>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-600">{formatTime(appointment.date)}</span>
+                </div>
+
+                {appointment.notes && (
+                    <div className="flex items-start gap-2">
+                        <FileText className="w-4 h-4 text-gray-600 mt-0.5" />
+                        <span className="text-sm text-gray-600">{appointment.notes}</span>
+                    </div>
+                )}
+            </div>
         </div>
-    )
-}
+    );
+};
