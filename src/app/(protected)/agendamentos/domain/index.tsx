@@ -84,19 +84,7 @@ export const Appointments = () => {
                   filteredAppointments.map((appointment) => (
                     <AppointmentCard
                       key={appointment.id}
-                      appointment={{
-                        id: appointment.id,
-                        title: appointment.name,
-                        patientName: appointment.name,
-                        phone: appointment.phone || '',
-                        date: new Date(appointment.date),
-                        time: new Date(appointment.date).toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }),
-                        status: appointment.status,
-                        notes: appointment.notes
-                      }}
+                      appointment={appointment}
                       onEdit={handleEditAppointment}
                       onDelete={handleDeleteAppointment}
                     />
@@ -124,7 +112,6 @@ export const Appointments = () => {
           setIsDialogOpen(false);
           refetch();
         }}
-        onDateClick={() => { }}
         initialDate={undefined}
       />
     </div>

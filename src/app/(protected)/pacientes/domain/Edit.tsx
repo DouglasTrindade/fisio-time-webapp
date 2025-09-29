@@ -18,7 +18,7 @@ interface PatientsEditProps {
 export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
   const updatePatient = useUpdatePatient();
 
-  const { data: patientData, isLoading, error } = usePatient(patientId);
+  const { data: patientData, isLoading } = usePatient(patientId);
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
@@ -33,7 +33,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
   useEffect(() => {
     if (patientData) {
       form.reset({
-        name: patientData.name,
+        name: patientData.name ?? "",
         phone: patientData.phone,
         email: patientData.email || "",
         birthDate: patientData.birthDate || undefined,

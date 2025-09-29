@@ -1,24 +1,31 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { createApiResponse, handleApiError } from "@/lib/api/utils"
-import type { ApiResponse } from "@/app/utils/types/patient"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { createApiResponse, handleApiError } from "@/lib/api/utils";
+import type { ApiResponse } from "@/app/utils/types/patient";
 
 interface PatientStats {
-  total: number
-  thisMonth: number
-  thisWeek: number
-  withEmail: number
-  withoutEmail: number
-  averageAge?: number
+  total: number;
+  thisMonth: number;
+  thisWeek: number;
+  withEmail: number;
+  withoutEmail: number;
+  averageAge?: number;
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<PatientStats>>> {
+export async function GET(): Promise<NextResponse<ApiResponse<PatientStats>>> {
   try {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()))
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
 
-    const [total, thisMonth, thisWeek, withEmail, withoutEmail, patientsWithBirthDate] = await Promise.all([
+    const [
+      total,
+      thisMonth,
+      thisWeek,
+      withEmail,
+      withoutEmail,
+      patientsWithBirthDate,
+    ] = await Promise.all([
       prisma.patient.count(),
 
       prisma.patient.count({
@@ -53,24 +60,29 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
           birthDate: true,
         },
       }),
-    ])
+    ]);
 
-    let averageAge: number | undefined
+    let averageAge: number | undefined;
     if (patientsWithBirthDate.length > 0) {
       const ages = patientsWithBirthDate.map((patient) => {
-        const birthDate = new Date(patient.birthDate!)
-        const today = new Date()
-        let age = today.getFullYear() - birthDate.getFullYear()
-        const monthDiff = today.getMonth() - birthDate.getMonth()
+        const birthDate = new Date(patient.birthDate!);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
 
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < birthDate.getDate())
+        ) {
+          age--;
         }
 
-        return age
-      })
+        return age;
+      });
 
-      averageAge = Math.round(ages.reduce((sum, age) => sum + age, 0) / ages.length)
+      averageAge = Math.round(
+        ages.reduce((sum, age) => sum + age, 0) / ages.length
+      );
     }
 
     const stats: PatientStats = {
@@ -80,10 +92,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       withEmail,
       withoutEmail,
       averageAge,
-    }
+    };
 
-    return NextResponse.json(createApiResponse(stats, "Estatísticas obtidas com sucesso"))
+    return NextResponse.json(
+      createApiResponse(stats, "Estatísticas obtidas com sucesso")
+    );
   } catch (error) {
-    return handleApiError(error)
+    return handleApiError(error);
   }
 }

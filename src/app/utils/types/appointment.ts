@@ -1,30 +1,18 @@
-export type AppointmentStatus =
-  | "waiting"
-  | "attended"
-  | "confirmed"
-  | "canceled"
-  | "rescheduled";
+import { Appointment as PrismaAppointment, Status } from "@prisma/client";
 
-export interface Appointment {
-  id: string;
-  name?: string;
-  phone: string;
+export type AppointmentStatus = Status;
+
+export interface Appointment
+  extends Omit<PrismaAppointment, "date" | "createdAt" | "updatedAt"> {
   date: string;
-  status: AppointmentStatus;
-  patientId: string | null;
-  notes?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface AppointmentCreateInput {
-  name?: string;
-  phone: string;
-  date: string;
-  status?: AppointmentStatus;
-  notes?: string | null;
-  patientId?: string | null;
-}
+export type AppointmentCreateInput = Omit<
+  Appointment,
+  "id" | "createdAt" | "updatedAt"
+>;
 
 export interface AppointmentFilters {
   page?: number;
