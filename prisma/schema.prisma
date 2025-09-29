@@ -23,7 +23,7 @@ model User {
 
 model Patient {
   id           String        @id @default(cuid())
-  name         String
+  name         String?
   phone        String
   email        String?
   birthDate    DateTime?
@@ -40,11 +40,13 @@ model Appointment {
   date           DateTime
   status         Status   @default(confirmed)
   professionalId String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
   patientId      String?
   patient        Patient? @relation(fields: [patientId], references: [id])
   User           User     @relation(fields: [professionalId], references: [id])
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -86,4 +88,6 @@ model VerificationToken {
 enum Status {
   confirmed
   canceled
+  waiting
+  rescheduled
 }

@@ -9,11 +9,21 @@ import {
   validateJsonBody,
 } from "@/lib/api/utils";
 import type {
-  Appointment,
-  AppointmentCreateInput,
   PaginatedResponse,
   ApiResponse,
 } from "@/app/utils/types/appointment";
+import type { Appointment as PrismaAppointment } from "@prisma/client";
+
+type Appointment = Omit<
+  PrismaAppointment,
+  "date" | "createdAt" | "updatedAt"
+> & {
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type AppointmentCreateInput = typeof createAppointmentSchema._type;
 
 export async function GET(
   request: NextRequest
@@ -23,7 +33,7 @@ export async function GET(
       getPaginationParams(request);
 
     if (page < 1 || limit < 1 || limit > 100) {
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse<PaginatedResponse<Appointment>>>(
         createApiError("Parâmetros de paginação inválidos"),
         { status: 400 }
       );
@@ -78,7 +88,7 @@ export async function GET(
       createApiResponse(paginatedResponse, "Agendamentos listados com sucesso")
     );
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError<PaginatedResponse<Appointment>>(error);
   }
 }
 
@@ -96,14 +106,15 @@ export async function POST(
         name: body.name || "",
         phone: body.phone,
         date: new Date(body.date),
-        status: body.status || "waiting",
+        status: body.status,
         notes: body.notes ?? null,
         patientId: body.patientId ?? null,
+        professionalId: body.professionalId,
       },
     });
 
     return NextResponse.json(
-      createApiResponse(
+      createApiResponse<Appointment>(
         {
           ...appointment,
           date: appointment.date.toISOString(),
@@ -115,6 +126,6 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError<Appointment>(error);
   }
 }

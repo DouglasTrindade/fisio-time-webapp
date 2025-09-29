@@ -29,25 +29,29 @@ export const AppointmentsModal = ({
             status: "waiting",
             patientId: "",
             notes: "",
+            professionalId: "",
         },
     });
 
     const { mutateAsync } = useCreateAppointment();
 
     const onSubmit = async (values: AppointmentForm) => {
-
         try {
-            await mutateAsync(values);
+            await mutateAsync({
+                ...values,
+                notes: values.notes ?? null,
+            });
             toast.success("Agendamento criado com sucesso!");
             form.reset();
             onClose();
         } catch (error: unknown) {
             if (error instanceof Error) {
-                console.log(error);
+                console.error(error);
                 toast.error("Erro ao criar agendamento");
             }
         }
     };
+
 
     useEffect(() => {
         if (initialDate) {

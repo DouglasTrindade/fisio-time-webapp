@@ -49,7 +49,7 @@ export const Fields = ({ form }: FieldsProps) => {
 
                                 const selectedPatient = patients.find(patient => patient.id === value);
                                 if (selectedPatient) {
-                                    form.setValue('name', selectedPatient.name);
+                                    form.setValue('name', selectedPatient.name ?? "");
                                 }
                             }}
                             defaultValue={field.value}

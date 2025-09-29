@@ -11,19 +11,22 @@ export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
         confirmed: 'bg-green-100 text-green-800',
         canceled: 'bg-red-100 text-red-800',
         rescheduled: 'bg-yellow-100 text-yellow-800',
-        waiting: 'bg-blue-100 text-blue-800'
+        waiting: 'bg-blue-100 text-blue-800',
+        attended: 'bg-gray-100 text-gray-800'
     };
 
     const statusLabels = {
         confirmed: 'Confirmado',
         canceled: 'Cancelado',
         rescheduled: 'Reagendado',
-        waiting: 'Aguardando'
+        waiting: 'Aguardando',
+        attended: 'Atendido'
     };
 
     const formatTime = (time: string) => {
         return time.padStart(5, '0');
     };
+
 
     return (
         <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">

@@ -6,7 +6,10 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import { updateAppointmentSchema, appointmentParamsSchema } from "../validation";
+import {
+  updateAppointmentSchema,
+  appointmentParamsSchema,
+} from "../validation";
 import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
 
 export async function GET(
@@ -19,13 +22,14 @@ export async function GET(
     const appointment = await prisma.appointment.findUnique({ where: { id } });
 
     if (!appointment) {
-      return NextResponse.json(createApiError("Agendamento não encontrado"), {
-        status: 404,
-      });
+      return NextResponse.json<ApiResponse<Appointment>>(
+        createApiError<Appointment>("Agendamento não encontrado"),
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(
-      createApiResponse({
+      createApiResponse<Appointment>({
         ...appointment,
         date: appointment.date.toISOString(),
         createdAt: appointment.createdAt.toISOString(),
@@ -33,7 +37,7 @@ export async function GET(
       })
     );
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError<Appointment>(error);
   }
 }
 
@@ -46,11 +50,11 @@ export async function PUT(
     const body = await validateJsonBody(request, updateAppointmentSchema);
 
     const existing = await prisma.appointment.findUnique({ where: { id } });
-
     if (!existing) {
-      return NextResponse.json(createApiError("Agendamento não encontrado"), {
-        status: 404,
-      });
+      return NextResponse.json<ApiResponse<Appointment>>(
+        createApiError<Appointment>("Agendamento não encontrado"),
+        { status: 404 }
+      );
     }
 
     const updated = await prisma.appointment.update({
@@ -66,15 +70,18 @@ export async function PUT(
     });
 
     return NextResponse.json(
-      createApiResponse({
-        ...updated,
-        date: updated.date.toISOString(),
-        createdAt: updated.createdAt.toISOString(),
-        updatedAt: updated.updatedAt.toISOString(),
-      }, "Agendamento atualizado com sucesso")
+      createApiResponse<Appointment>(
+        {
+          ...updated,
+          date: updated.date.toISOString(),
+          createdAt: updated.createdAt.toISOString(),
+          updatedAt: updated.updatedAt.toISOString(),
+        },
+        "Agendamento atualizado com sucesso"
+      )
     );
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError<Appointment>(error);
   }
 }
 
@@ -86,17 +93,19 @@ export async function DELETE(
     const { id } = appointmentParamsSchema.parse(await context.params);
 
     const existing = await prisma.appointment.findUnique({ where: { id } });
-
     if (!existing) {
-      return NextResponse.json(createApiError("Agendamento não encontrado"), {
-        status: 404,
-      });
+      return NextResponse.json<ApiResponse<null>>(
+        createApiError<null>("Agendamento não encontrado"),
+        { status: 404 }
+      );
     }
 
     await prisma.appointment.delete({ where: { id } });
 
-    return NextResponse.json(createApiResponse(null, "Agendamento excluído com sucesso"));
+    return NextResponse.json(
+      createApiResponse<null>(null, "Agendamento excluído com sucesso")
+    );
   } catch (error) {
-    return handleApiError(error);
+    return handleApiError<null>(error);
   }
 }

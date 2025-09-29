@@ -13,10 +13,12 @@ const API_BASE_URL = "/api";
 
 interface AppointmentApiData {
   id: string;
+  name: string;
   phone: string;
   date: string;
   status: AppointmentStatus;
   patientId: string | null;
+  professionalId: string;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
