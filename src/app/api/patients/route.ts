@@ -8,11 +8,11 @@ import {
   getPaginationParams,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, PaginatedResponse, Patient } from "@/app/utils/types/patient";
+import type { ApiResponse, RecordsResponse, Patient } from "@/app/utils/types/patient";
 
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<ApiResponse<PaginatedResponse<Patient>>>> {
+): Promise<NextResponse<ApiResponse<RecordsResponse<Patient>>>> {
   try {
     const { page, limit, search, sortBy, sortOrder } =
       getPaginationParams(request);
@@ -53,8 +53,8 @@ export async function GET(
 
     const totalPages = Math.ceil(total / limit);
 
-    const paginatedResponse: PaginatedResponse<Patient> = {
-      data: patients,
+    const paginatedResponse: RecordsResponse<Patient> = {
+      records: patients,
       pagination: {
         page,
         limit,

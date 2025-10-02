@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { usePatients } from "@/app/utils/hooks/usePatients";
-import type { PatientFilters } from "@/app/utils/types/patient";
+import { useRecords } from "@/app/utils/hooks/useRecords";
+import type { Patient, PatientFilters } from "@/app/utils/types/patient";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
@@ -41,10 +41,14 @@ export const Patients = () => {
     sortBy: "createdAt",
     sortOrder: "desc",
   });
+
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
 
-  const { data, isLoading } = usePatients(filters);
+  const { records: patients, isLoading, pagination } = useRecords<Patient>(
+    "/patients",
+    filters
+  );
 
   const handleSearch = (search: string) => {
     setFilters((prev) => ({ ...prev, search, page: 1 }));
@@ -70,7 +74,7 @@ export const Patients = () => {
         <div>
           <h1 className="text-2xl font-bold">Pacientes</h1>
           <p className="text-muted-foreground">
-            {data?.pagination.total || 0} pacientes cadastrados
+            {pagination?.total || 0} pacientes cadastrados
           </p>
         </div>
 
@@ -132,24 +136,14 @@ export const Patients = () => {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-40" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-16" />
-                  </TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                 </TableRow>
               ))
-            ) : data?.data.length === 0 ? (
+            ) : patients?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8">
                   {filters.search
@@ -158,7 +152,7 @@ export const Patients = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              data?.data.map((patient) => (
+              patients?.map((patient) => (
                 <PatientListItem
                   key={patient.id}
                   patient={patient}
@@ -170,37 +164,34 @@ export const Patients = () => {
         </Table>
       </div>
 
-      {data && (
+      {pagination && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Mostrando {(data.pagination.page - 1) * data.pagination.limit + 1} a{" "}
-            {Math.min(
-              data.pagination.page * data.pagination.limit,
-              data.pagination.total
-            )}{" "}
-            de {data.pagination.total} pacientes
+            Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+            de {pagination.total} pacientes
           </p>
 
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(data.pagination.page - 1)}
-              disabled={!data.pagination.hasPrev}
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={!pagination.hasPrev}
             >
               <ChevronLeft className="w-4 h-4" />
               Anterior
             </Button>
 
             <span className="text-sm">
-              Página {data.pagination.page} de {data.pagination.totalPages}
+              Página {pagination.page} de {pagination.totalPages}
             </span>
 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(data.pagination.page + 1)}
-              disabled={!data.pagination.hasNext}
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={!pagination.hasNext}
             >
               Próxima
               <ChevronRight className="w-4 h-4" />
@@ -210,10 +201,7 @@ export const Patients = () => {
       )}
 
       {editingPatientId && (
-        <Dialog
-          open={!!editingPatientId}
-          onOpenChange={() => setEditingPatientId(null)}
-        >
+        <Dialog open={!!editingPatientId} onOpenChange={() => setEditingPatientId(null)}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Editar Paciente</DialogTitle>
@@ -227,4 +215,4 @@ export const Patients = () => {
       )}
     </div>
   );
-}
+};

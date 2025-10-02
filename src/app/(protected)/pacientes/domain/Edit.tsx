@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { patientSchema, type PatientSchema } from "./Schema";
 import { Fields } from "./Fields";
-import { useUpdatePatient, usePatient } from "@/app/utils/hooks/usePatients";
+import { useUpdateRecord, useRecord } from "@/app/utils/hooks/useRecord";
 
 interface PatientsEditProps {
   patientId: string;
@@ -16,9 +16,12 @@ interface PatientsEditProps {
 }
 
 export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
-  const updatePatient = useUpdatePatient();
+  const { data: patient, isLoading } = useRecord<PatientSchema>(
+    "/patients",
+    patientId
+  )
 
-  const { data: patientData, isLoading } = usePatient(patientId);
+  const updatePatient = useUpdateRecord<PatientSchema, PatientSchema>("/patients")
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
@@ -26,38 +29,36 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
       name: "",
       phone: "",
       email: "",
+      birthDate: undefined,
       notes: "",
     },
   });
 
   useEffect(() => {
-    if (patientData) {
+    if (patient) {
       form.reset({
-        name: patientData.name ?? "",
-        phone: patientData.phone,
-        email: patientData.email || "",
-        birthDate: patientData.birthDate || undefined,
-        notes: patientData.notes || "",
+        name: patient.name,
+        phone: patient.phone,
+        email: patient.email,
+        birthDate: patient.birthDate,
+        notes: patient.notes,
       });
     }
-  }, [patientData, form]);
+  }, [patient, form]);
 
-  async function onSubmit(values: PatientSchema) {
+  const onSubmit = async (values: PatientSchema) => {
     try {
       await updatePatient.mutateAsync({
         id: patientId,
         data: {
-          name: values.name,
-          phone: values.phone,
-          email: values.email || undefined,
-          birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
-          notes: values.notes || undefined,
+          ...values,
+          birthDate: values.birthDate
         },
-      });
+      })
 
-      onClose?.();
+      onClose?.()
     } catch (error) {
-      console.error("Erro ao atualizar paciente:", error);
+      console.error("Erro ao atualizar paciente:", error)
     }
   }
 
@@ -91,7 +92,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
             className="flex-1"
             disabled={updatePatient.isPending}
           >
-            {updatePatient.isPending ? "Salvando..." : "Salvar Alterações"}
+            {updatePatient.isPending ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </form>

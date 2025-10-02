@@ -6,14 +6,14 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { patientSchema, type PatientSchema } from "./Schema";
 import { Fields } from "./Fields";
-import { useCreatePatient } from "@/app/utils/hooks/usePatients";
+import { useCreateRecord } from "@/app/utils/hooks/useRecords";
 
 interface PatientsNewProps {
   onClose?: () => void;
 }
 
 export const PatientsNew = ({ onClose }: PatientsNewProps) => {
-  const createPatient = useCreatePatient();
+  const createPatient = useCreateRecord<PatientSchema, PatientSchema>("/patients");
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),

@@ -20,9 +20,10 @@ export async function apiRequest<T = unknown>(
       url: endpoint,
       ...options,
     })
+
     return response.data
   } catch (error) {
-    console.error(`Erro na requisição [${options.method || "GET"} ${endpoint}]`, error)
+    console.error(`Erro na requisição [${options.method} ${endpoint}]`, error)
     throw error
   }
 }

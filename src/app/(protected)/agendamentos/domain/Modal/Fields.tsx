@@ -12,19 +12,18 @@ import { AppointmentForm } from "../Schema";
 import { UseFormReturn } from "react-hook-form";
 import { DateTime } from "luxon";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { usePatients } from "@/app/utils/hooks/usePatients";
+import { useRecords } from "@/app/utils/hooks/useRecords";
 
 interface FieldsProps {
     form: UseFormReturn<AppointmentForm>;
 }
 
 export const Fields = ({ form }: FieldsProps) => {
-    const { data } = usePatients()
+    const { data } = useRecords()
     const patients = data?.data || [];
 
     return (
         <>
-            {/* Campo hidden para o nome - será preenchido automaticamente */}
             <FormField
                 control={form.control}
                 name="name"
