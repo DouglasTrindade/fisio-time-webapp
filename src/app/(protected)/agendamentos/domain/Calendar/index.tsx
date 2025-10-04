@@ -5,27 +5,35 @@ import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useAppointments } from "@/app/utils/hooks/useAppointments";
+import { useRecords } from "@/app/utils/hooks/useRecords";
 import { Appointment } from "@/app/utils/types/appointment";
 
 interface CalendarProps {
     onDateSelect: (date: Date) => void;
+    onEventClick: (appointment: Appointment) => void; // 🔹 dispara edição
 }
 
-export const Calendar = ({ onDateSelect }: CalendarProps) => {
-    const { data } = useAppointments();
-    const appointments = data?.data || [];
+export const Calendar = ({ onDateSelect, onEventClick }: CalendarProps) => {
+    const { records: appointments, isLoading } = useRecords<Appointment>("/appointments");
 
+    /** 🔹 Quando o usuário seleciona um dia no calendário */
     const handleDateClick = (selectInfo: DateSelectArg) => {
         onDateSelect(selectInfo.start);
     };
 
+    /** 🔹 Quando o usuário clica em um evento */
     const handleEventClick = (info: EventClickArg) => {
         const appointment = info.event.extendedProps as Appointment;
-        alert(`Agendamento: ${info.event.title}\nHorário: ${new Date(appointment.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`);
+        onEventClick(appointment); // dispara modal de edição
     };
 
-    const calendarEvents = appointments.map((appt: Appointment) => ({
+    /** 🔹 Quando o usuário clica em um dia (apenas filtra, não abre modal) */
+    const handleDayClick = (arg: { date: Date }) => {
+        onDateSelect(arg.date);
+    };
+
+    /** 🔹 Mapeia agendamentos para eventos do FullCalendar */
+    const calendarEvents = appointments.map((appt) => ({
         id: appt.id,
         title: appt.name,
         start: appt.date,
@@ -39,13 +47,14 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
                         : appt.status === "waiting"
                             ? "#3b82f6"
                             : "#6b7280",
-        extendedProps: {
-            ...appt,
-        },
+        extendedProps: { ...appt },
     }));
 
     return (
         <div className="w-full">
+            {isLoading && (
+                <div className="text-sm text-muted-foreground mb-2">Carregando agendamentos...</div>
+            )}
             <FullCalendar
                 height="75vh"
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -63,10 +72,10 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
                 locale="pt-br"
                 initialView="dayGridMonth"
                 editable={false}
-                selectable={true}
-                selectMirror={true}
+                selectable={false}
+                selectMirror={false}
                 dayMaxEvents={true}
-                select={handleDateClick}
+                dateClick={handleDayClick}
                 eventClick={handleEventClick}
                 events={calendarEvents}
                 eventDisplay="block"

@@ -1,47 +1,60 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Phone, Clock, User, FileText } from "lucide-react";
 import { Appointment } from "@/app/utils/types/appointment";
+import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
+import { toast } from "sonner";
 
-export const AppointmentCard = ({ appointment, onEdit, onDelete }: {
+interface AppointmentCardProps {
     appointment: Appointment;
     onEdit: (appointment: Appointment) => void;
-    onDelete: (id: string) => void;
-}) => {
-    const statusColors = {
-        confirmed: 'bg-green-100 text-green-800',
-        canceled: 'bg-red-100 text-red-800',
-        rescheduled: 'bg-yellow-100 text-yellow-800',
-        waiting: 'bg-blue-100 text-blue-800',
-        attended: 'bg-gray-100 text-gray-800'
+}
+
+export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) => {
+    const statusColors: Record<string, string> = {
+        confirmed: "bg-green-100 text-green-800",
+        canceled: "bg-red-100 text-red-800",
+        rescheduled: "bg-yellow-100 text-yellow-800",
+        waiting: "bg-blue-100 text-blue-800",
     };
 
-    const statusLabels = {
-        confirmed: 'Confirmado',
-        canceled: 'Cancelado',
-        rescheduled: 'Reagendado',
-        waiting: 'Aguardando',
-        attended: 'Atendido'
+    const statusLabels: Record<string, string> = {
+        confirmed: "Confirmado",
+        canceled: "Cancelado",
+        rescheduled: "Reagendado",
+        waiting: "Aguardando",
     };
 
-    const formatTime = (time: string) => {
-        return time.padStart(5, '0');
+    const formatTime = (date: string) => {
+        const d = new Date(date);
+        return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     };
 
+    const deleteMutation = useDeleteRecord("/appointments");
+
+    const handleDelete = async () => {
+        if (!confirm("Deseja realmente excluir este agendamento?")) return;
+        try {
+            await deleteMutation.mutateAsync(appointment.id);
+        } catch (e: any) {
+            toast.error(e?.message || "Erro ao excluir");
+        }
+    };
 
     return (
         <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
             <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
-                        {statusLabels[appointment.status]}
-                    </span>
-                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
+                    {statusLabels[appointment.status]}
+                </span>
+
                 <div className="flex gap-1">
                     <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
                         Editar
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onDelete(appointment.id)}>
-                        Excluir
+                    <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleteMutation.isPending}>
+                        {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
                     </Button>
                 </div>
             </div>
