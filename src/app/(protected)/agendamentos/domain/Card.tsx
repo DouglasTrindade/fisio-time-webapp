@@ -5,6 +5,7 @@ import { Phone, Clock, User, FileText } from "lucide-react";
 import { Appointment } from "@/app/utils/types/appointment";
 import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
 import { toast } from "sonner";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface AppointmentCardProps {
     appointment: Appointment;
@@ -43,47 +44,51 @@ export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) =
     };
 
     return (
-        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
-            <div className="flex justify-between items-start mb-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
-                    {statusLabels[appointment.status]}
-                </span>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[appointment.status]}`}>
+                        {statusLabels[appointment.status]}
+                    </span>
 
-                <div className="flex gap-1">
-                    <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
-                        Editar
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleteMutation.isPending}>
-                        {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
-                    </Button>
+                    <div className="flex items-end w-full justify-end gap-2">
+                        <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
+                            Editar
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleteMutation.isPending}>
+                            {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            </CardHeader>
 
-            <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-600" />
-                    <span className="font-semibold">{appointment.name}</span>
-                </div>
-
-                {appointment.phone && (
+            <CardContent>
+                <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm text-gray-600">{appointment.phone}</span>
+                        <User className="w-4 h-4 text-gray-600" />
+                        <span className="font-semibold text-gray-600">{appointment.name}</span>
                     </div>
-                )}
 
-                <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm text-gray-600">{formatTime(appointment.date)}</span>
+                    {appointment.phone && (
+                        <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm text-gray-600">{appointment.phone}</span>
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm text-gray-600">{formatTime(appointment.date)}</span>
+                    </div>
+
+                    {appointment.notes && (
+                        <div className="flex items-start gap-2">
+                            <FileText className="w-4 h-4 text-gray-600 mt-0.5" />
+                            <span className="text-sm text-gray-600">{appointment.notes}</span>
+                        </div>
+                    )}
                 </div>
-
-                {appointment.notes && (
-                    <div className="flex items-start gap-2">
-                        <FileText className="w-4 h-4 text-gray-600 mt-0.5" />
-                        <span className="text-sm text-gray-600">{appointment.notes}</span>
-                    </div>
-                )}
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };

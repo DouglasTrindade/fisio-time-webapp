@@ -10,29 +10,24 @@ import { Appointment } from "@/app/utils/types/appointment";
 
 interface CalendarProps {
     onDateSelect: (date: Date) => void;
-    onEventClick: (appointment: Appointment) => void; // 🔹 dispara edição
 }
 
-export const Calendar = ({ onDateSelect, onEventClick }: CalendarProps) => {
+export const Calendar = ({ onDateSelect }: CalendarProps) => {
     const { records: appointments, isLoading } = useRecords<Appointment>("/appointments");
 
-    /** 🔹 Quando o usuário seleciona um dia no calendário */
     const handleDateClick = (selectInfo: DateSelectArg) => {
         onDateSelect(selectInfo.start);
     };
 
-    /** 🔹 Quando o usuário clica em um evento */
     const handleEventClick = (info: EventClickArg) => {
         const appointment = info.event.extendedProps as Appointment;
-        onEventClick(appointment); // dispara modal de edição
+        console.log("Evento clicado:", appointment);
     };
 
-    /** 🔹 Quando o usuário clica em um dia (apenas filtra, não abre modal) */
     const handleDayClick = (arg: { date: Date }) => {
         onDateSelect(arg.date);
     };
 
-    /** 🔹 Mapeia agendamentos para eventos do FullCalendar */
     const calendarEvents = appointments.map((appt) => ({
         id: appt.id,
         title: appt.name,
@@ -76,6 +71,7 @@ export const Calendar = ({ onDateSelect, onEventClick }: CalendarProps) => {
                 selectMirror={false}
                 dayMaxEvents={true}
                 dateClick={handleDayClick}
+                select={handleDateClick}
                 eventClick={handleEventClick}
                 events={calendarEvents}
                 eventDisplay="block"
