@@ -1,18 +1,22 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Status } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const main = async () => {
+async function main() {
   console.log("🌱 Iniciando seed do banco de dados...");
+
+  const hashedPassword = await bcrypt.hash("123123123", 10);
 
   const user = await prisma.user.upsert({
     where: { email: "joao@fisiotime.com" },
     update: {},
     create: {
-      id: "user_1",
+      id: "usr_joao_silva",
       name: "Dr. João Silva",
       email: "joao@fisiotime.com",
-      password: "$2b$10$example",
+      password: hashedPassword,
+      createdAt: new Date(),
     },
   });
 
@@ -20,36 +24,36 @@ const main = async () => {
 
   const patients = await Promise.all([
     prisma.patient.upsert({
-      where: { id: "patient_1" },
+      where: { id: "pat_maria_santos" },
       update: {},
       create: {
-        id: "patient_1",
+        id: "pat_maria_santos",
         name: "Maria Santos",
-        phone: "(11) 99999-9999",
+        phone: "11999999999",
         email: "maria@email.com",
         birthDate: new Date("1985-03-15"),
         notes: "Paciente com dor nas costas",
       },
     }),
     prisma.patient.upsert({
-      where: { id: "patient_2" },
+      where: { id: "pat_pedro_oliveira" },
       update: {},
       create: {
-        id: "patient_2",
+        id: "pat_pedro_oliveira",
         name: "Pedro Oliveira",
-        phone: "(11) 88888-8888",
+        phone: "11888888888",
         email: "pedro@email.com",
         birthDate: new Date("1990-07-22"),
         notes: "Fisioterapia pós-cirúrgica",
       },
     }),
     prisma.patient.upsert({
-      where: { id: "patient_3" },
+      where: { id: "pat_ana_costa" },
       update: {},
       create: {
-        id: "patient_3",
+        id: "pat_ana_costa",
         name: "Ana Costa",
-        phone: "(11) 77777-7777",
+        phone: "11777777777",
         email: null,
         birthDate: new Date("1978-12-10"),
         notes: "Reabilitação do joelho",
@@ -61,23 +65,38 @@ const main = async () => {
 
   const appointments = await Promise.all([
     prisma.appointment.upsert({
-      where: { id: "appointment_1" },
+      where: { id: "appt_maria_15jan" },
       update: {},
       create: {
-        id: "appointment_1",
+        id: "appt_maria_15jan",
         name: "Maria Santos",
-        phone: "(11) 99999-9999",
+        phone: "11999999999",
         date: new Date("2024-01-15T10:00:00"),
-        status: "confirmed",
+        status: Status.CONFIRMED, 
         professionalId: user.id,
-        patientId: "patient_1",
+        patientId: "pat_maria_santos",
+        notes: "Sessão inicial de fisioterapia",
+      },
+    }),
+    prisma.appointment.upsert({
+      where: { id: "appt_pedro_16jan" },
+      update: {},
+      create: {
+        id: "appt_pedro_16jan",
+        name: "Pedro Oliveira",
+        phone: "11888888888",
+        date: new Date("2024-01-16T09:30:00"),
+        status: Status.WAITING,
+        professionalId: user.id,
+        patientId: "pat_pedro_oliveira",
+        notes: "Aguardando avaliação pós-cirúrgica",
       },
     }),
   ]);
 
   console.log(`📅 ${appointments.length} agendamentos criados`);
   console.log("✅ Seed concluído com sucesso!");
-};
+}
 
 main()
   .catch((e) => {

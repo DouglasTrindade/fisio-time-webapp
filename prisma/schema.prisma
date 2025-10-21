@@ -38,7 +38,7 @@ model Appointment {
   name           String
   phone          String
   date           DateTime
-  status         Status   @default(confirmed)
+  status         Status   @default(CONFIRMED)
   professionalId String
   patientId      String?
   patient        Patient? @relation(fields: [patientId], references: [id])
@@ -86,8 +86,8 @@ model VerificationToken {
 }
 
 enum Status {
-  confirmed
-  canceled
-  waiting
-  rescheduled
+  CONFIRMED   @map("confirmed")
+  CANCELED    @map("canceled")
+  WAITING     @map("waiting")
+  RESCHEDULED @map("rescheduled")
 }
