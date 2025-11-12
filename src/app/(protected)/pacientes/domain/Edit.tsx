@@ -29,7 +29,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
       name: "",
       phone: "",
       email: "",
-      birthDate: undefined,
+      birthDate: null,
       notes: "",
     },
   });
@@ -40,7 +40,9 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
         name: patient.name,
         phone: patient.phone,
         email: patient.email,
-        birthDate: patient.birthDate,
+        birthDate: patient.birthDate 
+          ? new Date(patient.birthDate).toISOString().split('T')[0]
+          : null,
         notes: patient.notes,
       });
     }
@@ -50,10 +52,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
     try {
       await updatePatient.mutateAsync({
         id: patientId,
-        data: {
-          ...values,
-          birthDate: values.birthDate
-        },
+        data: values,
       })
 
       onClose?.()

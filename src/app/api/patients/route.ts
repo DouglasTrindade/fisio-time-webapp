@@ -95,7 +95,7 @@ export async function POST(
         name: body.name,
         phone: body.phone,
         email: body.email || null,
-        birthDate: body.birthDate ? new Date(body.birthDate) : null,
+        birthDate: body.birthDate || null,
         notes: body.notes || null,
       },
     });

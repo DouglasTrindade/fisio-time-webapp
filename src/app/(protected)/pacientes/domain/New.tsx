@@ -22,16 +22,17 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
       phone: "",
       email: "",
       notes: "",
+      birthDate: null,
     },
   });
 
-  async function onSubmit(values: PatientSchema) {
+  async function onSubmit(data: PatientSchema) {
     await createPatient.mutateAsync({
-      name: values.name,
-      phone: values.phone,
-      email: values.email || undefined,
-      birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
-      notes: values.notes || undefined,
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      birthDate: data.birthDate,
+      notes: data.notes || undefined,
     });
 
     form.reset();

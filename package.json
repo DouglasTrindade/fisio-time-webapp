@@ -60,6 +60,7 @@
     "react-hook-form": "^7.57.0",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.0",
+    "use-mask-input": "^3.5.2",
     "zod": "^3.25.56"
   },
   "devDependencies": {
