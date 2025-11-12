@@ -14,6 +14,8 @@ import { DateTime } from "luxon";
 import { useRecords } from "@/app/utils/hooks/useRecords";
 import { AppointmentForm } from "../Schema";
 import { Patient } from "@/app/utils/types/patient";
+import { InputMask } from "@/components/ui/input-mask";
+import { Status } from "@prisma/client";
 
 interface FieldsProps {
     form: UseFormReturn<AppointmentForm>;
@@ -86,7 +88,11 @@ export const Fields = ({ form }: FieldsProps) => {
                     <FormItem>
                         <FormLabel>Telefone</FormLabel>
                         <FormControl>
-                            <Input placeholder="(11) 99999-9999" {...field} />
+                            <InputMask
+                                placeholder="(99) 99999-9999"
+                                mask="(99) 99999-9999"
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -134,10 +140,10 @@ export const Fields = ({ form }: FieldsProps) => {
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="waiting">Aguardando</SelectItem>
-                                <SelectItem value="confirmed">Confirmado</SelectItem>
-                                <SelectItem value="canceled">Cancelado</SelectItem>
-                                <SelectItem value="rescheduled">Reagendado</SelectItem>
+                                <SelectItem value={Status.WAITING}>Aguardando</SelectItem>
+                                <SelectItem value={Status.CONFIRMED}>Confirmado</SelectItem>
+                                <SelectItem value={Status.CANCELED}>Cancelado</SelectItem>
+                                <SelectItem value={Status.RESCHEDULED}>Reagendado</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />

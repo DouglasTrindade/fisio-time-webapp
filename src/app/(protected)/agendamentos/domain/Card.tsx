@@ -1,11 +1,13 @@
 "use client";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Phone, Clock, User, FileText } from "lucide-react";
+import { Phone, Clock, User, FileText, Edit } from "lucide-react";
+import { DateTime } from "luxon";
 import { Appointment } from "@/app/utils/types/appointment";
 import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Status } from "@prisma/client"; "@/components/ui/card";
 
 interface AppointmentCardProps {
     appointment: Appointment;
@@ -13,18 +15,18 @@ interface AppointmentCardProps {
 }
 
 export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) => {
-    const statusColors: Record<string, string> = {
-        confirmed: "bg-green-100 text-green-800",
-        canceled: "bg-red-100 text-red-800",
-        rescheduled: "bg-yellow-100 text-yellow-800",
-        waiting: "bg-blue-100 text-blue-800",
+    const statusColors: Record<Status, string> = {
+        [Status.CONFIRMED]: "bg-green-100 text-green-800",
+        [Status.CANCELED]: "bg-red-100 text-red-800",
+        [Status.RESCHEDULED]: "bg-yellow-100 text-yellow-800",
+        [Status.WAITING]: "bg-blue-100 text-blue-800",
     };
 
-    const statusLabels: Record<string, string> = {
-        confirmed: "Confirmado",
-        canceled: "Cancelado",
-        rescheduled: "Reagendado",
-        waiting: "Aguardando",
+    const statusLabels: Record<Status, string> = {
+        [Status.CONFIRMED]: "Confirmado",
+        [Status.CANCELED]: "Cancelado",
+        [Status.RESCHEDULED]: "Reagendado",
+        [Status.WAITING]: "Aguardando",
     };
 
     const formatTime = (date: string) => {

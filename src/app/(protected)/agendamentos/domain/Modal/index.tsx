@@ -30,6 +30,11 @@ interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDa
 export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: AppointmentsModalProps) => {
     const { data: session } = useSession();
 
+    // Early return if no session
+    if (!session?.user?.id) {
+        return null; // ou um loading spinner
+    }
+
     const form = useForm<AppointmentForm>({
         resolver: zodResolver(appointmentFormSchema),
         mode: "onSubmit",
@@ -38,14 +43,14 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: "waiting",
+            status: Status.WAITING,
             patientId: null,
             notes: null,
-            professionalId: session?.user?.id || "",
+            professionalId: session.user.id,
         },
     });
 
-    const professionalId = session?.user?.id || form.getValues("professionalId");
+    const professionalId = session.user.id;
     const createAppointment = useCreateRecord<ApiResponse<Appointment>, AppointmentForm>("/appointments");
     // hook de atualização genérico
     const updateAppointment = useUpdateRecord<ApiResponse<Appointment>, Partial<AppointmentForm>>("/appointments");
@@ -73,16 +78,15 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: "waiting",
+            status: Status.WAITING,
             patientId: null,
             notes: null,
-            professionalId: professionalId || "",
+            professionalId: professionalId,
         });
         onClose();
     }, [form, onClose, initialDate, professionalId]);
 
     const onSubmit: SubmitHandler<AppointmentForm> = async (values) => {
-        if (!values.professionalId) { toast.error("ID do profissional é obrigatório"); return; }
         const basePayload: AppointmentForm = {
             ...values,
             notes: values.notes || null,
@@ -101,7 +105,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 name: "",
                 phone: "",
                 date: initialDate || "",
-                status: "waiting",
+                status: Status.WAITING,
                 patientId: null,
                 notes: null,
                 professionalId: values.professionalId,

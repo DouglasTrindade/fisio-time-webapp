@@ -7,6 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useRecords } from "@/app/utils/hooks/useRecords";
 import { Appointment } from "@/app/utils/types/appointment";
+import { Status } from "@prisma/client";
 
 interface CalendarProps {
     onDateSelect: (date: Date) => void;
@@ -33,13 +34,13 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
         title: appt.name,
         start: appt.date,
         backgroundColor:
-            appt.status === "confirmed"
+            appt.status === Status.CONFIRMED
                 ? "#10b981"
-                : appt.status === "canceled"
+                : appt.status === Status.CANCELED
                     ? "#ef4444"
-                    : appt.status === "rescheduled"
+                    : appt.status === Status.RESCHEDULED
                         ? "#facc15"
-                        : appt.status === "waiting"
+                        : appt.status === Status.WAITING
                             ? "#3b82f6"
                             : "#6b7280",
         extendedProps: { ...appt },
