@@ -10,7 +10,6 @@ import { AppointmentForm, appointmentSchema } from "../Schema";
 import { Status } from "@prisma/client";
 import { z } from "zod";
 
-// Schema específico para o formulário garantindo status requerido após default
 const appointmentFormSchema = appointmentSchema.extend({
     status: z.nativeEnum(Status),
 });
@@ -30,11 +29,6 @@ interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDa
 export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: AppointmentsModalProps) => {
     const { data: session } = useSession();
 
-    // Early return if no session
-    if (!session?.user?.id) {
-        return null; // ou um loading spinner
-    }
-
     const form = useForm<AppointmentForm>({
         resolver: zodResolver(appointmentFormSchema),
         mode: "onSubmit",
@@ -43,22 +37,20 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: Status.WAITING,
+            status: Status.waiting,
             patientId: null,
             notes: null,
-            professionalId: session.user.id,
+            professionalId: session?.user?.id ?? "",
         },
     });
 
-    const professionalId = session.user.id;
+    const professionalId = session?.user?.id;
     const createAppointment = useCreateRecord<ApiResponse<Appointment>, AppointmentForm>("/appointments");
-    // hook de atualização genérico
     const updateAppointment = useUpdateRecord<ApiResponse<Appointment>, Partial<AppointmentForm>>("/appointments");
 
     useEffect(() => { if (session?.user?.id) form.setValue("professionalId", session.user.id); }, [session, form]);
     useEffect(() => { if (initialDate && !appointment) form.setValue("date", initialDate); }, [initialDate, form, appointment]);
 
-    // Preenche form em modo edição
     useEffect(() => {
         if (appointment) {
             form.reset({
@@ -78,7 +70,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: Status.WAITING,
+            status: Status.waiting,
             patientId: null,
             notes: null,
             professionalId: professionalId,
@@ -105,7 +97,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 name: "",
                 phone: "",
                 date: initialDate || "",
-                status: Status.WAITING,
+                status: Status.waiting,
                 patientId: null,
                 notes: null,
                 professionalId: values.professionalId,
@@ -128,7 +120,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
     }, [form.formState.errors]);
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
+        <Dialog open={open && !!session?.user?.id} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{appointment ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
@@ -146,5 +138,5 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 </Form>
             </DialogContent>
         </Dialog>
-    );
-};
+    )
+}

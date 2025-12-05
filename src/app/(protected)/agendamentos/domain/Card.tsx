@@ -1,13 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Phone, Clock, User, FileText, Edit } from "lucide-react";
-import { DateTime } from "luxon";
+import { Phone, Clock, User, FileText } from "lucide-react";
 import { Appointment } from "@/app/utils/types/appointment";
 import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
-import { toast } from "sonner";
-import { Status } from "@prisma/client"; "@/components/ui/card";
+import { Status } from "@prisma/client";
+import { handleApiError } from "@/app/utils/services/handleApiError";
 
 interface AppointmentCardProps {
     appointment: Appointment;
@@ -16,17 +15,17 @@ interface AppointmentCardProps {
 
 export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) => {
     const statusColors: Record<Status, string> = {
-        [Status.CONFIRMED]: "bg-green-100 text-green-800",
-        [Status.CANCELED]: "bg-red-100 text-red-800",
-        [Status.RESCHEDULED]: "bg-yellow-100 text-yellow-800",
-        [Status.WAITING]: "bg-blue-100 text-blue-800",
+        [Status.confirmed]: "bg-green-100 text-green-800",
+        [Status.canceled]: "bg-red-100 text-red-800",
+        [Status.rescheduled]: "bg-yellow-100 text-yellow-800",
+        [Status.waiting]: "bg-blue-100 text-blue-800",
     };
 
     const statusLabels: Record<Status, string> = {
-        [Status.CONFIRMED]: "Confirmado",
-        [Status.CANCELED]: "Cancelado",
-        [Status.RESCHEDULED]: "Reagendado",
-        [Status.WAITING]: "Aguardando",
+        [Status.confirmed]: "Confirmado",
+        [Status.canceled]: "Cancelado",
+        [Status.rescheduled]: "Reagendado",
+        [Status.waiting]: "Aguardando",
     };
 
     const formatTime = (date: string) => {
@@ -40,8 +39,8 @@ export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) =
         if (!confirm("Deseja realmente excluir este agendamento?")) return;
         try {
             await deleteMutation.mutateAsync(appointment.id);
-        } catch (e: any) {
-            toast.error(e?.message || "Erro ao excluir");
+        } catch (e) {
+            handleApiError(e, "Erro ao excluir agendamento");
         }
     };
 
