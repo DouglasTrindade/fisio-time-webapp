@@ -7,6 +7,7 @@ import { Appointment } from "@/app/utils/types/appointment";
 import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
 import { Status } from "@prisma/client";
 import { handleApiError } from "@/app/utils/services/handleApiError";
+import { toast } from 'sonner';
 
 interface AppointmentCardProps {
     appointment: Appointment;
@@ -36,12 +37,20 @@ export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) =
     const deleteMutation = useDeleteRecord("/appointments");
 
     const handleDelete = async () => {
-        if (!confirm("Deseja realmente excluir este agendamento?")) return;
-        try {
-            await deleteMutation.mutateAsync(appointment.id);
-        } catch (e) {
-            handleApiError(e, "Erro ao excluir agendamento");
-        }
+        toast('tem certeza que deseja excluir este agendamento?', {
+            position: 'top-center',
+            action: {
+                label: 'Sim, excluir',
+                onClick: async () => {
+                    try {
+                        await deleteMutation.mutateAsync(appointment.id);
+                    } catch (e) {
+                        handleApiError(e, "Erro ao excluir agendamento");
+                    }
+                },
+            },
+            closeButton: true,
+        });
     };
 
     return (

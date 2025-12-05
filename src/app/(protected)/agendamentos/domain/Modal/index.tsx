@@ -23,6 +23,7 @@ import { Form } from "@/components/ui/form";
 import { Fields } from "./Fields";
 import { Button } from "@/components/ui/button";
 import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
+import { handleApiError } from "@/app/utils/services/handleApiError";
 
 interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDate?: string; appointment?: Appointment | null }
 
@@ -57,9 +58,9 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 name: appointment.name || "",
                 phone: appointment.phone || "",
                 date: appointment.date,
-                status: appointment.status as any,
-                patientId: (appointment as any).patientId ?? null,
-                notes: (appointment as any).notes ?? null,
+                status: appointment.status,
+                patientId: appointment.patientId ?? null,
+                notes: appointment.notes ?? null,
                 professionalId: appointment.professionalId,
             });
         }
@@ -103,10 +104,8 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 professionalId: values.professionalId,
             });
             onClose?.();
-        } catch (error: any) {
-            const msg = error?.response?.data?.error || error?.message || (appointment?.id ? "Erro ao atualizar" : "Erro ao criar agendamento");
-            toast.error(msg);
-            console.error("Erro submit agendamento:", error);
+        } catch (e) {
+            handleApiError(e, appointment?.id ? "Erro ao atualizar agendamento" : "Erro ao criar agendamento");
         }
     };
 
@@ -114,7 +113,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
         const errors = form.formState.errors;
         const firstKey = Object.keys(errors)[0];
         if (firstKey) {
-            const err: any = (errors as any)[firstKey];
+            const err = (errors as any)[firstKey];
             if (err && err.message) toast.error(err.message);
         }
     }, [form.formState.errors]);

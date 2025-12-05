@@ -1,7 +1,10 @@
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
-export function handleApiError(error: unknown, defaultMessage = "Erro inesperado") {
+export const handleApiError = (
+  error: unknown,
+  defaultMessage = "Erro inesperado"
+) => {
   if (error instanceof AxiosError) {
     const msg = error.response?.data?.message || error.message;
     toast.error(msg || defaultMessage);
@@ -12,4 +15,4 @@ export function handleApiError(error: unknown, defaultMessage = "Erro inesperado
   } else {
     toast.error(defaultMessage);
   }
-}
+};

@@ -1,4 +1,3 @@
-"use client";
 
 import { Calendar, Settings, Users, LayoutDashboard } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -40,8 +39,8 @@ const data = {
       icon: Users,
     },
     {
-      title: "Settings",
-      url: "#",
+      title: "Configurações",
+      url: "/configuracoes",
       icon: Settings,
     },
   ],

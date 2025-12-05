@@ -8,7 +8,6 @@ import { Calendar } from "./Calendar";
 import { AppointmentsModal } from "./Modal";
 import { useRecords } from "@/app/utils/hooks/useRecords";
 import { Appointment } from "@/app/utils/types/appointment";
-import { DateTime } from "luxon";
 
 export const Appointments = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -17,9 +16,9 @@ export const Appointments = () => {
 
   const queryDate = selectedDate
     ? new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 10)
-    : undefined; // YYYY-MM-DD
+      .toISOString()
+      .slice(0, 10)
+    : undefined;
   const { records: appointments, refetch, isFetching } = useRecords<Appointment>(
     "/appointments",
     queryDate ? { date: queryDate } : undefined
@@ -30,10 +29,8 @@ export const Appointments = () => {
   }
 
   const handleDateSelect = (date: Date) => {
-    // Agora apenas filtra pela data; não abre modal automaticamente
     setSelectedDate(date);
     setEditingAppointment(null);
-    // Garantir que modal permaneça fechado
     setIsDialogOpen(false);
   };
 
@@ -50,8 +47,8 @@ export const Appointments = () => {
   };
 
 
-  const filteredAppointments = appointments; // já filtrados no backend se date presente
-  const totalAppointments = appointments.length; // total do resultado atual (paginado)
+  const filteredAppointments = appointments;
+  const totalAppointments = appointments.length;
 
   return (
     <div className="space-y-4">
@@ -73,7 +70,6 @@ export const Appointments = () => {
         <div className="flex-1">
           <Calendar
             onDateSelect={handleDateSelect}
-            onEventClick={handleEditAppointment}
           />
         </div>
 
@@ -95,7 +91,7 @@ export const Appointments = () => {
                 </p>
               </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3 h-[38rem] overflow-y-auto">
                 {filteredAppointments.length > 0 ? (
                   filteredAppointments.map((appointment) => (
                     <AppointmentCard
@@ -128,10 +124,10 @@ export const Appointments = () => {
         }}
         initialDate={(selectedDate && !editingAppointment)
           ? (() => {
-              const d = new Date(selectedDate);
-              d.setHours(9,0,0,0); // 09:00
-              return d.toISOString();
-            })()
+            const d = new Date(selectedDate);
+            d.setHours(9, 0, 0, 0); // 09:00
+            return d.toISOString();
+          })()
           : selectedDate?.toISOString()}
         appointment={editingAppointment}
       />

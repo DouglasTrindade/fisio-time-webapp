@@ -47,7 +47,7 @@ export const Patients = () => {
 
   const { records: patients, isLoading, pagination } = useRecords<Patient>(
     "/patients",
-    filters
+    filters as Record<string, unknown>
   );
 
   const handleSearch = (search: string) => {

@@ -1,5 +1,7 @@
+import { DashboardHome } from "./domain";
+
 const DashboardPage = async () => {
-  return <div>Dashboard</div>;
+  return <DashboardHome />;
 };
 
 export default DashboardPage;

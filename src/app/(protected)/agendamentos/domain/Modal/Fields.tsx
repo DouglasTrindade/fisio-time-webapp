@@ -23,7 +23,6 @@ interface FieldsProps {
 
 export const Fields = ({ form }: FieldsProps) => {
     const { records: patients } = useRecords<Patient>("patients");
-    const patientId = form.watch("patientId");
 
     return (
         <>
@@ -140,10 +139,10 @@ export const Fields = ({ form }: FieldsProps) => {
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value={Status.WAITING}>Aguardando</SelectItem>
-                                <SelectItem value={Status.CONFIRMED}>Confirmado</SelectItem>
-                                <SelectItem value={Status.CANCELED}>Cancelado</SelectItem>
-                                <SelectItem value={Status.RESCHEDULED}>Reagendado</SelectItem>
+                                <SelectItem value={Status.waiting}>Aguardando</SelectItem>
+                                <SelectItem value={Status.confirmed}>Confirmado</SelectItem>
+                                <SelectItem value={Status.canceled}>Cancelado</SelectItem>
+                                <SelectItem value={Status.rescheduled}>Reagendado</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
