@@ -7,7 +7,7 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse } from "@/app/utils/types/user";
+import type { ApiResponse } from "@/lib/api/types";
 import { z } from "zod";
 
 const updateUserSchema = z.object({
