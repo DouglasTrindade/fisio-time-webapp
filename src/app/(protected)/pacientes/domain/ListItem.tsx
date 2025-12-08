@@ -53,8 +53,9 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
     <>
       <TableRow>
         <TableCell className="font-medium">{patient.name}</TableCell>
-        <TableCell>{patient.phone}</TableCell>
         <TableCell>{patient.email || "-"}</TableCell>
+        <TableCell>{patient.phone}</TableCell>
+        <TableCell>{formatDate(patient.birthDate)}</TableCell>
         <TableCell>{formatDate(patient.createdAt)}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>

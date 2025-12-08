@@ -126,8 +126,9 @@ export const Patients = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Nome</TableHead>
-              <TableHead>Telefone</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Telefone</TableHead>
+              <TableHead>Data de Nascimento</TableHead>
               <TableHead>Data de Cadastro</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
