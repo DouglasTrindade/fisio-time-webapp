@@ -1,4 +1,3 @@
-"use client";
 
 import { Calendar, Settings, Users, LayoutDashboard } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -16,38 +15,43 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const menuItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: LayoutDashboard,
   },
-  items: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Agendamentos",
-      url: "/agendamentos",
-      icon: Calendar,
-    },
-    {
-      title: "Pacientes",
-      url: "/pacientes",
-      icon: Users,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-  ],
-};
+  {
+    title: "Agendamentos",
+    url: "/agendamentos",
+    icon: Calendar,
+  },
+  {
+    title: "Pacientes",
+    url: "/pacientes",
+    icon: Users,
+  },
+  {
+    title: "Configurações",
+    url: "/configuracoes",
+    icon: Settings,
+  },
+];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const session = await auth();
+  const user = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, email: true, image: true },
+      })
+    : null;
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex items-center">
@@ -58,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {data?.items.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
@@ -73,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user ?? {}} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

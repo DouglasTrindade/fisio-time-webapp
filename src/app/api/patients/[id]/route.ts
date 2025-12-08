@@ -70,11 +70,7 @@ export async function PUT(
         name: body.name ?? undefined,
         phone: body.phone ?? undefined,
         email: body.email === "" ? null : body.email,
-        birthDate: body.birthDate
-          ? new Date(body.birthDate)
-          : body.birthDate === ""
-          ? null
-          : undefined,
+        birthDate: body.birthDate ?? undefined,
         notes: body.notes === "" ? null : body.notes ?? undefined,
       },
     });

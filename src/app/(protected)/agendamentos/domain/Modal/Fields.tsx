@@ -8,59 +8,53 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AppointmentForm } from "../Schema";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { DateTime } from "luxon";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { usePatients } from "@/app/utils/hooks/usePatients";
+import { useRecords } from "@/app/utils/hooks/useRecords";
+import { AppointmentForm } from "../Schema";
+import { Patient } from "@/app/utils/types/patient";
+import { InputMask } from "@/components/ui/input-mask";
+import { Status } from "@prisma/client";
 
 interface FieldsProps {
     form: UseFormReturn<AppointmentForm>;
 }
 
 export const Fields = ({ form }: FieldsProps) => {
-    const { data } = usePatients()
-    const patients = data?.data || [];
+    const { records: patients } = useRecords<Patient>("patients");
 
     return (
         <>
-            {/* Campo hidden para o nome - será preenchido automaticamente */}
-            <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormControl>
-                            <Input {...field} type="hidden" />
-                        </FormControl>
-                    </FormItem>
-                )}
-            />
-
             <FormField
                 control={form.control}
                 name="patientId"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Paciente</FormLabel>
+                        <FormLabel>Paciente (Opcional)</FormLabel>
                         <Select
+                            value={field.value || "__none__"}
                             onValueChange={(value) => {
+                                if (value === "__none__") {
+                                    field.onChange(null);
+                                    form.setValue("name", "");
+                                    return;
+                                }
                                 field.onChange(value);
-
-                                const selectedPatient = patients.find(patient => patient.id === value);
+                                const selectedPatient = patients.find((p) => p.id === value);
                                 if (selectedPatient) {
-                                    form.setValue('name', selectedPatient.name ?? "");
+                                    form.setValue("name", selectedPatient.name ?? "");
                                 }
                             }}
-                            defaultValue={field.value}
                         >
                             <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um paciente" />
+                                    <SelectValue placeholder="Selecione um paciente (opcional)" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {patients?.map((patient) => (
+                                <SelectItem value="__none__">Nenhum paciente</SelectItem>
+                                {patients.map((patient) => (
                                     <SelectItem key={patient.id} value={patient.id}>
                                         {patient.name}
                                     </SelectItem>
@@ -74,12 +68,30 @@ export const Fields = ({ form }: FieldsProps) => {
 
             <FormField
                 control={form.control}
+                name="name"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Nome do paciente" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+
+            <FormField
+                control={form.control}
                 name="phone"
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Telefone</FormLabel>
                         <FormControl>
-                            <Input placeholder="(11) 99999-9999" {...field} />
+                            <InputMask
+                                placeholder="(99) 99999-9999"
+                                mask="(99) 99999-9999"
+                                {...field}
+                            />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -104,11 +116,8 @@ export const Fields = ({ form }: FieldsProps) => {
                                     const iso = DateTime.fromFormat(
                                         e.target.value,
                                         "yyyy-MM-dd'T'HH:mm"
-                                    )
-                                        .toUTC()
-                                        .toISO()
-
-                                    field.onChange(iso)
+                                    ).toUTC().toISO();
+                                    field.onChange(iso);
                                 }}
                             />
                         </FormControl>
@@ -123,18 +132,17 @@ export const Fields = ({ form }: FieldsProps) => {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione o status" />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="waiting">Aguardando</SelectItem>
-                                <SelectItem value="confirmed">Confirmado</SelectItem>
-                                <SelectItem value="attended">Atendido</SelectItem>
-                                <SelectItem value="canceled">Cancelado</SelectItem>
-                                <SelectItem value="rescheduled">Reagendado</SelectItem>
+                                <SelectItem value={Status.WAITING}>Aguardando</SelectItem>
+                                <SelectItem value={Status.CONFIRMED}>Confirmado</SelectItem>
+                                <SelectItem value={Status.CANCELED}>Cancelado</SelectItem>
+                                <SelectItem value={Status.RESCHEDULED}>Reagendado</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -149,11 +157,7 @@ export const Fields = ({ form }: FieldsProps) => {
                     <FormItem>
                         <FormLabel>Observações</FormLabel>
                         <FormControl>
-                            <Input
-                                placeholder="Observações adicionais"
-                                {...field}
-                                value={field.value || ""}
-                            />
+                            <Input placeholder="Observações adicionais" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

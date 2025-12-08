@@ -6,14 +6,14 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { patientSchema, type PatientSchema } from "./Schema";
 import { Fields } from "./Fields";
-import { useCreatePatient } from "@/app/utils/hooks/usePatients";
+import { useCreateRecord } from "@/app/utils/hooks/useRecords";
 
 interface PatientsNewProps {
   onClose?: () => void;
 }
 
 export const PatientsNew = ({ onClose }: PatientsNewProps) => {
-  const createPatient = useCreatePatient();
+  const createPatient = useCreateRecord<PatientSchema, PatientSchema>("/patients");
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
@@ -22,16 +22,17 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
       phone: "",
       email: "",
       notes: "",
+      birthDate: null,
     },
   });
 
-  async function onSubmit(values: PatientSchema) {
+  async function onSubmit(data: PatientSchema) {
     await createPatient.mutateAsync({
-      name: values.name,
-      phone: values.phone,
-      email: values.email || undefined,
-      birthDate: values.birthDate ? new Date(values.birthDate) : undefined,
-      notes: values.notes || undefined,
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      birthDate: data.birthDate,
+      notes: data.notes || undefined,
     });
 
     form.reset();

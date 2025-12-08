@@ -5,16 +5,16 @@ import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useAppointments } from "@/app/utils/hooks/useAppointments";
+import { useRecords } from "@/app/utils/hooks/useRecords";
 import { Appointment } from "@/app/utils/types/appointment";
+import { Status } from "@prisma/client";
 
 interface CalendarProps {
     onDateSelect: (date: Date) => void;
 }
 
 export const Calendar = ({ onDateSelect }: CalendarProps) => {
-    const { data } = useAppointments();
-    const appointments = data?.data || [];
+    const { records: appointments, isLoading } = useRecords<Appointment>("/appointments");
 
     const handleDateClick = (selectInfo: DateSelectArg) => {
         onDateSelect(selectInfo.start);
@@ -22,30 +22,35 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
 
     const handleEventClick = (info: EventClickArg) => {
         const appointment = info.event.extendedProps as Appointment;
-        alert(`Agendamento: ${info.event.title}\nHorário: ${new Date(appointment.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`);
+        console.log("Evento clicado:", appointment);
     };
 
-    const calendarEvents = appointments.map((appt: Appointment) => ({
+    const handleDayClick = (arg: { date: Date }) => {
+        onDateSelect(arg.date);
+    };
+
+    const calendarEvents = appointments.map((appt) => ({
         id: appt.id,
         title: appt.name,
         start: appt.date,
         backgroundColor:
-            appt.status === "confirmed"
+            appt.status === Status.CONFIRMED
                 ? "#10b981"
-                : appt.status === "canceled"
+                : appt.status === Status.CANCELED
                     ? "#ef4444"
-                    : appt.status === "rescheduled"
+                    : appt.status === Status.RESCHEDULED
                         ? "#facc15"
-                        : appt.status === "waiting"
+                        : appt.status === Status.WAITING
                             ? "#3b82f6"
                             : "#6b7280",
-        extendedProps: {
-            ...appt,
-        },
+        extendedProps: { ...appt },
     }));
 
     return (
         <div className="w-full">
+            {isLoading && (
+                <div className="text-sm text-muted-foreground mb-2">Carregando agendamentos...</div>
+            )}
             <FullCalendar
                 height="75vh"
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -63,9 +68,10 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
                 locale="pt-br"
                 initialView="dayGridMonth"
                 editable={false}
-                selectable={true}
-                selectMirror={true}
+                selectable={false}
+                selectMirror={false}
                 dayMaxEvents={true}
+                dateClick={handleDayClick}
                 select={handleDateClick}
                 eventClick={handleEventClick}
                 events={calendarEvents}

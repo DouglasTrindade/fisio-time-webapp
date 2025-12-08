@@ -41,6 +41,18 @@ export interface PatientFilters {
   sortOrder?: "asc" | "desc";
 }
 
+export interface RecordsResponse<T> {
+  records: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   pagination: {

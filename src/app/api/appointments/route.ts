@@ -8,10 +8,7 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type {
-  PaginatedResponse,
-  ApiResponse,
-} from "@/app/utils/types/appointment";
+import type { ApiResponse } from "@/app/utils/types/appointment";
 import type { Appointment as PrismaAppointment } from "@prisma/client";
 
 type Appointment = Omit<
@@ -25,15 +22,40 @@ type Appointment = Omit<
 
 type AppointmentCreateInput = typeof createAppointmentSchema._type;
 
+interface RecordsResponse<T> {
+  records: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
 export async function GET(
   request: NextRequest
-): Promise<NextResponse<ApiResponse<PaginatedResponse<Appointment>>>> {
+): Promise<NextResponse<ApiResponse<RecordsResponse<Appointment>>>> {
   try {
     const { page, limit, search, sortBy, sortOrder } =
       getPaginationParams(request);
 
+    const url = new URL(request.url);
+    const dateParam = url.searchParams.get("date"); // formato esperado YYYY-MM-DD
+
+    let dateFilter: { date?: { gte: Date; lt: Date } } = {};
+    if (dateParam) {
+      // tenta montar intervalo do dia UTC
+      const start = new Date(dateParam + "T00:00:00.000Z");
+      const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+      if (!isNaN(start.getTime())) {
+        dateFilter = { date: { gte: start, lt: end } };
+      }
+    }
+
     if (page < 1 || limit < 1 || limit > 100) {
-      return NextResponse.json<ApiResponse<PaginatedResponse<Appointment>>>(
+      return NextResponse.json<ApiResponse<RecordsResponse<Appointment>>>(
         createApiError("Parâmetros de paginação inválidos"),
         { status: 400 }
       );
@@ -41,7 +63,7 @@ export async function GET(
 
     const skip = (page - 1) * limit;
 
-    const where = search
+    const textWhere = search
       ? {
           OR: [
             { name: { contains: search, mode: "insensitive" as const } },
@@ -49,6 +71,8 @@ export async function GET(
           ],
         }
       : {};
+
+    const where = { ...textWhere, ...dateFilter };
 
     const validSortFields = ["date", "name", "createdAt", "status"];
     const orderBy = validSortFields.includes(sortBy)
@@ -67,8 +91,8 @@ export async function GET(
 
     const totalPages = Math.ceil(total / limit);
 
-    const paginatedResponse: PaginatedResponse<Appointment> = {
-      data: appointments.map((a) => ({
+    const responseBody: RecordsResponse<Appointment> = {
+      records: appointments.map((a) => ({
         ...a,
         date: a.date.toISOString(),
         createdAt: a.createdAt.toISOString(),
@@ -85,10 +109,10 @@ export async function GET(
     };
 
     return NextResponse.json(
-      createApiResponse(paginatedResponse, "Agendamentos listados com sucesso")
+      createApiResponse(responseBody, "Agendamentos listados com sucesso")
     );
   } catch (error) {
-    return handleApiError<PaginatedResponse<Appointment>>(error);
+    return handleApiError<RecordsResponse<Appointment>>(error);
   }
 }
 

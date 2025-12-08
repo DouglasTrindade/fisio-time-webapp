@@ -21,7 +21,7 @@ import {
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Patient } from "@/app/utils/types/patient";
-import { useDeletePatient } from "@/app/utils/hooks/usePatients";
+import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
 
 interface PatientListItemProps {
   patient: Patient;
@@ -30,7 +30,7 @@ interface PatientListItemProps {
 
 export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const deletePatient = useDeletePatient();
+  const deletePatient = useDeleteRecord("/patients");
 
   const handleDelete = async () => {
     await deletePatient.mutateAsync(patient.id);
@@ -65,7 +65,7 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(patient.id)}>
+              <DropdownMenuItem onClick={() => onEdit(patient?.id)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>

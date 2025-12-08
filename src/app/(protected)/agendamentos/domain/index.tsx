@@ -6,40 +6,48 @@ import { Plus } from "lucide-react";
 import { AppointmentCard } from "./Card";
 import { Calendar } from "./Calendar";
 import { AppointmentsModal } from "./Modal";
-import { useAppointments } from "@/app/utils/hooks/useAppointments";
+import { useRecords } from "@/app/utils/hooks/useRecords";
 import { Appointment } from "@/app/utils/types/appointment";
 
 export const Appointments = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
 
-  const { data, refetch } = useAppointments();
-  const appointments = data?.data || [];
+  const queryDate = selectedDate
+    ? new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10)
+    : undefined;
+  const { records: appointments, refetch, isFetching } = useRecords<Appointment>(
+    "/appointments",
+    queryDate ? { date: queryDate } : undefined
+  );
+
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[Appointments] selectedDate=", selectedDate?.toISOString(), "queryDate=", queryDate, "records=", appointments.length, appointments[0]);
+  }
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
-
-    const filtered = appointments.filter((appointment: Appointment) => {
-      const appointmentDate = new Date(appointment.date);
-      return appointmentDate.toDateString() === date.toDateString();
-    });
-
-    setFilteredAppointments(filtered);
+    setEditingAppointment(null);
+    setIsDialogOpen(false);
   };
 
   const handleNewAppointment = () => {
+    setSelectedDate(null);
+    setEditingAppointment(null);
     setIsDialogOpen(true);
   };
 
   const handleEditAppointment = (appointment: Appointment) => {
-    console.log("Editar agendamento:", appointment);
+    setEditingAppointment(appointment);
+    setSelectedDate(new Date(appointment.date));
+    setIsDialogOpen(true);
   };
 
-  const handleDeleteAppointment = (id: string) => {
-    console.log("Excluir agendamento:", id);
-  };
 
+  const filteredAppointments = appointments;
   const totalAppointments = appointments.length;
 
   return (
@@ -48,7 +56,7 @@ export const Appointments = () => {
         <div>
           <h1 className="text-2xl font-bold">Agendamentos</h1>
           <p className="text-muted-foreground">
-            {totalAppointments} pacientes Agendados
+            {totalAppointments} paciente{totalAppointments !== 1 ? "s" : ""} agendado{totalAppointments !== 1 ? "s" : ""}
           </p>
         </div>
 
@@ -60,45 +68,46 @@ export const Appointments = () => {
 
       <div className="flex w-full gap-6">
         <div className="flex-1">
-          <Calendar onDateSelect={handleDateSelect} />
+          <Calendar
+            onDateSelect={handleDateSelect}
+          />
         </div>
 
         <div className="w-80">
-          {selectedDate && (
+          {selectedDate ? (
             <div className="space-y-4">
               <div className="border-b pb-2">
                 <h3 className="font-semibold">
-                  Agendamentos - {selectedDate.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
+                  Agendamentos -{" "}
+                  {selectedDate.toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
                   })}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {filteredAppointments.length} agendamento{filteredAppointments.length !== 1 ? 's' : ''}
+                  {filteredAppointments.length} agendamento
+                  {filteredAppointments.length !== 1 ? "s" : ""}
                 </p>
               </div>
 
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3 h-[38rem] overflow-y-auto">
                 {filteredAppointments.length > 0 ? (
                   filteredAppointments.map((appointment) => (
                     <AppointmentCard
                       key={appointment.id}
                       appointment={appointment}
                       onEdit={handleEditAppointment}
-                      onDelete={handleDeleteAppointment}
                     />
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>Nenhum agendamento encontrado para esta data</p>
+                    <p>{isFetching ? "Carregando..." : "Nenhum agendamento encontrado para esta data"}</p>
                   </div>
                 )}
               </div>
             </div>
-          )}
-
-          {!selectedDate && (
+          ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>Selecione uma data no calendário para ver os agendamentos</p>
             </div>
@@ -110,10 +119,18 @@ export const Appointments = () => {
         open={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);
+          setEditingAppointment(null);
           refetch();
         }}
-        initialDate={undefined}
+        initialDate={(selectedDate && !editingAppointment)
+          ? (() => {
+            const d = new Date(selectedDate);
+            d.setHours(9, 0, 0, 0); // 09:00
+            return d.toISOString();
+          })()
+          : selectedDate?.toISOString()}
+        appointment={editingAppointment}
       />
     </div>
   );
-}
+};
