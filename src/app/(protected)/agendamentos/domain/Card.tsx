@@ -16,17 +16,17 @@ interface AppointmentCardProps {
 
 export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) => {
     const statusColors: Record<Status, string> = {
-        [Status.confirmed]: "bg-green-100 text-green-800",
-        [Status.canceled]: "bg-red-100 text-red-800",
-        [Status.rescheduled]: "bg-yellow-100 text-yellow-800",
-        [Status.waiting]: "bg-blue-100 text-blue-800",
+        [Status.CONFIRMED]: "bg-green-100 text-green-800",
+        [Status.CANCELED]: "bg-red-100 text-red-800",
+        [Status.RESCHEDULED]: "bg-yellow-100 text-yellow-800",
+        [Status.WAITING]: "bg-blue-100 text-blue-800",
     };
 
     const statusLabels: Record<Status, string> = {
-        [Status.confirmed]: "Confirmado",
-        [Status.canceled]: "Cancelado",
-        [Status.rescheduled]: "Reagendado",
-        [Status.waiting]: "Aguardando",
+        [Status.CONFIRMED]: "Confirmado",
+        [Status.CANCELED]: "Cancelado",
+        [Status.RESCHEDULED]: "Reagendado",
+        [Status.WAITING]: "Aguardando",
     };
 
     const formatTime = (date: string) => {

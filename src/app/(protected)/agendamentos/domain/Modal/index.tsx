@@ -38,7 +38,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: Status.waiting,
+            status: Status.WAITING,
             patientId: null,
             notes: null,
             professionalId: session?.user?.id ?? "",
@@ -71,7 +71,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             name: "",
             phone: "",
             date: initialDate || "",
-            status: Status.waiting,
+            status: Status.WAITING,
             patientId: null,
             notes: null,
             professionalId: professionalId,
@@ -85,7 +85,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             notes: values.notes || null,
             patientId: values.patientId || null,
             professionalId: values.professionalId,
-        } as AppointmentForm;
+        };
         try {
             if (appointment?.id) {
                 const resp = await updateAppointment.mutateAsync({ id: appointment.id, data: basePayload });
@@ -98,7 +98,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 name: "",
                 phone: "",
                 date: initialDate || "",
-                status: Status.waiting,
+                status: Status.WAITING,
                 patientId: null,
                 notes: null,
                 professionalId: values.professionalId,
@@ -109,14 +109,23 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
         }
     };
 
-    useEffect(() => {
-        const errors = form.formState.errors;
-        const firstKey = Object.keys(errors)[0];
-        if (firstKey) {
-            const err = (errors as any)[firstKey];
-            if (err && err.message) toast.error(err.message);
+    const getErrorMessage = useCallback((error: unknown): string | undefined => {
+        if (typeof error === "object" && error && "message" in error) {
+            const message = (error as { message?: unknown }).message;
+            return typeof message === "string" ? message : undefined;
         }
-    }, [form.formState.errors]);
+        return undefined;
+    }, []);
+
+    useEffect(() => {
+        const firstErrorMessage = Object.values(form.formState.errors)
+            .map((error) => getErrorMessage(error))
+            .find((message): message is string => Boolean(message));
+
+        if (firstErrorMessage) {
+            toast.error(firstErrorMessage);
+        }
+    }, [form.formState.errors, getErrorMessage]);
 
     return (
         <Dialog open={open && !!session?.user?.id} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>

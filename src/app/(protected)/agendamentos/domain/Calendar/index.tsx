@@ -34,13 +34,13 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
         title: appt.name,
         start: appt.date,
         backgroundColor:
-            appt.status === Status.confirmed
+            appt.status === Status.CONFIRMED
                 ? "#10b981"
-                : appt.status === Status.canceled
+                : appt.status === Status.CANCELED
                     ? "#ef4444"
-                    : appt.status === Status.rescheduled
+                    : appt.status === Status.RESCHEDULED
                         ? "#facc15"
-                        : appt.status === Status.waiting
+                        : appt.status === Status.WAITING
                             ? "#3b82f6"
                             : "#6b7280",
         extendedProps: { ...appt },

@@ -160,7 +160,7 @@ export const DashboardHome = () => {
     const noShows = appointments.filter((appointment) => {
       const appointmentDate = new Date(appointment.date);
       return (
-        appointmentDate < now && appointment.status === Status.waiting
+        appointmentDate < now && appointment.status === Status.WAITING
       );
     }).length;
 
@@ -321,20 +321,20 @@ export const DashboardHome = () => {
                         {formatTime(appointment.date)}
                       </p>
                       <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${appointment.status === Status.confirmed
+                        className={`text-xs font-medium px-2 py-1 rounded-full ${appointment.status === Status.CONFIRMED
                           ? "bg-emerald-100 text-emerald-800"
-                          : appointment.status === Status.canceled
+                          : appointment.status === Status.CANCELED
                             ? "bg-rose-100 text-rose-800"
-                            : appointment.status === Status.rescheduled
+                            : appointment.status === Status.RESCHEDULED
                               ? "bg-amber-100 text-amber-800"
                               : "bg-sky-100 text-sky-800"
                           }`}
                       >
-                        {appointment.status === Status.confirmed
+                        {appointment.status === Status.CONFIRMED
                           ? "Confirmado"
-                          : appointment.status === Status.canceled
+                          : appointment.status === Status.CANCELED
                             ? "Cancelado"
-                            : appointment.status === Status.rescheduled
+                            : appointment.status === Status.RESCHEDULED
                               ? "Reagendado"
                               : "Aguardando"}
                       </span>
