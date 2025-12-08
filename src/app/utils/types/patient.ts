@@ -53,6 +53,17 @@ export interface RecordsResponse<T> {
   };
 }
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
 
 export interface ApiResponse<T = unknown> {
   success: boolean;

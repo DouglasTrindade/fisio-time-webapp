@@ -8,7 +8,7 @@ export const createAppointmentSchema = z.object({
   status: z.nativeEnum(Status).optional(),
   notes: z.string().optional().or(z.literal("")).nullable(),
   patientId: z.string().nullable().optional(),
-  professionalId: z.string().nullable().optional(),
+  professionalId: z.string().min(1, "ID do profissional é obrigatório"),
 });
 
 export const updateAppointmentSchema = createAppointmentSchema.partial();
