@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "Patient" ADD COLUMN     "cep" TEXT,
+ADD COLUMN     "city" TEXT,
+ADD COLUMN     "companyName" TEXT,
+ADD COLUMN     "complement" TEXT,
+ADD COLUMN     "country" TEXT,
+ADD COLUMN     "cpf" TEXT,
+ADD COLUMN     "gender" TEXT,
+ADD COLUMN     "maritalStatus" TEXT,
+ADD COLUMN     "neighborhood" TEXT,
+ADD COLUMN     "number" TEXT,
+ADD COLUMN     "profession" TEXT,
+ADD COLUMN     "rg" TEXT,
+ADD COLUMN     "state" TEXT,
+ADD COLUMN     "street" TEXT;

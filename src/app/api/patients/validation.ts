@@ -19,6 +19,20 @@ export const createPatientSchema = z.object({
     return new Date(val);
   }).nullable().optional(),
   notes: z.string().optional().or(z.literal("")),
+  cpf: z.string().optional().or(z.literal("")),
+  rg: z.string().optional().or(z.literal("")),
+  maritalStatus: z.enum(["solteiro", "casado", "viuva", "divorciado", "separado"]).optional().or(z.literal("")),
+  gender: z.enum(["masculino", "feminino"]).optional().or(z.literal("")),
+  profession: z.string().optional().or(z.literal("")),
+  companyName: z.string().optional().or(z.literal("")),
+  cep: z.string().optional().or(z.literal("")),
+  country: z.string().optional().or(z.literal("")),
+  state: z.string().optional().or(z.literal("")),
+  city: z.string().optional().or(z.literal("")),
+  street: z.string().optional().or(z.literal("")),
+  number: z.string().optional().or(z.literal("")),
+  neighborhood: z.string().optional().or(z.literal("")),
+  complement: z.string().optional().or(z.literal("")),
 })
 
 export const updatePatientSchema = createPatientSchema.partial()

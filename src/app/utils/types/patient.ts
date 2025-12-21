@@ -8,6 +8,20 @@ export interface PatientCreateInput {
   email?: string;
   birthDate?: Date;
   notes?: string;
+  cpf?: string;
+  rg?: string;
+  maritalStatus?: string;
+  gender?: string;
+  profession?: string;
+  companyName?: string;
+  cep?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  complement?: string;
 }
 
 export interface PatientUpdateInput extends Partial<PatientCreateInput> {
@@ -21,6 +35,20 @@ export interface PatientApiData {
   email: string | null;
   birthDate: string | null;
   notes: string | null;
+  cpf: string | null;
+  rg: string | null;
+  maritalStatus: string | null;
+  gender: string | null;
+  profession: string | null;
+  companyName: string | null;
+  cep: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  street: string | null;
+  number: string | null;
+  neighborhood: string | null;
+  complement: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +59,20 @@ export interface PatientApiInput {
   email?: string;
   birthDate?: string;
   notes?: string;
+  cpf?: string;
+  rg?: string;
+  maritalStatus?: string;
+  gender?: string;
+  profession?: string;
+  companyName?: string;
+  cep?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  complement?: string;
 }
 
 export interface PatientFilters {
