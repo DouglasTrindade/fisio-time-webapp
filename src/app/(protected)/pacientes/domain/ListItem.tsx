@@ -18,8 +18,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { MoreHorizontal, Edit, Trash2, History } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import type { Patient } from "@/app/utils/types/patient";
 import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
 
@@ -31,6 +32,7 @@ interface PatientListItemProps {
 export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deletePatient = useDeleteRecord("/patients");
+  const router = useRouter();
 
   const handleDelete = async () => {
     await deletePatient.mutateAsync(patient.id);
@@ -49,9 +51,23 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
     }).format(dateObj);
   };
 
+  const goToHistory = useCallback(() => {
+    router.push(`/pacientes/${patient.id}/history`);
+  }, [patient.id, router]);
+
   return (
     <>
-      <TableRow>
+      <TableRow
+        onClick={goToHistory}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            goToHistory();
+          }
+        }}
+        tabIndex={0}
+        className="cursor-pointer transition hover:bg-muted/50 focus-visible:bg-muted/50"
+      >
         <TableCell className="font-medium">{patient.name}</TableCell>
         <TableCell>{patient.phone}</TableCell>
         <TableCell>{patient.email || "-"}</TableCell>
@@ -59,18 +75,39 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <span className="sr-only">Abrir menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(patient?.id)}>
+              <DropdownMenuItem
+                onClick={(event) => {
+                  event.stopPropagation();
+                  goToHistory();
+                }}
+              >
+                <History className="mr-2 h-4 w-4" />
+                Histórico
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onEdit(patient.id);
+                }}
+              >
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setShowDeleteDialog(true);
+                }}
                 className="text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
