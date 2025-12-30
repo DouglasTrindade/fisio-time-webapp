@@ -45,15 +45,13 @@ type TimelineEvent = {
   title: string;
   description: string;
   date: Date | string;
-  type: "evaluation" | "evolution" | "system" | "note";
+  type: "evaluation" | "evolution";
   author?: string;
 };
 
 const typeStyles: Record<TimelineEvent["type"], string> = {
   evaluation: "bg-emerald-50 text-emerald-700 border-emerald-100",
   evolution: "bg-blue-50 text-blue-700 border-blue-100",
-  note: "bg-amber-50 text-amber-700 border-amber-100",
-  system: "bg-slate-50 text-slate-700 border-slate-200",
 };
 
 const formatDate = (value?: Date | string | null, withTime = false) => {
@@ -135,63 +133,63 @@ const QuickActionCard = ({
 );
 
 const TimelineCard = ({ events }: { events: TimelineEvent[] }) => (
-  <Card>
+  <Card className="lg:col-span-2">
     <CardHeader className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <HistoryIcon className="h-5 w-5 text-primary" />
         <div>
           <CardTitle>Linha do tempo</CardTitle>
           <CardDescription>
-            Evoluções clínicas, avaliações e acontecimentos relevantes
+            Apenas avaliações e evoluções clínicas registradas.
           </CardDescription>
         </div>
       </div>
     </CardHeader>
     <CardContent>
-      <div className="relative pl-4">
-        <div className="absolute top-2 bottom-2 left-1.5 w-px bg-border" aria-hidden />
-        <div className="space-y-8">
-          {events.map((event, index) => (
-            <div key={event.id} className="relative pl-6">
-              <span
-                aria-hidden
-                className={`absolute left-0 top-2 h-3.5 w-3.5 rounded-full border-2 bg-background ${typeStyles[event.type]}`}
-              />
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold leading-tight">{event.title}</h3>
-                    <span
-                      className={`text-xs font-medium rounded-full px-2 py-0.5 border ${typeStyles[event.type]}`}
+      {events.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Ainda não existem avaliações ou evoluções para este paciente.
+        </p>
+      ) : (
+        <div className="relative pl-4">
+          <div className="absolute top-2 bottom-2 left-1.5 w-px bg-border" aria-hidden />
+          <div className="space-y-8">
+            {events.map((event, index) => (
+              <div key={event.id} className="relative pl-6">
+                <span
+                  aria-hidden
+                  className={`absolute left-0 top-2 h-3.5 w-3.5 rounded-full border-2 bg-background ${typeStyles[event.type]}`}
+                />
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold leading-tight">{event.title}</h3>
+                      <span
+                        className={`text-xs font-medium rounded-full px-2 py-0.5 border ${typeStyles[event.type]}`}
+                      >
+                        {event.type === "evaluation" ? "Avaliação" : "Evolução"}
+                      </span>
+                    </div>
+                    <time
+                      className="text-sm text-muted-foreground"
+                      dateTime={new Date(event.date).toISOString()}
                     >
-                      {event.type === "evaluation"
-                        ? "Avaliação"
-                        : event.type === "evolution"
-                        ? "Evolução"
-                        : event.type === "note"
-                        ? "Observação"
-                        : "Sistema"}
-                    </span>
+                      {formatDate(event.date, true)}
+                    </time>
                   </div>
-                  <time
-                    className="text-sm text-muted-foreground"
-                    dateTime={new Date(event.date).toISOString()}
-                  >
-                    {formatDate(event.date, true)}
-                  </time>
+                  <p className="text-sm text-muted-foreground">{event.description}</p>
+                  {event.author && (
+                    <p className="text-xs text-muted-foreground/80">
+                      Registrado por <strong>{event.author}</strong>
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">{event.description}</p>
-                {event.author && (
-                  <p className="text-xs text-muted-foreground/80">
-                    Registrado por <strong>{event.author}</strong>
-                  </p>
-                )}
+                {index < events.length - 1 && <Separator className="mt-6" />}
               </div>
-              {index < events.length - 1 && <Separator className="mt-6" />}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </CardContent>
   </Card>
 );
@@ -247,26 +245,6 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
   const age = calculateAge(patient.birthDate);
 
   const timelineEvents = useMemo<TimelineEvent[]>(() => {
-    const baseEvents: TimelineEvent[] = [
-      {
-        id: "created",
-        title: "Paciente cadastrado",
-        description: "Ficha criada no sistema.",
-        date: patient.createdAt,
-        type: "system",
-      },
-    ];
-
-    if (patient.updatedAt !== patient.createdAt) {
-      baseEvents.push({
-        id: "updated",
-        title: "Dados atualizados",
-        description: "Informações de contato ou cadastro foram revisadas.",
-        date: patient.updatedAt,
-        type: "system",
-      });
-    }
-
     const demoEvents: TimelineEvent[] = [
       {
         id: "evaluation-latest",
@@ -286,19 +264,9 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
         type: "evolution",
         author: "Dra. Ana Costa",
       },
-      {
-        id: "note-initial",
-        title: "Observação inicial",
-        description: patient.notes
-          ? patient.notes
-          : "Sem observações complementares registradas.",
-        date: patient.createdAt,
-        type: "note",
-        author: "Equipe FisioTime",
-      },
     ];
 
-    return [...baseEvents, ...demoEvents].sort(
+    return demoEvents.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   }, [patient]);
@@ -357,7 +325,7 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-4">
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -379,7 +347,7 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="rounded-xl border bg-muted/30 p-4">
-              <div className="flex flex-wrap items-center gap-6 text-sm">
+              <div className="flex flex-wrap items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <CalendarCheck className="h-4 w-4 text-primary" />
                   <span>Início: {formatDate(patient.createdAt)}</span>
@@ -427,32 +395,35 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <QuickActionCard
-            title="Nova avaliação"
-            description="Registre achados clínicos e defina o plano terapêutico."
-            icon={<ClipboardList className="h-5 w-5" />}
-            triggerLabel="Registrar avaliação"
-            dialogTitle="Nova avaliação"
-            dialogDescription="Preencha os dados para documentar a avaliação do paciente."
-          >
-            <EvaluationForm />
-          </QuickActionCard>
-
-          <QuickActionCard
-            title="Nova evolução"
-            description="Documente progressos e intervenções realizadas."
-            icon={<HistoryIcon className="h-5 w-5" />}
-            triggerLabel="Registrar evolução"
-            dialogTitle="Nova evolução"
-            dialogDescription="Adicione detalhes sobre a sessão e os próximos passos."
-          >
-            <EvolutionForm />
-          </QuickActionCard>
-        </div>
+        <TimelineCard events={timelineEvents} />
       </div>
 
-      <TimelineCard events={timelineEvents} />
+
+      <div className="space-y-6">
+        <QuickActionCard
+          title="Nova avaliação"
+          description="Registre achados clínicos e defina o plano terapêutico."
+          icon={<ClipboardList className="h-5 w-5" />}
+          triggerLabel="Registrar avaliação"
+          dialogTitle="Nova avaliação"
+          dialogDescription="Preencha os dados para documentar a avaliação do paciente."
+        >
+          <EvaluationForm />
+        </QuickActionCard>
+
+        <QuickActionCard
+          title="Nova evolução"
+          description="Documente progressos e intervenções realizadas."
+          icon={<HistoryIcon className="h-5 w-5" />}
+          triggerLabel="Registrar evolução"
+          dialogTitle="Nova evolução"
+          dialogDescription="Adicione detalhes sobre a sessão e os próximos passos."
+        >
+          <EvolutionForm />
+        </QuickActionCard>
+      </div>
+
     </div>
+
   );
 };

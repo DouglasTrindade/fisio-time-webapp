@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PatientHistory } from "../../domain/history";
+import { PatientHistory } from "../../domain/History";
 
 interface HistoryPageProps {
   params: Promise<{ id: string }>;
