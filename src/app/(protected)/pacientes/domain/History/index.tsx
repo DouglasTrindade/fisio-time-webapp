@@ -9,7 +9,6 @@ import {
   CalendarClock,
   ClipboardList,
   HeartPulse,
-  History as HistoryIcon,
   UserRound,
 } from "lucide-react";
 import type { Patient } from "@/app/utils/types/patient";
@@ -20,50 +19,16 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+  PatientTimeline,
+  type TimelineEvent,
+  formatDate,
+} from "./Timeline";
 
 type PatientHistoryProps = {
   patient: Patient;
-};
-
-type TimelineEvent = {
-  id: string;
-  title: string;
-  description: string;
-  date: Date | string;
-  type: "evaluation" | "evolution";
-  author?: string;
-};
-
-const typeStyles: Record<TimelineEvent["type"], string> = {
-  evaluation: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  evolution: "bg-blue-50 text-blue-700 border-blue-100",
-};
-
-const formatDate = (value?: Date | string | null, withTime = false) => {
-  if (!value) return "Não informado";
-  const date = typeof value === "string" ? new Date(value) : value;
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: withTime ? "long" : "2-digit",
-    year: "numeric",
-    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
-  }).format(date);
 };
 
 const calculateAge = (birthDate: Date | string | null) => {
@@ -82,163 +47,6 @@ const calculateAge = (birthDate: Date | string | null) => {
 
 const emptyFallback = (value?: string | null) =>
   value && value.trim() !== "" ? value : "Não informado";
-
-const QuickActionCard = ({
-  title,
-  description,
-  icon,
-  triggerLabel,
-  dialogTitle,
-  dialogDescription,
-  children,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  triggerLabel: string;
-  dialogTitle: string;
-  dialogDescription: string;
-  children: React.ReactNode;
-}) => (
-  <Card className="h-full">
-    <CardHeader>
-      <div className="flex items-start gap-3">
-        <div className="rounded-xl bg-muted text-muted-foreground p-2">{icon}</div>
-        <div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="w-full">{triggerLabel}</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription>
-          </DialogHeader>
-          {children}
-          <DialogFooter>
-            <Button disabled className="w-full">
-              Em breve
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </CardContent>
-  </Card>
-);
-
-const TimelineCard = ({ events }: { events: TimelineEvent[] }) => (
-  <Card className="lg:col-span-2">
-    <CardHeader className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <HistoryIcon className="h-5 w-5 text-primary" />
-        <div>
-          <CardTitle>Linha do tempo</CardTitle>
-          <CardDescription>
-            Apenas avaliações e evoluções clínicas registradas.
-          </CardDescription>
-        </div>
-      </div>
-    </CardHeader>
-    <CardContent>
-      {events.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Ainda não existem avaliações ou evoluções para este paciente.
-        </p>
-      ) : (
-        <div className="relative pl-4">
-          <div className="absolute top-2 bottom-2 left-1.5 w-px bg-border" aria-hidden />
-          <div className="space-y-8">
-            {events.map((event, index) => (
-              <div key={event.id} className="relative pl-6">
-                <span
-                  aria-hidden
-                  className={`absolute left-0 top-2 h-3.5 w-3.5 rounded-full border-2 bg-background ${typeStyles[event.type]}`}
-                />
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold leading-tight">{event.title}</h3>
-                      <span
-                        className={`text-xs font-medium rounded-full px-2 py-0.5 border ${typeStyles[event.type]}`}
-                      >
-                        {event.type === "evaluation" ? "Avaliação" : "Evolução"}
-                      </span>
-                    </div>
-                    <time
-                      className="text-sm text-muted-foreground"
-                      dateTime={new Date(event.date).toISOString()}
-                    >
-                      {formatDate(event.date, true)}
-                    </time>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{event.description}</p>
-                  {event.author && (
-                    <p className="text-xs text-muted-foreground/80">
-                      Registrado por <strong>{event.author}</strong>
-                    </p>
-                  )}
-                </div>
-                {index < events.length - 1 && <Separator className="mt-6" />}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
-
-const EvaluationForm = () => (
-  <form className="space-y-4">
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-2">
-        <Label>Data da avaliação</Label>
-        <Input type="date" />
-      </div>
-      <div className="space-y-2">
-        <Label>Profissional responsável</Label>
-        <Input placeholder="Ex: Dr. João" />
-      </div>
-    </div>
-    <div className="space-y-2">
-      <Label>Objetivo principal</Label>
-      <Input placeholder="Ex: Reabilitação pós-operatória" />
-    </div>
-    <div className="space-y-2">
-      <Label>Resumo da avaliação</Label>
-      <Textarea rows={4} placeholder="Registre achados clínicos, testes e observações" />
-    </div>
-  </form>
-);
-
-const EvolutionForm = () => (
-  <form className="space-y-4">
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-2">
-        <Label>Data da evolução</Label>
-        <Input type="date" />
-      </div>
-      <div className="space-y-2">
-        <Label>Profissional responsável</Label>
-        <Input placeholder="Ex: Dra. Ana" />
-      </div>
-    </div>
-    <div className="space-y-2">
-      <Label>Intervenções realizadas</Label>
-      <Textarea rows={3} placeholder="Exercícios, técnicas, orientações..." />
-    </div>
-    <div className="space-y-2">
-      <Label>Resposta do paciente</Label>
-      <Textarea rows={3} placeholder="Evolução do quadro, dor, mobilidade..." />
-    </div>
-  </form>
-);
 
 export const PatientHistory = ({ patient }: PatientHistoryProps) => {
   const router = useRouter();
@@ -333,7 +141,6 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
                 <UserRound className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle>Demonstração do paciente</CardTitle>
                 <CardDescription>
                   Informações principais, contatos e dados clínicos
                 </CardDescription>
@@ -395,34 +202,8 @@ export const PatientHistory = ({ patient }: PatientHistoryProps) => {
           </CardContent>
         </Card>
 
-        <TimelineCard events={timelineEvents} />
+        <PatientTimeline events={timelineEvents} />
       </div>
-
-
-      <div className="space-y-6">
-        <QuickActionCard
-          title="Nova avaliação"
-          description="Registre achados clínicos e defina o plano terapêutico."
-          icon={<ClipboardList className="h-5 w-5" />}
-          triggerLabel="Registrar avaliação"
-          dialogTitle="Nova avaliação"
-          dialogDescription="Preencha os dados para documentar a avaliação do paciente."
-        >
-          <EvaluationForm />
-        </QuickActionCard>
-
-        <QuickActionCard
-          title="Nova evolução"
-          description="Documente progressos e intervenções realizadas."
-          icon={<HistoryIcon className="h-5 w-5" />}
-          triggerLabel="Registrar evolução"
-          dialogTitle="Nova evolução"
-          dialogDescription="Adicione detalhes sobre a sessão e os próximos passos."
-        >
-          <EvolutionForm />
-        </QuickActionCard>
-      </div>
-
     </div>
 
   );
