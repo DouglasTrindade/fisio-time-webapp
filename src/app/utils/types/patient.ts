@@ -113,3 +113,15 @@ export interface ApiResponse<T = unknown> {
   error?: string;
   message?: string;
 }
+
+export type PatientSearchResult = Pick<
+  Patient,
+  | "id"
+  | "name"
+  | "phone"
+  | "email"
+  | "birthDate"
+  | "notes"
+  | "createdAt"
+  | "updatedAt"
+>;
