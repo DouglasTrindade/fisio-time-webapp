@@ -85,7 +85,7 @@ export const Patients = () => {
               Novo Paciente
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle>Novo Paciente</DialogTitle>
             </DialogHeader>
@@ -202,7 +202,7 @@ export const Patients = () => {
 
       {editingPatientId && (
         <Dialog open={!!editingPatientId} onOpenChange={() => setEditingPatientId(null)}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle>Editar Paciente</DialogTitle>
             </DialogHeader>

@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -28,6 +27,20 @@ model Patient {
   email        String?
   birthDate    DateTime?
   notes        String?
+  cpf          String?
+  rg           String?
+  maritalStatus String?
+  gender       String?
+  profession   String?
+  companyName  String?
+  cep          String?
+  country      String?
+  state        String?
+  city         String?
+  street       String?
+  number       String?
+  neighborhood String?
+  complement   String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]

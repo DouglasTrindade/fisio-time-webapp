@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createApiResponse, handleApiError } from "@/lib/api/utils"
-import type { ApiResponse, Patient } from "@/app/utils/types/patient"
+import type { ApiResponse, PatientSearchResult } from "@/app/utils/types/patient"
 
-export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<Patient[]>>> {
+export async function GET(
+  request: NextRequest,
+): Promise<NextResponse<ApiResponse<PatientSearchResult[]>>> {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get("q") || ""
@@ -39,7 +41,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       },
     })
 
-    return NextResponse.json(createApiResponse(patients, `${patients.length} pacientes encontrados`))
+    return NextResponse.json(
+      createApiResponse(patients, `${patients.length} pacientes encontrados`),
+    )
   } catch (error) {
     return handleApiError(error)
   }

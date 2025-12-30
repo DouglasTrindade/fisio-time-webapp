@@ -1,7 +1,15 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Status } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL (ou DIRECT_URL) precisa estar configurado para executar o seed.");
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Iniciando seed do banco de dados...");
