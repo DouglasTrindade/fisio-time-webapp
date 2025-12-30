@@ -99,11 +99,6 @@ const historyFormSchema = baseHistorySchema
   .superRefine(historyRefinement);
 
 type HistoryFormValues = CreateHistoryInput & {
-  assessmentMainComplaint?: string | null;
-  assessmentDiseaseHistory?: string | null;
-  assessmentMedicalHistory?: string | null;
-  assessmentFamilyHistory?: string | null;
-  assessmentObservations?: string | null;
   attachment?: File;
   removeAttachment?: boolean;
 };
