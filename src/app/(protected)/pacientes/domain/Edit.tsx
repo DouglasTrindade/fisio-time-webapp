@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -10,74 +10,69 @@ import { patientSchema, type PatientSchema } from "./Schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
 import { useUpdateRecord, useRecord } from "@/app/utils/hooks/useRecord";
+import type { PatientApiData } from "@/app/utils/types/patient";
 
 interface PatientsEditProps {
   patientId: string;
   onClose?: () => void;
 }
 
+const mapPatientToFormValues = (
+  patient?: PatientApiData | null
+): PatientSchema => ({
+  name: patient?.name ?? "",
+  phone: patient?.phone ?? "",
+  email: patient?.email ?? "",
+  birthDate: patient?.birthDate
+    ? new Date(patient.birthDate).toISOString().split("T")[0]
+    : null,
+  notes: patient?.notes ?? "",
+  cpf: patient?.cpf ?? "",
+  rg: patient?.rg ?? "",
+  maritalStatus: (patient?.maritalStatus ?? "") as PatientSchema["maritalStatus"],
+  gender: (patient?.gender ?? "") as PatientSchema["gender"],
+  profession: patient?.profession ?? "",
+  companyName: patient?.companyName ?? "",
+  cep: patient?.cep ?? "",
+  country: patient?.country ?? "",
+  state: patient?.state ?? "",
+  city: patient?.city ?? "",
+  street: patient?.street ?? "",
+  number: patient?.number ?? "",
+  neighborhood: patient?.neighborhood ?? "",
+  complement: patient?.complement ?? "",
+})
+
 export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
-  const { data: patient, isLoading } = useRecord<PatientSchema>(
+  const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
     "/patients",
-    patientId
+    patientId,
+    {
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: "always",
+    }
   )
 
   const updatePatient = useUpdateRecord<PatientSchema, PatientSchema>("/patients")
   const [step, setStep] = useState(0);
+  const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      birthDate: null,
-      notes: "",
-      cpf: "",
-      rg: "",
-      maritalStatus: "",
-      gender: "",
-      profession: "",
-      companyName: "",
-      cep: "",
-      country: "",
-      state: "",
-      city: "",
-      street: "",
-      number: "",
-      neighborhood: "",
-      complement: "",
-    },
+    defaultValues: useMemo(() => mapPatientToFormValues(), []),
   });
 
   useEffect(() => {
-    if (patient) {
-      form.reset({
-        name: patient.name,
-        phone: patient.phone,
-        email: patient.email ?? "",
-        birthDate: patient.birthDate 
-          ? new Date(patient.birthDate).toISOString().split('T')[0]
-          : null,
-        notes: patient.notes ?? "",
-        cpf: patient.cpf ?? "",
-        rg: patient.rg ?? "",
-        maritalStatus: patient.maritalStatus ?? "",
-        gender: patient.gender ?? "",
-        profession: patient.profession ?? "",
-        companyName: patient.companyName ?? "",
-        cep: patient.cep ?? "",
-        country: patient.country ?? "",
-        state: patient.state ?? "",
-        city: patient.city ?? "",
-        street: patient.street ?? "",
-        number: patient.number ?? "",
-        neighborhood: patient.neighborhood ?? "",
-        complement: patient.complement ?? "",
-      });
-    }
-  }, [patient, form]);
+    setIsFormReady(false);
+  }, [patientId]);
+
+  useEffect(() => {
+    if (!patient) return;
+    form.reset(mapPatientToFormValues(patient));
+    setIsFormReady(true);
+  }, [form, patient, patientId, isFetching]);
 
   useEffect(() => {
     setStep(0);
@@ -119,7 +114,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
     setStep((prev) => Math.max(prev - 1, 0));
   };
 
-  if (isLoading) {
+  if (isLoading || !isFormReady) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-full" />
@@ -158,15 +153,6 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
 
         <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              className="bg-transparent"
-              disabled={updatePatient.isPending}
-            >
-              Cancelar
-            </Button>
             {step > 0 && (
               <Button
                 type="button"
@@ -179,20 +165,42 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
             )}
           </div>
           {isLastStep ? (
-            <Button
-              type="submit"
-              disabled={updatePatient.isPending}
-            >
-              {updatePatient.isPending ? "Salvando..." : "Salvar"}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="bg-transparent"
+                disabled={updatePatient.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={updatePatient.isPending}
+              >
+                {updatePatient.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
           ) : (
-            <Button
-              type="button"
-              onClick={handleNextStep}
-              disabled={updatePatient.isPending}
-            >
-              Avançar
-            </Button>
+            <div className="flex justify-between w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="bg-transparent"
+                disabled={updatePatient.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNextStep}
+                disabled={updatePatient.isPending}
+              >
+                Avançar
+              </Button>
+            </div>
           )}
         </div>
       </form>

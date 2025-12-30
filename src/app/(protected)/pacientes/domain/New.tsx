@@ -123,15 +123,6 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
 
         <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              className="bg-transparent"
-              disabled={createPatient.isPending}
-            >
-              Cancelar
-            </Button>
             {step > 0 && (
               <Button
                 type="button"
@@ -144,20 +135,42 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
             )}
           </div>
           {isLastStep ? (
-            <Button
-              type="submit"
-              disabled={createPatient.isPending}
-            >
-              {createPatient.isPending ? "Salvando..." : "Salvar"}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="bg-transparent"
+                disabled={createPatient.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={createPatient.isPending}
+              >
+                {createPatient.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
           ) : (
-            <Button
-              type="button"
-              onClick={handleNextStep}
-              disabled={createPatient.isPending}
-            >
-              Avançar
-            </Button>
+            <div className="flex justify-between w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="bg-transparent"
+                disabled={createPatient.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleNextStep}
+                disabled={createPatient.isPending}
+              >
+                Avançar
+              </Button>
+            </div>
           )}
         </div>
       </form>

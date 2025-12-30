@@ -1,21 +1,37 @@
 "use client"
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query"
 import { toast } from "sonner"
 import { apiRequest } from "../services/api"
 import type { ApiResponse } from "@/app/utils/types/patient";
 
+type UseRecordOptions<T> = Partial<
+  Omit<UseQueryOptions<T, Error>, "queryKey" | "queryFn">
+>
 
-export const useRecord = <T>(endpoint: string, id?: string) => {
-  return useQuery<T>({
+export const useRecord = <T>(
+  endpoint: string,
+  id?: string,
+  options?: UseRecordOptions<T>
+) => {
+  const { enabled, staleTime, ...restOptions } = options ?? {}
+  const isEnabled = (enabled ?? true) && !!id
+
+  return useQuery<T, Error>({
     queryKey: [endpoint, id],
-      queryFn: async () => {
-      const response = await apiRequest<ApiResponse<T>>(`${endpoint}/${id}`);
-        if (!response.data) throw new Error("Dados não encontrados");
-      return response.data; 
+    queryFn: async () => {
+      const response = await apiRequest<ApiResponse<T>>(`${endpoint}/${id}`)
+      if (!response.data) throw new Error("Dados não encontrados")
+      return response.data
     },
-    enabled: !!id,
-    staleTime: 2 * 60 * 1000,
+    enabled: isEnabled,
+    staleTime: staleTime ?? 2 * 60 * 1000,
+    ...restOptions,
   })
 }
 

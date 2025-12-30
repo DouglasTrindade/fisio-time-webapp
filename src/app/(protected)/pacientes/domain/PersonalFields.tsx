@@ -13,6 +13,19 @@ interface PersonalFieldsProps {
 }
 
 export const PersonalFields = ({ form }: PersonalFieldsProps) => {
+  const maritalStatus = [
+    { name: "Solteiro", value: "solteiro" },
+    { name: "Casado", value: "casado" },
+    { name: "Viúva", value: "viuva" },
+    { name: "Divorciado", value: "divorciado" },
+    { name: "Separado", value: "separado" },
+  ]
+
+  const genders = [
+    { name: "Masculino", value: "masculino" },
+    { name: "Feminino", value: "feminino" },
+  ]
+
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <FormField
@@ -121,18 +134,21 @@ export const PersonalFields = ({ form }: PersonalFieldsProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Estado civil</FormLabel>
-            <Select value={field.value || undefined} onValueChange={field.onChange}>
-              <FormControl>
+            <Select
+              value={field.value || undefined}
+              onValueChange={field.onChange}
+            >
+              <FormControl className="w-full">
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o estado civil" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="solteiro">Solteiro</SelectItem>
-                <SelectItem value="casado">Casado</SelectItem>
-                <SelectItem value="viuva">Viúva</SelectItem>
-                <SelectItem value="divorciado">Divorciado</SelectItem>
-                <SelectItem value="separado">Separado</SelectItem>
+                {maritalStatus.map((ms) => (
+                  <SelectItem key={ms.value} value={ms.value}>
+                    {ms.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -146,15 +162,21 @@ export const PersonalFields = ({ form }: PersonalFieldsProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Sexo/Gênero</FormLabel>
-            <Select value={field.value || undefined} onValueChange={field.onChange}>
-              <FormControl>
+            <Select
+              value={field.value || undefined}
+              onValueChange={field.onChange}
+            >
+              <FormControl className="w-full">
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o sexo/gênero" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="masculino">Masculino</SelectItem>
-                <SelectItem value="feminino">Feminino</SelectItem>
+                {genders.map((gender) => (
+                  <SelectItem key={gender.value} value={gender.value}>
+                    {gender.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -180,7 +202,7 @@ export const PersonalFields = ({ form }: PersonalFieldsProps) => {
         control={form.control}
         name="companyName"
         render={({ field }) => (
-          <FormItem className="md:col-span-2">
+          <FormItem className="md:col-span-3">
             <FormLabel>Nome da empresa</FormLabel>
             <FormControl>
               <Input placeholder="Empresa" {...field} />
