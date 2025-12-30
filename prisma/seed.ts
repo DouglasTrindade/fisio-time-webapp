@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, Status } from "@prisma/client";
+import { PrismaClient, Status, HistoryKind } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
@@ -70,6 +70,30 @@ async function main() {
   ]);
 
   console.log(`👥 ${patients.length} pacientes criados`);
+
+  if (patients.length > 0) {
+    await prisma.patientHistory.createMany({
+      data: [
+        {
+          patientId: patients[0].id,
+          kind: HistoryKind.EVOLUTION,
+          cidCode: "M54.5",
+          cidDescription: "Dor lombar baixa",
+          content:
+            "Relata melhora após exercícios de estabilização lombar. Dor reduzida para 3/10.",
+        },
+        {
+          patientId: patients[0].id,
+          kind: HistoryKind.EVOLUTION,
+          cidCode: "M79.1",
+          cidDescription: "Mialgia",
+          content:
+            "Aplicado protocolo de liberação miofascial. Reavaliação em 7 dias.",
+        },
+      ],
+    });
+    console.log("📝 Evoluções de exemplo adicionadas");
+  }
 
   const appointments = await Promise.all([
     prisma.appointment.upsert({

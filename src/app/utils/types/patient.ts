@@ -114,6 +114,33 @@ export interface ApiResponse<T = unknown> {
   message?: string;
 }
 
+export type HistoryKind = "EVOLUTION" | "ASSESSMENT";
+
+export interface PatientHistoryEntry {
+  id: string;
+  patientId: string;
+  kind: HistoryKind;
+  cidCode: string | null;
+  cidDescription: string | null;
+  content: string;
+  attachmentUrl: string | null;
+  attachmentPath?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateHistoryPayload {
+  kind: HistoryKind;
+  cidCode?: string;
+  cidDescription?: string;
+  content: string;
+  attachmentUrl?: string | null;
+}
+
+export interface HistoryResponse {
+  entries: PatientHistoryEntry[];
+}
+
 export type PatientSearchResult = Pick<
   Patient,
   | "id"

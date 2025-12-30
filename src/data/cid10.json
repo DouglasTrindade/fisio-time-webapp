@@ -1,0 +1,14 @@
+[
+  { "code": "B68.1", "name": "Infestação por Taenia saginata" },
+  { "code": "B68.0", "name": "Infestação por Taenia saginata intestinal" },
+  { "code": "M54.5", "name": "Dor lombar baixa" },
+  { "code": "M25.5", "name": "Dor articular" },
+  { "code": "G44.1", "name": "Cefaleia vascular" },
+  { "code": "G43.9", "name": "Enxaqueca não especificada" },
+  { "code": "S13.4", "name": "Entorse e distensão do pescoço" },
+  { "code": "S33.5", "name": "Luxação da articulação sacroilíaca" },
+  { "code": "S83.4", "name": "Entorse do joelho" },
+  { "code": "M75.1", "name": "Síndrome do manguito rotador" },
+  { "code": "M79.1", "name": "Mialgia" },
+  { "code": "M62.5", "name": "Atrofia muscular" }
+]

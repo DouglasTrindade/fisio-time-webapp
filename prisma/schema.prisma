@@ -44,6 +44,7 @@ model Patient {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
+  history      PatientHistory[]
 }
 
 model Appointment {
@@ -103,4 +104,23 @@ enum Status {
   CANCELED    @map("canceled")
   WAITING     @map("waiting")
   RESCHEDULED @map("rescheduled")
+}
+
+model PatientHistory {
+  id             String      @id @default(cuid())
+  patientId      String
+  patient        Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  kind           HistoryKind @default(EVOLUTION)
+  cidCode        String?
+  cidDescription String?
+  content        String
+  attachmentUrl  String?
+  attachmentPath String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+enum HistoryKind {
+  EVOLUTION
+  ASSESSMENT
 }
