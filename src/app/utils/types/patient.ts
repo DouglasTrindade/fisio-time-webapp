@@ -1,4 +1,4 @@
-import type { Patient as PrismaPatient } from "@prisma/client";
+import type { Patient as PrismaPatient, HistoryKind as PrismaHistoryKind } from "@prisma/client";
 
 export type Patient = PrismaPatient;
 
@@ -114,7 +114,7 @@ export interface ApiResponse<T = unknown> {
   message?: string;
 }
 
-export type HistoryKind = "EVOLUTION" | "ASSESSMENT";
+export type HistoryKind = Lowercase<PrismaHistoryKind>;
 
 export interface PatientHistoryEntry {
   id: string;
@@ -125,6 +125,11 @@ export interface PatientHistoryEntry {
   content: string;
   attachmentUrl: string | null;
   attachmentPath?: string | null;
+  assessmentMainComplaint?: string | null;
+  assessmentDiseaseHistory?: string | null;
+  assessmentMedicalHistory?: string | null;
+  assessmentFamilyHistory?: string | null;
+  assessmentObservations?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { HistoryKind as PrismaHistoryKind } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   createApiError,
@@ -8,6 +9,7 @@ import {
 import {
   historyParamsSchema,
   updateHistorySchema,
+  type HistoryKindValue,
 } from "../../../history/validation";
 import type { UpdateHistoryInput } from "../../../history/validation";
 import {
@@ -15,6 +17,12 @@ import {
   parseHistoryRequest,
   uploadHistoryAttachment,
 } from "../../../history/utils";
+
+const toPrismaKind = (kind: HistoryKindValue): PrismaHistoryKind =>
+  kind === "assessment" ? "ASSESSMENT" : "EVOLUTION";
+
+const fromPrismaKind = (kind: PrismaHistoryKind): HistoryKindValue =>
+  kind === "ASSESSMENT" ? "assessment" : "evolution";
 
 export async function PUT(
   request: NextRequest,
@@ -38,10 +46,7 @@ export async function PUT(
       request,
     );
 
-    const data = updateHistorySchema.parse({
-      ...payload,
-      kind: payload.kind?.toUpperCase?.() ?? existing.kind,
-    });
+    const data = updateHistorySchema.parse(payload);
 
     let attachmentUrl = existing.attachmentUrl;
     let attachmentPath = existing.attachmentPath;
@@ -57,20 +62,62 @@ export async function PUT(
       attachmentPath = null;
     }
 
+    const nextKind = data.kind ?? fromPrismaKind(existing.kind);
+    const prismaNextKind = toPrismaKind(nextKind);
+    const resolvedContent =
+      nextKind === "assessment"
+        ? data.assessmentObservations ??
+          data.content ??
+          existing.assessmentObservations ??
+          existing.content
+        : data.content ?? existing.content;
+
     const updated = await prisma.patientHistory.update({
       where: { id: historyId },
       data: {
-        kind: data.kind ?? existing.kind,
-        cidCode: data.cidCode ?? existing.cidCode,
-        cidDescription: data.cidDescription ?? existing.cidDescription,
-        content: data.content ?? existing.content,
+        kind: prismaNextKind,
+        cidCode:
+          nextKind === "evolution"
+            ? data.cidCode ?? existing.cidCode
+            : null,
+        cidDescription:
+          nextKind === "evolution"
+            ? data.cidDescription ?? existing.cidDescription
+            : null,
+        content: resolvedContent,
         attachmentUrl,
         attachmentPath,
+        assessmentMainComplaint:
+          nextKind === "assessment"
+            ? data.assessmentMainComplaint ?? existing.assessmentMainComplaint
+            : null,
+        assessmentDiseaseHistory:
+          nextKind === "assessment"
+            ? data.assessmentDiseaseHistory ?? existing.assessmentDiseaseHistory
+            : null,
+        assessmentMedicalHistory:
+          nextKind === "assessment"
+            ? data.assessmentMedicalHistory ??
+              existing.assessmentMedicalHistory
+            : null,
+        assessmentFamilyHistory:
+          nextKind === "assessment"
+            ? data.assessmentFamilyHistory ?? existing.assessmentFamilyHistory
+            : null,
+        assessmentObservations:
+          nextKind === "assessment"
+            ? data.assessmentObservations ??
+              existing.assessmentObservations ??
+              resolvedContent
+            : null,
       },
     });
 
     return NextResponse.json(
-      createApiResponse(updated, "Registro atualizado com sucesso"),
+      createApiResponse(
+        { ...updated, kind: fromPrismaKind(updated.kind) },
+        "Registro atualizado com sucesso",
+      ),
     );
   } catch (error) {
     return handleApiError(error);

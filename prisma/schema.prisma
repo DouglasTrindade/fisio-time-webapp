@@ -116,11 +116,16 @@ model PatientHistory {
   content        String
   attachmentUrl  String?
   attachmentPath String?
+  assessmentMainComplaint   String?
+  assessmentDiseaseHistory  String?
+  assessmentMedicalHistory  String?
+  assessmentFamilyHistory   String?
+  assessmentObservations    String?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 }
 
 enum HistoryKind {
-  EVOLUTION
-  ASSESSMENT
+  EVOLUTION  @map("evolution")
+  ASSESSMENT @map("assessment")
 }

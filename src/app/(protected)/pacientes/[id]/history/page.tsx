@@ -1,5 +1,3 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { PatientHistory } from "../../domain/History";
 
 interface HistoryPageProps {
@@ -9,15 +7,7 @@ interface HistoryPageProps {
 const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
   const { id } = await params;
 
-  const patient = await prisma.patient.findUnique({
-    where: { id },
-  });
-
-  if (!patient) {
-    notFound();
-  }
-
-  return <PatientHistory patient={patient} />;
+  return <PatientHistory patientId={id} />;
 };
 
 export default PatientHistoryPage;
