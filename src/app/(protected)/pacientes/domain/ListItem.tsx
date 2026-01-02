@@ -21,7 +21,7 @@ import {
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Patient } from "@/app/utils/types/patient";
-import { usePatientContext } from "@/context/PatientsContext";
+import { usePatientContext } from "@/contexts/PatientsContext";
 
 interface PatientListItemProps {
   patient: Patient;

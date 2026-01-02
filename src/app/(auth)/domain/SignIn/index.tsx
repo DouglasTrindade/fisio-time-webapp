@@ -28,6 +28,7 @@ export const SignIn = () => {
       await SignInAction(data).then((res) => {
         if (res?.error) {
           setError(res?.error);
+          toast.error(res?.error);
         } else {
           toast.success("Login realizado com sucesso!");
           router.push("/dashboard");

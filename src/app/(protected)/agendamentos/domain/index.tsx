@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { AppointmentCard } from "./Card";
 import { Calendar } from "./Calendar";
 import { AppointmentsModal } from "./Modal";
-import { useAppointmentsContext } from "@/context/AppointmentsContext";
+import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 
 export const Appointments = () => {
   const {

@@ -13,7 +13,7 @@ export default {
         const { data, success } = signInSchema.safeParse(credentials);
 
         if (!success) {
-          throw new Error("Invalid credentials");
+          throw new Error("INVALID_CREDENTIALS");
         }
 
         const user = await prisma.user.findUnique({
@@ -23,13 +23,13 @@ export default {
         });
 
         if (!user || !user.password) {
-          throw new Error("No user found");
+          throw new Error("USER_NOT_FOUND");
         }
 
         const isValid = await bcrypt.compare(data.password, user.password);
 
         if (!isValid) {
-          throw new Error("Incorrect password");
+          throw new Error("INVALID_PASSWORD");
         }
 
         return user;

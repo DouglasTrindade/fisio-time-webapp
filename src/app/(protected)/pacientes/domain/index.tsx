@@ -29,7 +29,7 @@ import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePatientsContext } from "@/context/PatientsContext";
+import { usePatientsContext } from "@/contexts/PatientsContext";
 
 export const Patients = () => {
   const {

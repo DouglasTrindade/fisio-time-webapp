@@ -14,8 +14,21 @@ export const SignInAction = async (data: SignInSchema) => {
     return { success: true };
   } catch (err) {
     if (err instanceof AuthError) {
-      return { error: err.cause?.err?.message };
+      const errorCode = err.cause?.err?.message ?? err.message;
+      const errorMessage = (() => {
+        switch (errorCode) {
+          case "INVALID_CREDENTIALS":
+            return "Credenciais inválidas.";
+          case "USER_NOT_FOUND":
+            return "Usuário não encontrado.";
+          case "INVALID_PASSWORD":
+            return "Senha inválida.";
+          default:
+            return "Não foi possível autenticar. Tente novamente.";
+        }
+      })();
+      return { error: errorMessage };
     }
-    return { error: "error 500" };
+    return { error: "Erro interno ao autenticar. Tente novamente." };
   }
 };
