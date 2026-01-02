@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createAppointmentSchema } from "./validation";
+import { createAppointmentSchema, normalizeAppointmentStatus } from "./validation";
 import {
   createApiError,
   createApiResponse,
@@ -8,8 +8,8 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse } from "@/app/utils/types/appointment";
-import type { Appointment as PrismaAppointment } from "@prisma/client";
+import type { ApiResponse, RecordsResponse } from "@/app/utils/types/api";
+import { Status, type Appointment as PrismaAppointment } from "@prisma/client";
 
 type Appointment = Omit<
   PrismaAppointment,
@@ -19,20 +19,6 @@ type Appointment = Omit<
   createdAt: string;
   updatedAt: string;
 };
-
-type AppointmentCreateInput = typeof createAppointmentSchema._type;
-
-interface RecordsResponse<T> {
-  records: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
 
 export async function GET(
   request: NextRequest
@@ -120,17 +106,19 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Appointment>>> {
   try {
-    const body = await validateJsonBody<AppointmentCreateInput>(
+    const body = await validateJsonBody(
       request,
       createAppointmentSchema
     );
+
+    const normalizedStatus = normalizeAppointmentStatus(body.status) ?? Status.WAITING;
 
     const appointment = await prisma.appointment.create({
       data: {
         name: body.name || "",
         phone: body.phone,
         date: new Date(body.date),
-        status: body.status,
+        status: normalizedStatus,
         notes: body.notes ?? null,
         patientId: body.patientId ?? null,
         professionalId: body.professionalId,

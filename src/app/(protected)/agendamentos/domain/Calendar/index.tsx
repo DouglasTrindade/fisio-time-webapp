@@ -5,8 +5,8 @@ import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useRecords } from "@/app/utils/hooks/useRecords";
-import { Appointment } from "@/app/utils/types/appointment";
+import { useAppointmentsContext } from "@/context/AppointmentsContext";
+import type { Appointment } from "@/app/utils/types/appointment";
 import { Status } from "@prisma/client";
 
 interface CalendarProps {
@@ -14,7 +14,7 @@ interface CalendarProps {
 }
 
 export const Calendar = ({ onDateSelect }: CalendarProps) => {
-    const { records: appointments, isLoading } = useRecords<Appointment>("/appointments");
+    const { calendarAppointments: appointments, isCalendarLoading } = useAppointmentsContext();
 
     const handleDateClick = (selectInfo: DateSelectArg) => {
         onDateSelect(selectInfo.start);
@@ -48,7 +48,7 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
 
     return (
         <div className="w-full">
-            {isLoading && (
+            {isCalendarLoading && (
                 <div className="text-sm text-muted-foreground mb-2">Carregando agendamentos...</div>
             )}
             <FullCalendar

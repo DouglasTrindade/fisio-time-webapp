@@ -1,50 +1,27 @@
 "use client";
-
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AppointmentCard } from "./Card";
 import { Calendar } from "./Calendar";
 import { AppointmentsModal } from "./Modal";
-import { useRecords } from "@/app/utils/hooks/useRecords";
-import { Appointment } from "@/app/utils/types/appointment";
+import { useAppointmentsContext } from "@/context/AppointmentsContext";
 
 export const Appointments = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
-
-  const queryDate = selectedDate
-    ? new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 10)
-    : undefined;
-  const { records: appointments, refetch, isFetching } = useRecords<Appointment>(
-    "/appointments",
-    queryDate ? { date: queryDate } : undefined
-  );
+  const {
+    records: appointments,
+    isFetching,
+    selectedDate,
+    isDialogOpen,
+    editingAppointment,
+    handleDateSelect,
+    openNew,
+    openEdit,
+    closeDialog,
+  } = useAppointmentsContext();
 
   if (process.env.NODE_ENV !== "production") {
-    console.debug("[Appointments] selectedDate=", selectedDate?.toISOString(), "queryDate=", queryDate, "records=", appointments.length, appointments[0]);
+    console.debug("[Appointments] selectedDate=", selectedDate?.toISOString(), "records=", appointments.length, appointments[0]);
   }
-
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setEditingAppointment(null);
-    setIsDialogOpen(false);
-  };
-
-  const handleNewAppointment = () => {
-    setSelectedDate(null);
-    setEditingAppointment(null);
-    setIsDialogOpen(true);
-  };
-
-  const handleEditAppointment = (appointment: Appointment) => {
-    setEditingAppointment(appointment);
-    setSelectedDate(new Date(appointment.date));
-    setIsDialogOpen(true);
-  };
 
 
   const filteredAppointments = appointments;
@@ -60,7 +37,7 @@ export const Appointments = () => {
           </p>
         </div>
 
-        <Button onClick={handleNewAppointment}>
+        <Button onClick={openNew}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Agendamento
         </Button>
@@ -97,7 +74,7 @@ export const Appointments = () => {
                     <AppointmentCard
                       key={appointment.id}
                       appointment={appointment}
-                      onEdit={handleEditAppointment}
+                      onEdit={openEdit}
                     />
                   ))
                 ) : (
@@ -118,9 +95,7 @@ export const Appointments = () => {
       <AppointmentsModal
         open={isDialogOpen}
         onClose={() => {
-          setIsDialogOpen(false);
-          setEditingAppointment(null);
-          refetch();
+          closeDialog();
         }}
         initialDate={(selectedDate && !editingAppointment)
           ? (() => {

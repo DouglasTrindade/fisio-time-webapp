@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Clock, User, FileText } from "lucide-react";
 import { Appointment } from "@/app/utils/types/appointment";
-import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
+import { useAppointmentsContext } from "@/context/AppointmentsContext";
 import { Status } from "@prisma/client";
 import { handleApiError } from "@/app/utils/services/handleApiError";
 import { toast } from 'sonner';
@@ -34,16 +34,16 @@ export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) =
         return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     };
 
-    const deleteMutation = useDeleteRecord("/appointments");
+    const { handleDelete, isDeleting } = useAppointmentsContext();
 
-    const handleDelete = async () => {
+    const handleDeleteClick = async () => {
         toast('tem certeza que deseja excluir este agendamento?', {
             position: 'top-center',
             action: {
                 label: 'Sim, excluir',
                 onClick: async () => {
                     try {
-                        await deleteMutation.mutateAsync(appointment.id);
+                        await handleDelete(appointment.id);
                     } catch (e) {
                         handleApiError(e, "Erro ao excluir agendamento");
                     }
@@ -65,8 +65,8 @@ export const AppointmentCard = ({ appointment, onEdit }: AppointmentCardProps) =
                         <Button variant="outline" size="sm" onClick={() => onEdit(appointment)}>
                             Editar
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleDelete} disabled={deleteMutation.isPending}>
-                            {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+                        <Button variant="outline" size="sm" onClick={handleDeleteClick} disabled={isDeleting}>
+                            {isDeleting ? "Excluindo..." : "Excluir"}
                         </Button>
                     </div>
                 </div>

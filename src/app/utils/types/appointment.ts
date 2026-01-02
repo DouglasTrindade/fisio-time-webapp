@@ -1,4 +1,5 @@
 import { Appointment as PrismaAppointment, Status } from "@prisma/client";
+import type { ApiResponse, PaginatedResponse, RecordsResponse } from "./api";
 
 export type AppointmentStatus = Status;
 
@@ -14,29 +15,13 @@ export type AppointmentCreateInput = Omit<
   "id" | "createdAt" | "updatedAt"
 >;
 
-export interface AppointmentFilters {
+export interface AppointmentFilters extends Record<string, unknown> {
   page?: number;
   limit?: number;
   search?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  date?: string;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
+export type { RecordsResponse, ApiResponse, PaginatedResponse };

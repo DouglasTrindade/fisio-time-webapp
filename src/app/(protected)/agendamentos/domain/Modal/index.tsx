@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-import { AppointmentForm, appointmentSchema } from "../Schema";
+import { AppointmentForm, AppointmentPayload, appointmentSchema } from "@/app/utils/appointments/schema";
 import { Status } from "@prisma/client";
 import { z } from "zod";
 
@@ -14,8 +14,7 @@ const appointmentFormSchema = appointmentSchema.extend({
     status: z.nativeEnum(Status),
 });
 
-import { useCreateRecord } from "@/app/utils/hooks/useRecords";
-import { useUpdateRecord } from "@/app/utils/hooks/useRecord";
+import { useAppointmentsContext } from "@/context/AppointmentsContext";
 
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
@@ -46,8 +45,12 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
     });
 
     const professionalId = session?.user?.id;
-    const createAppointment = useCreateRecord<ApiResponse<Appointment>, AppointmentForm>("/appointments");
-    const updateAppointment = useUpdateRecord<ApiResponse<Appointment>, Partial<AppointmentForm>>("/appointments");
+    const {
+        handleCreate,
+        handleUpdate,
+        isCreating,
+        isUpdating,
+    } = useAppointmentsContext();
 
     useEffect(() => { if (session?.user?.id) form.setValue("professionalId", session.user.id); }, [session, form]);
     useEffect(() => { if (initialDate && !appointment) form.setValue("date", initialDate); }, [initialDate, form, appointment]);
@@ -80,18 +83,19 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
     }, [form, onClose, initialDate, professionalId]);
 
     const onSubmit: SubmitHandler<AppointmentForm> = async (values) => {
-        const basePayload: AppointmentForm = {
+        const basePayload: AppointmentPayload = {
             ...values,
             notes: values.notes || null,
             patientId: values.patientId || null,
             professionalId: values.professionalId,
+            status: values.status.toLowerCase(),
         };
         try {
             if (appointment?.id) {
-                const resp = await updateAppointment.mutateAsync({ id: appointment.id, data: basePayload });
+                const resp = await handleUpdate(appointment.id, basePayload) as ApiResponse<Appointment>;
                 toast.success(resp?.message || "Agendamento atualizado!");
             } else {
-                const response = await createAppointment.mutateAsync(basePayload);
+                const response = await handleCreate(basePayload) as ApiResponse<Appointment>;
                 toast.success(response?.message || "Agendamento criado com sucesso!");
             }
             form.reset({
@@ -137,9 +141,9 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
                         <Fields form={form} />
                         <DialogFooter className="flex gap-2 pt-2">
-                            <Button type="button" variant="outline" onClick={handleClose} disabled={createAppointment.isPending}>Cancelar</Button>
-                            <Button type="submit" className="flex-1" disabled={createAppointment.isPending || updateAppointment.isPending}>
-                                {(createAppointment.isPending || updateAppointment.isPending) ? "Salvando..." : "Salvar"}
+                            <Button type="button" variant="outline" onClick={handleClose} disabled={isCreating || isUpdating}>Cancelar</Button>
+                            <Button type="submit" className="flex-1" disabled={isCreating || isUpdating}>
+                                {(isCreating || isUpdating) ? "Salvando..." : "Salvar"}
                             </Button>
                         </DialogFooter>
                     </form>
