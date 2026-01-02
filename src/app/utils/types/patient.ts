@@ -1,4 +1,5 @@
 import type { Patient as PrismaPatient } from "@prisma/client";
+import type { ApiResponse, RecordsResponse, PaginatedResponse } from "./api";
 
 export type Patient = PrismaPatient;
 
@@ -75,7 +76,7 @@ export interface PatientApiInput {
   complement?: string;
 }
 
-export interface PatientFilters {
+export interface PatientFilters extends Record<string, unknown> {
   search?: string;
   page?: number;
   limit?: number;
@@ -83,36 +84,7 @@ export interface PatientFilters {
   sortOrder?: "asc" | "desc";
 }
 
-export interface RecordsResponse<T> {
-  records: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
+export type { RecordsResponse, PaginatedResponse, ApiResponse };
 
 export type PatientSearchResult = Pick<
   Patient,

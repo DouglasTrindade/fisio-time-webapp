@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,47 +25,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { useRecords } from "@/app/utils/hooks/useRecords";
-import type { Patient, PatientFilters } from "@/app/utils/types/patient";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePatientsContext } from "@/context/PatientsContext";
 
 export const Patients = () => {
-  const [filters, setFilters] = useState<PatientFilters>({
-    page: 1,
-    limit: 10,
-    search: "",
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
-
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
-  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
-
-  const { records: patients, isLoading, pagination } = useRecords<Patient>(
-    "/patients",
-    filters as Record<string, unknown>
-  );
-
-  const handleSearch = (search: string) => {
-    setFilters((prev) => ({ ...prev, search, page: 1 }));
-  };
-
-  const handlePageChange = (page: number) => {
-    setFilters((prev) => ({ ...prev, page }));
-  };
-
-  const handleSortChange = (sortBy: string) => {
-    const [field, order] = sortBy.split("-");
-    setFilters((prev) => ({
-      ...prev,
-      sortBy: field as PatientFilters["sortBy"],
-      sortOrder: order as "asc" | "desc",
-      page: 1,
-    }));
-  };
+  const {
+    records: patients,
+    isLoading,
+    pagination,
+    filters,
+    isNewDialogOpen,
+    editingPatientId,
+    openNew,
+    closeNew,
+    openEdit,
+    closeEdit,
+    handleSearch,
+    handlePageChange,
+    handleSortChange,
+  } = usePatientsContext();
 
   return (
     <div className="space-y-4">
@@ -78,7 +58,10 @@ export const Patients = () => {
           </p>
         </div>
 
-        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+        <Dialog
+          open={isNewDialogOpen}
+          onOpenChange={(open) => (open ? openNew() : closeNew())}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -89,7 +72,7 @@ export const Patients = () => {
             <DialogHeader>
               <DialogTitle>Novo Paciente</DialogTitle>
             </DialogHeader>
-            <PatientsNew onClose={() => setIsNewDialogOpen(false)} />
+            <PatientsNew />
           </DialogContent>
         </Dialog>
       </div>
@@ -156,7 +139,7 @@ export const Patients = () => {
                 <PatientListItem
                   key={patient.id}
                   patient={patient}
-                  onEdit={(id) => setEditingPatientId(id)}
+                  onEdit={openEdit}
                 />
               ))
             )}
@@ -201,14 +184,18 @@ export const Patients = () => {
       )}
 
       {editingPatientId && (
-        <Dialog open={!!editingPatientId} onOpenChange={() => setEditingPatientId(null)}>
+        <Dialog
+          open={!!editingPatientId}
+          onOpenChange={(open) => {
+            if (!open) closeEdit();
+          }}
+        >
           <DialogContent className="sm:max-w-3xl">
             <DialogHeader>
               <DialogTitle>Editar Paciente</DialogTitle>
             </DialogHeader>
             <PatientsEdit
               patientId={editingPatientId}
-              onClose={() => setEditingPatientId(null)}
             />
           </DialogContent>
         </Dialog>

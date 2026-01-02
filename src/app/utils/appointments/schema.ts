@@ -1,5 +1,7 @@
-import { z } from "zod";
-import { Status } from "@prisma/client";
+"use client"
+
+import { z } from "zod"
+import { Status } from "@prisma/client"
 
 export const appointmentSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -9,6 +11,7 @@ export const appointmentSchema = z.object({
   patientId: z.string().nullable().optional(),
   notes: z.string().optional().or(z.literal("")).nullable(),
   professionalId: z.string().min(1, "ID do profissional é obrigatório"),
-});
+})
 
-export type AppointmentForm = z.infer<typeof appointmentSchema>;
+export type AppointmentForm = z.infer<typeof appointmentSchema>
+export type AppointmentPayload = Omit<AppointmentForm, "status"> & { status: string }

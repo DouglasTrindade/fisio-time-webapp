@@ -21,7 +21,7 @@ import {
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Patient } from "@/app/utils/types/patient";
-import { useDeleteRecord } from "@/app/utils/hooks/useRecord";
+import { usePatientContext } from "@/context/PatientsContext";
 
 interface PatientListItemProps {
   patient: Patient;
@@ -30,10 +30,10 @@ interface PatientListItemProps {
 
 export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const deletePatient = useDeleteRecord("/patients");
+  const { handleDelete, isDeleting } = usePatientContext();
 
-  const handleDelete = async () => {
-    await deletePatient.mutateAsync(patient.id);
+  const handleDeleteClick = async () => {
+    await handleDelete(patient.id);
     setShowDeleteDialog(false);
   };
 
@@ -91,15 +91,15 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletePatient.isPending}>
+            <AlertDialogCancel disabled={isDeleting}>
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deletePatient.isPending}
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deletePatient.isPending ? "Excluindo..." : "Excluir"}
+              {isDeleting ? "Excluindo..." : "Excluir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

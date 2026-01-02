@@ -5,7 +5,6 @@ import type React from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "next-auth/react";
-import { PatientProvider } from '@/context/PatientContext'
 import { Toaster } from "sonner"
 import { useState } from "react"
 
@@ -31,10 +30,8 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
     >
       <SessionProvider>
         <QueryClientProvider client={queryClient}>
-          <PatientProvider>
-            {children}
-            <Toaster position="top-right" />
-          </PatientProvider>
+          {children}
+          <Toaster position="top-right" />
         </QueryClientProvider>
       </SessionProvider>
     </ThemeProvider>

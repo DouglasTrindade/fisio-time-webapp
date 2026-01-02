@@ -5,17 +5,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { patientSchema, type PatientSchema } from "./Schema";
+import { patientSchema, type PatientSchema } from "@/app/utils/patients/schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
-import { useCreateRecord } from "@/app/utils/hooks/useRecords";
+import { usePatientContext } from "@/context/PatientsContext";
 
-interface PatientsNewProps {
-  onClose?: () => void;
-}
-
-export const PatientsNew = ({ onClose }: PatientsNewProps) => {
-  const createPatient = useCreateRecord<PatientSchema, PatientSchema>("/patients");
+export const PatientsNew = () => {
+  const { handleCreate, isCreating, closeNew } = usePatientContext();
   const [step, setStep] = useState(0);
   const steps = ["Informações pessoais", "Endereço"];
 
@@ -45,7 +41,7 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
   });
 
   async function onSubmit(data: PatientSchema) {
-    await createPatient.mutateAsync({
+    await handleCreate({
       name: data.name,
       phone: data.phone,
       email: data.email || undefined,
@@ -69,12 +65,12 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
 
     form.reset();
     setStep(0);
-    onClose?.();
+    closeNew();
   }
 
   const handleClose = () => {
     setStep(0);
-    onClose?.();
+    closeNew();
   };
 
   const handleStepClick = (
@@ -108,7 +104,7 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
               size="sm"
               variant={index === step ? "default" : "outline"}
               onClick={(event) => handleStepClick(event, index)}
-              disabled={createPatient.isPending}
+              disabled={isCreating}
             >
               {index + 1}. {label}
             </Button>
@@ -128,7 +124,7 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
                 type="button"
                 variant="outline"
                 onClick={handlePrevStep}
-                disabled={createPatient.isPending}
+                disabled={isCreating}
               >
                 Voltar
               </Button>
@@ -141,15 +137,15 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={createPatient.isPending}
+                disabled={isCreating}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={createPatient.isPending}
+                disabled={isCreating}
               >
-                {createPatient.isPending ? "Salvando..." : "Salvar"}
+                {isCreating ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           ) : (
@@ -159,14 +155,14 @@ export const PatientsNew = ({ onClose }: PatientsNewProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={createPatient.isPending}
+                disabled={isCreating}
               >
                 Cancelar
               </Button>
               <Button
                 type="button"
                 onClick={handleNextStep}
-                disabled={createPatient.isPending}
+                disabled={isCreating}
               >
                 Avançar
               </Button>

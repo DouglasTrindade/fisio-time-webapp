@@ -1,4 +1,6 @@
-import { z } from "zod";
+"use client"
+
+import { z } from "zod"
 
 export const patientSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -20,6 +22,6 @@ export const patientSchema = z.object({
   number: z.string().optional().or(z.literal("")),
   neighborhood: z.string().optional().or(z.literal("")),
   complement: z.string().optional().or(z.literal("")),
-});
+})
 
-export type PatientSchema = z.infer<typeof patientSchema>;
+export type PatientSchema = z.infer<typeof patientSchema>

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { apiRequest } from "../services/api";
-import type { RecordsResponse, ApiResponse } from "@/app/utils/types/patient";
+import type { RecordsResponse, ApiResponse } from "@/app/utils/types/api";
 
 type UseRecordsOptions<T> = Partial<
   Omit<UseQueryOptions<RecordsResponse<T>, Error>, "queryKey" | "queryFn">

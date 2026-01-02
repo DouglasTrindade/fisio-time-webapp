@@ -9,6 +9,7 @@ import {
 import {
   updateAppointmentSchema,
   appointmentParamsSchema,
+  normalizeAppointmentStatus,
 } from "../validation";
 import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
 
@@ -63,7 +64,7 @@ export async function PUT(
         name: body.name ?? undefined,
         phone: body.phone ?? undefined,
         date: body.date ? new Date(body.date) : undefined,
-        status: body.status ?? undefined,
+        status: normalizeAppointmentStatus(body.status) ?? undefined,
         notes: body.notes ?? undefined,
         patientId: body.patientId ?? undefined,
       },

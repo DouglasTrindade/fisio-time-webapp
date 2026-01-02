@@ -6,15 +6,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { patientSchema, type PatientSchema } from "./Schema";
+import { patientSchema, type PatientSchema } from "@/app/utils/patients/schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
-import { useUpdateRecord, useRecord } from "@/app/utils/hooks/useRecord";
+import { useRecord } from "@/app/utils/hooks/useRecord";
 import type { PatientApiData } from "@/app/utils/types/patient";
+import { usePatientContext } from "@/context/PatientsContext";
 
 interface PatientsEditProps {
   patientId: string;
-  onClose?: () => void;
 }
 
 const mapPatientToFormValues = (
@@ -43,7 +43,7 @@ const mapPatientToFormValues = (
   complement: patient?.complement ?? "",
 })
 
-export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
+export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
   const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
     "/patients",
     patientId,
@@ -54,7 +54,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
     }
   )
 
-  const updatePatient = useUpdateRecord<PatientSchema, PatientSchema>("/patients")
+  const { handleUpdate, isUpdating, closeEdit } = usePatientContext()
   const [step, setStep] = useState(0);
   const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
@@ -80,12 +80,9 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
 
   const onSubmit = async (values: PatientSchema) => {
     try {
-      await updatePatient.mutateAsync({
-        id: patientId,
-        data: values,
-      })
+      await handleUpdate(patientId, values)
 
-      onClose?.()
+      closeEdit()
     } catch (error) {
       console.error("Erro ao atualizar paciente:", error)
     }
@@ -93,7 +90,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
 
   const handleClose = () => {
     setStep(0);
-    onClose?.();
+    closeEdit();
   };
 
   const handleStepClick = (
@@ -138,7 +135,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
               size="sm"
               variant={index === step ? "default" : "outline"}
               onClick={(event) => handleStepClick(event, index)}
-              disabled={updatePatient.isPending}
+              disabled={isUpdating}
             >
               {index + 1}. {label}
             </Button>
@@ -158,7 +155,7 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
                 type="button"
                 variant="outline"
                 onClick={handlePrevStep}
-                disabled={updatePatient.isPending}
+                disabled={isUpdating}
               >
                 Voltar
               </Button>
@@ -171,15 +168,15 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={updatePatient.isPending}
+                disabled={isUpdating}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={updatePatient.isPending}
+                disabled={isUpdating}
               >
-                {updatePatient.isPending ? "Salvando..." : "Salvar"}
+                {isUpdating ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           ) : (
@@ -189,14 +186,14 @@ export const PatientsEdit = ({ patientId, onClose }: PatientsEditProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={updatePatient.isPending}
+                disabled={isUpdating}
               >
                 Cancelar
               </Button>
               <Button
                 type="button"
                 onClick={handleNextStep}
-                disabled={updatePatient.isPending}
+                disabled={isUpdating}
               >
                 Avançar
               </Button>

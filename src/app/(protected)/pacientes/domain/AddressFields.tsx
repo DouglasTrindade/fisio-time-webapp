@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { InputMask } from "@/components/ui/input-mask"
-import type { PatientSchema } from "./Schema"
+import type { PatientSchema } from "@/app/utils/patients/schema"
 
 interface AddressFieldsProps {
   form: UseFormReturn<PatientSchema>
