@@ -14,7 +14,7 @@ const appointmentFormSchema = appointmentSchema.extend({
     status: z.nativeEnum(Status),
 });
 
-import { useAppointmentsContext } from "@/context/AppointmentsContext";
+import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";

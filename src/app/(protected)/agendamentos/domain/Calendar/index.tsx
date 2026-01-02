@@ -5,7 +5,7 @@ import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useAppointmentsContext } from "@/context/AppointmentsContext";
+import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 import type { Appointment } from "@/app/utils/types/appointment";
 import { Status } from "@prisma/client";
 

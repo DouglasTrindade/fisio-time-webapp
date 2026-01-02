@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, Clock, User, FileText } from "lucide-react";
 import { Appointment } from "@/app/utils/types/appointment";
-import { useAppointmentsContext } from "@/context/AppointmentsContext";
+import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 import { Status } from "@prisma/client";
 import { handleApiError } from "@/app/utils/services/handleApiError";
 import { toast } from 'sonner';

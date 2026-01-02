@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { patientSchema, type PatientSchema } from "@/app/utils/patients/schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
-import { usePatientContext } from "@/context/PatientsContext";
+import { usePatientContext } from "@/contexts/PatientsContext";
 
 export const PatientsNew = () => {
   const { handleCreate, isCreating, closeNew } = usePatientContext();

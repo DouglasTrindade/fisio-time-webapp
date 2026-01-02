@@ -11,7 +11,7 @@ import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
 import { useRecord } from "@/app/utils/hooks/useRecord";
 import type { PatientApiData } from "@/app/utils/types/patient";
-import { usePatientContext } from "@/context/PatientsContext";
+import { usePatientContext } from "@/contexts/PatientsContext";
 
 interface PatientsEditProps {
   patientId: string;
