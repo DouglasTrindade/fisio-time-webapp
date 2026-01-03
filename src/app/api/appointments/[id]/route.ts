@@ -10,8 +10,8 @@ import {
   updateAppointmentSchema,
   appointmentParamsSchema,
   normalizeAppointmentStatus,
-} from "../validation";
-import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
+} from "../schema";
+import type { Appointment, ApiResponse } from "@/app/types/appointment";
 
 export async function GET(
   _request: NextRequest,

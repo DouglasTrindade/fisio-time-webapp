@@ -1,96 +1,76 @@
 "use client";
 
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { patientSchema, type PatientSchema } from "@/app/utils/patients/schema";
+import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
-import { useRecord } from "@/app/utils/hooks/useRecord";
-import type { PatientApiData } from "@/app/utils/types/patient";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
-interface PatientsEditProps {
-  patientId: string;
-}
-
-const mapPatientToFormValues = (
-  patient?: PatientApiData | null
-): PatientSchema => ({
-  name: patient?.name ?? "",
-  phone: patient?.phone ?? "",
-  email: patient?.email ?? "",
-  birthDate: patient?.birthDate
-    ? new Date(patient.birthDate).toISOString().split("T")[0]
-    : null,
-  notes: patient?.notes ?? "",
-  cpf: patient?.cpf ?? "",
-  rg: patient?.rg ?? "",
-  maritalStatus: (patient?.maritalStatus ?? "") as PatientSchema["maritalStatus"],
-  gender: (patient?.gender ?? "") as PatientSchema["gender"],
-  profession: patient?.profession ?? "",
-  companyName: patient?.companyName ?? "",
-  cep: patient?.cep ?? "",
-  country: patient?.country ?? "",
-  state: patient?.state ?? "",
-  city: patient?.city ?? "",
-  street: patient?.street ?? "",
-  number: patient?.number ?? "",
-  neighborhood: patient?.neighborhood ?? "",
-  complement: patient?.complement ?? "",
-})
-
-export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
-  const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
-    "/patients",
-    patientId,
-    {
-      staleTime: 0,
-      gcTime: 0,
-      refetchOnMount: "always",
-    }
-  )
-
-  const { handleUpdate, isUpdating, closeEdit } = usePatientContext()
+export const PatientsNew = () => {
+  const { handleCreate, isCreating, closeNew } = usePatientContext();
   const [step, setStep] = useState(0);
-  const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
-    defaultValues: useMemo(() => mapPatientToFormValues(), []),
+    defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
+      notes: "",
+      birthDate: null,
+      cpf: "",
+      rg: "",
+      maritalStatus: "",
+      gender: "",
+      profession: "",
+      companyName: "",
+      cep: "",
+      country: "",
+      state: "",
+      city: "",
+      street: "",
+      number: "",
+      neighborhood: "",
+      complement: "",
+    },
   });
 
-  useEffect(() => {
-    setIsFormReady(false);
-  }, [patientId]);
+  async function onSubmit(data: PatientSchema) {
+    await handleCreate({
+      name: data.name,
+      phone: data.phone,
+      email: data.email || undefined,
+      birthDate: data.birthDate,
+      notes: data.notes || undefined,
+      cpf: data.cpf || undefined,
+      rg: data.rg || undefined,
+      maritalStatus: data.maritalStatus || undefined,
+      gender: data.gender || undefined,
+      profession: data.profession || undefined,
+      companyName: data.companyName || undefined,
+      cep: data.cep || undefined,
+      country: data.country || undefined,
+      state: data.state || undefined,
+      city: data.city || undefined,
+      street: data.street || undefined,
+      number: data.number || undefined,
+      neighborhood: data.neighborhood || undefined,
+      complement: data.complement || undefined,
+    });
 
-  useEffect(() => {
-    if (!patient) return;
-    form.reset(mapPatientToFormValues(patient));
-    setIsFormReady(true);
-  }, [form, patient, patientId, isFetching]);
-
-  useEffect(() => {
+    form.reset();
     setStep(0);
-  }, [patientId]);
-
-  const onSubmit = async (values: PatientSchema) => {
-    try {
-      await handleUpdate(patientId, values)
-
-      closeEdit()
-    } catch (error) {
-      console.error("Erro ao atualizar paciente:", error)
-    }
+    closeNew();
   }
 
   const handleClose = () => {
     setStep(0);
-    closeEdit();
+    closeNew();
   };
 
   const handleStepClick = (
@@ -111,17 +91,6 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
     setStep((prev) => Math.max(prev - 1, 0));
   };
 
-  if (isLoading || !isFormReady) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    );
-  }
-
   const isLastStep = step === steps.length - 1;
 
   return (
@@ -135,7 +104,7 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
               size="sm"
               variant={index === step ? "default" : "outline"}
               onClick={(event) => handleStepClick(event, index)}
-              disabled={isUpdating}
+              disabled={isCreating}
             >
               {index + 1}. {label}
             </Button>
@@ -155,7 +124,7 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
                 type="button"
                 variant="outline"
                 onClick={handlePrevStep}
-                disabled={isUpdating}
+                disabled={isCreating}
               >
                 Voltar
               </Button>
@@ -168,15 +137,15 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={isUpdating}
+                disabled={isCreating}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isUpdating}
+                disabled={isCreating}
               >
-                {isUpdating ? "Salvando..." : "Salvar"}
+                {isCreating ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           ) : (
@@ -186,14 +155,14 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={isUpdating}
+                disabled={isCreating}
               >
                 Cancelar
               </Button>
               <Button
                 type="button"
                 onClick={handleNextStep}
-                disabled={isUpdating}
+                disabled={isCreating}
               >
                 Avançar
               </Button>

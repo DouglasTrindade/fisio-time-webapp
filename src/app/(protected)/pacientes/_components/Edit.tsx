@@ -1,76 +1,96 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { patientSchema, type PatientSchema } from "@/app/utils/patients/schema";
+import { Skeleton } from "@/components/ui/skeleton";
+import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/schema";
 import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
+import { useRecord } from "@/app/hooks/useRecord";
+import type { PatientApiData } from "@/app/types/patient";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
-export const PatientsNew = () => {
-  const { handleCreate, isCreating, closeNew } = usePatientContext();
+interface PatientsEditProps {
+  patientId: string;
+}
+
+const mapPatientToFormValues = (
+  patient?: PatientApiData | null
+): PatientSchema => ({
+  name: patient?.name ?? "",
+  phone: patient?.phone ?? "",
+  email: patient?.email ?? "",
+  birthDate: patient?.birthDate
+    ? new Date(patient.birthDate).toISOString().split("T")[0]
+    : null,
+  notes: patient?.notes ?? "",
+  cpf: patient?.cpf ?? "",
+  rg: patient?.rg ?? "",
+  maritalStatus: (patient?.maritalStatus ?? "") as PatientSchema["maritalStatus"],
+  gender: (patient?.gender ?? "") as PatientSchema["gender"],
+  profession: patient?.profession ?? "",
+  companyName: patient?.companyName ?? "",
+  cep: patient?.cep ?? "",
+  country: patient?.country ?? "",
+  state: patient?.state ?? "",
+  city: patient?.city ?? "",
+  street: patient?.street ?? "",
+  number: patient?.number ?? "",
+  neighborhood: patient?.neighborhood ?? "",
+  complement: patient?.complement ?? "",
+})
+
+export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
+  const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
+    "/patients",
+    patientId,
+    {
+      staleTime: 0,
+      gcTime: 0,
+      refetchOnMount: "always",
+    }
+  )
+
+  const { handleUpdate, isUpdating, closeEdit } = usePatientContext()
   const [step, setStep] = useState(0);
+  const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      notes: "",
-      birthDate: null,
-      cpf: "",
-      rg: "",
-      maritalStatus: "",
-      gender: "",
-      profession: "",
-      companyName: "",
-      cep: "",
-      country: "",
-      state: "",
-      city: "",
-      street: "",
-      number: "",
-      neighborhood: "",
-      complement: "",
-    },
+    defaultValues: useMemo(() => mapPatientToFormValues(), []),
   });
 
-  async function onSubmit(data: PatientSchema) {
-    await handleCreate({
-      name: data.name,
-      phone: data.phone,
-      email: data.email || undefined,
-      birthDate: data.birthDate,
-      notes: data.notes || undefined,
-      cpf: data.cpf || undefined,
-      rg: data.rg || undefined,
-      maritalStatus: data.maritalStatus || undefined,
-      gender: data.gender || undefined,
-      profession: data.profession || undefined,
-      companyName: data.companyName || undefined,
-      cep: data.cep || undefined,
-      country: data.country || undefined,
-      state: data.state || undefined,
-      city: data.city || undefined,
-      street: data.street || undefined,
-      number: data.number || undefined,
-      neighborhood: data.neighborhood || undefined,
-      complement: data.complement || undefined,
-    });
+  useEffect(() => {
+    setIsFormReady(false);
+  }, [patientId]);
 
-    form.reset();
+  useEffect(() => {
+    if (!patient) return;
+    form.reset(mapPatientToFormValues(patient));
+    setIsFormReady(true);
+  }, [form, patient, patientId, isFetching]);
+
+  useEffect(() => {
     setStep(0);
-    closeNew();
+  }, [patientId]);
+
+  const onSubmit = async (values: PatientSchema) => {
+    try {
+      await handleUpdate(patientId, values)
+
+      closeEdit()
+    } catch (error) {
+      console.error("Erro ao atualizar paciente:", error)
+    }
   }
 
   const handleClose = () => {
     setStep(0);
-    closeNew();
+    closeEdit();
   };
 
   const handleStepClick = (
@@ -91,6 +111,17 @@ export const PatientsNew = () => {
     setStep((prev) => Math.max(prev - 1, 0));
   };
 
+  if (isLoading || !isFormReady) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    );
+  }
+
   const isLastStep = step === steps.length - 1;
 
   return (
@@ -104,7 +135,7 @@ export const PatientsNew = () => {
               size="sm"
               variant={index === step ? "default" : "outline"}
               onClick={(event) => handleStepClick(event, index)}
-              disabled={isCreating}
+              disabled={isUpdating}
             >
               {index + 1}. {label}
             </Button>
@@ -124,7 +155,7 @@ export const PatientsNew = () => {
                 type="button"
                 variant="outline"
                 onClick={handlePrevStep}
-                disabled={isCreating}
+                disabled={isUpdating}
               >
                 Voltar
               </Button>
@@ -137,15 +168,15 @@ export const PatientsNew = () => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={isCreating}
+                disabled={isUpdating}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isCreating}
+                disabled={isUpdating}
               >
-                {isCreating ? "Salvando..." : "Salvar"}
+                {isUpdating ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           ) : (
@@ -155,14 +186,14 @@ export const PatientsNew = () => {
                 variant="outline"
                 onClick={handleClose}
                 className="bg-transparent"
-                disabled={isCreating}
+                disabled={isUpdating}
               >
                 Cancelar
               </Button>
               <Button
                 type="button"
                 onClick={handleNextStep}
-                disabled={isCreating}
+                disabled={isUpdating}
               >
                 Avançar
               </Button>

@@ -4,9 +4,9 @@ import { useMemo, type ComponentType } from "react";
 import { Users, UserPlus, CalendarClock, AlertTriangle, Gift, Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRecords } from "@/app/utils/hooks/useRecords";
-import type { Patient } from "@/app/utils/types/patient";
-import type { Appointment } from "@/app/utils/types/appointment";
+import { useRecords } from "@/app/hooks/useRecords";
+import type { Patient } from "@/app/types/patient";
+import type { Appointment } from "@/app/types/appointment";
 import { Status } from "@prisma/client";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;

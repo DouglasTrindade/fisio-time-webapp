@@ -1,4 +1,4 @@
-import { Patients } from "./domain";
+import { Patients } from "./_components";
 
 const PatientsPage = () => {
   return <Patients />;

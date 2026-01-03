@@ -1,6 +1,6 @@
 "use client"
 
-import type { PatientFilters } from "@/app/utils/types/patient"
+import type { PatientFilters } from "@/app/types/patient"
 
 export const patientsCrudConfig = {
   endpoint: "/patients",

@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { DateTime } from "luxon";
-import { useRecords } from "@/app/utils/hooks/useRecords";
-import { AppointmentForm } from "@/app/utils/appointments/schema";
-import { Patient } from "@/app/utils/types/patient";
+import { useRecords } from "@/app/hooks/useRecords";
+import { AppointmentForm } from "@/app/(protected)/agendamentos/_components/schema";
+import { Patient } from "@/app/types/patient";
 import { InputMask } from "@/components/ui/input-mask";
 import { Status } from "@prisma/client";
 

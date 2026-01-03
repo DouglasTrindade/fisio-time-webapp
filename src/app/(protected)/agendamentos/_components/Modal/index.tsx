@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-import { AppointmentForm, AppointmentPayload, appointmentSchema } from "@/app/utils/appointments/schema";
+import { AppointmentForm, AppointmentPayload, appointmentSchema } from "@/app/(protected)/agendamentos/_components/schema";
 import { Status } from "@prisma/client";
 import { z } from "zod";
 
@@ -21,8 +21,8 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Form } from "@/components/ui/form";
 import { Fields } from "./Fields";
 import { Button } from "@/components/ui/button";
-import type { Appointment, ApiResponse } from "@/app/utils/types/appointment";
-import { handleApiError } from "@/app/utils/services/handleApiError";
+import type { Appointment, ApiResponse } from "@/app/types/appointment";
+import { handleApiError } from "@/app/services/handleApiError";
 
 interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDate?: string; appointment?: Appointment | null }
 

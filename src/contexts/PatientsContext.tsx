@@ -2,11 +2,11 @@
 
 import { createContext, useContext, useMemo, useState } from "react"
 import type { ReactNode } from "react"
-import type { Patient, PatientFilters } from "@/app/utils/types/patient"
-import type { PatientSchema } from "@/app/utils/patients/schema"
-import { createCrudContext } from "@/app/utils/crud/createCrudContext"
-import type { CrudContextValue } from "@/app/utils/crud/types"
-import { patientsCrudConfig } from "@/app/utils/patients/config"
+import type { Patient, PatientFilters } from "@/app/types/patient"
+import type { PatientSchema } from "@/app/(protected)/pacientes/_components/schema"
+import { createCrudContext } from "@/contexts/crud/createCrudContext"
+import type { CrudContextValue } from "@/contexts/crud/types"
+import { patientsCrudConfig } from "@/app/(protected)/pacientes/_components/config"
 
 type PatientsCrudValue = CrudContextValue<
   Patient,

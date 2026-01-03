@@ -6,7 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
-import type { Appointment } from "@/app/utils/types/appointment";
+import type { Appointment } from "@/app/types/appointment";
 import { Status } from "@prisma/client";
 
 interface CalendarProps {

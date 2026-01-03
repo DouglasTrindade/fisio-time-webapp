@@ -16,8 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRecord, useUpdateRecord } from "@/app/utils/hooks/useRecord";
-import type { UserProfile } from "@/app/utils/types/user";
+import { useRecord, useUpdateRecord } from "@/app/hooks/useRecord";
+import type { UserProfile } from "@/app/types/user";
 import { userSettingsSchema, type UserSettingsValues } from "./schema";
 import { ImageInput } from "@/components/ui/image-input";
 

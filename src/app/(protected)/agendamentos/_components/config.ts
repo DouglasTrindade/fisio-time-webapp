@@ -1,6 +1,6 @@
 "use client"
 
-import type { AppointmentFilters } from "@/app/utils/types/appointment"
+import type { AppointmentFilters } from "@/app/types/appointment"
 
 export const appointmentsCrudConfig = {
   endpoint: "/appointments",

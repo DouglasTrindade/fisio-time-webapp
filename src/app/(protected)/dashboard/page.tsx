@@ -1,4 +1,4 @@
-import { DashboardHome } from "./domain";
+import { DashboardHome } from "./_components";
 
 const DashboardPage = async () => {
   return <DashboardHome />;
