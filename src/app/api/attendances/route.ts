@@ -111,8 +111,8 @@ export async function POST(
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
     const body = await validateJsonBody(request, createAttendanceSchema);
-
-    const prismaType = toPrismaAttendanceType(body.type) ?? AttendanceType.EVALUATION;
+    const prismaType =
+      toPrismaAttendanceType(body.type) ?? AttendanceType.EVALUATION;
 
     const attendance = await prisma.attendance.create({
       data: {

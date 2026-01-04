@@ -9,6 +9,7 @@ import type {
   AttendanceUpdateInput,
   AttendanceType,
 } from "@/app/types/attendance"
+import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { attendancesCrudConfig } from "@/app/(protected)/atendimentos/_components/config"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import type { CrudContextValue } from "@/contexts/crud/types"
@@ -70,7 +71,7 @@ const AttendancesProviderInner = ({ children }: { children: ReactNode }) => {
     () => ({
       ...crud,
       isDialogOpen: !!dialogState,
-      creatingType: dialogState?.type ?? "evaluation",
+      creatingType: dialogState?.type ?? PrismaAttendanceType.EVALUATION,
       editingAttendance: dialogState?.attendance ?? null,
       openNew: (type: AttendanceType) =>
         setDialogState({ type, attendance: null }),

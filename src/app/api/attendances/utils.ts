@@ -27,22 +27,18 @@ export const toPrismaAttendanceType = (
   value?: string | null
 ): AttendanceType | undefined => {
   if (!value) return undefined;
-  const normalized = value.toLowerCase();
-  if (normalized === "evaluation") return AttendanceType.EVALUATION;
-  if (normalized === "evolution") return AttendanceType.EVOLUTION;
+  const normalized = value.toUpperCase();
+  if (normalized in AttendanceType) {
+    return AttendanceType[normalized as keyof typeof AttendanceType];
+  }
   return undefined;
 };
-
-const fromPrismaAttendanceType = (
-  value: AttendanceType
-): "evaluation" | "evolution" =>
-  value === AttendanceType.EVOLUTION ? "evolution" : "evaluation";
 
 export const formatAttendance = (
   attendance: AttendanceWithRelations
 ): Attendance => ({
   ...attendance,
-  type: fromPrismaAttendanceType(attendance.type),
+  type: attendance.type,
   date: attendance.date.toISOString(),
   createdAt: attendance.createdAt.toISOString(),
   updatedAt: attendance.updatedAt.toISOString(),

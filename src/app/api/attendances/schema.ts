@@ -10,12 +10,15 @@ const optionalText = z
     return trimmed.length ? trimmed : null;
   });
 
+const attendanceTypeField = z.preprocess(
+  (value) => (typeof value === "string" ? value.toLowerCase() : value),
+  z.enum(["evaluation", "evolution"])
+);
+
 export const createAttendanceSchema = z.object({
   patientId: z.string().min(1, "Paciente é obrigatório"),
   professionalId: z.string().min(1, "Profissional é obrigatório"),
-  type: z
-    .enum(["evaluation", "evolution"])
-    .default("evaluation"),
+  type: attendanceTypeField.default("evaluation"),
   date: z
     .union([
       z.string().datetime("Data inválida"),

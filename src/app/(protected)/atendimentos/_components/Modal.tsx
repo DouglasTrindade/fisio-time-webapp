@@ -31,9 +31,14 @@ interface AttendanceDialogProps {
   attendance: Attendance | null
 }
 
-const typeLabels: Record<AttendanceType, string> = {
+const typeLabels = {
   evaluation: "Avaliação",
   evolution: "Evolução",
+} as const
+
+const getTypeLabel = (type: AttendanceType) => {
+  const key = type.toLowerCase() as keyof typeof typeLabels
+  return typeLabels[key] ?? "Atendimento"
 }
 
 const getDefaultDateParts = () => {
@@ -135,7 +140,8 @@ export const AttendanceDialog = ({
   }, [attendance, form, open])
 
   const isSubmitting = isCreating || isUpdating
-  const title = attendance ? "Editar atendimento" : `Nova ${typeLabels[type].toLowerCase()}`
+  const typeLabel = getTypeLabel(type)
+  const title = attendance ? "Editar atendimento" : `Nova ${typeLabel.toLowerCase()}`
 
   const onSubmit = async (values: AttendanceFormValues) => {
     if (!professionalId) {
@@ -143,10 +149,9 @@ export const AttendanceDialog = ({
       return
     }
 
-    const payload = {
+    const basePayload = {
       patientId: values.patientId,
       professionalId,
-      type,
       date: combineDateAndTime(values.date, values.time),
       mainComplaint: values.mainComplaint?.trim() || null,
       currentIllnessHistory: values.currentIllnessHistory?.trim() || null,
@@ -154,12 +159,13 @@ export const AttendanceDialog = ({
       familyHistory: values.familyHistory?.trim() || null,
       observations: values.observations?.trim() || null,
     }
-
+    const payload = attendance ? basePayload : { ...basePayload, type }
+    const creationPayload = { ...basePayload, type }
     try {
       if (attendance) {
         await handleUpdate(attendance.id, payload)
       } else {
-        await handleCreate(payload)
+        await handleCreate(creationPayload)
       }
       onOpenChange(false)
     } catch (error) {
@@ -174,7 +180,7 @@ export const AttendanceDialog = ({
           <DialogTitle className="flex flex-col gap-1">
             <span>{title}</span>
             <span className="text-sm font-normal text-muted-foreground">
-              {typeLabels[type]}
+              {typeLabel}
             </span>
           </DialogTitle>
         </DialogHeader>

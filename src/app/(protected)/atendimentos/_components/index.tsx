@@ -22,6 +22,7 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { AttendanceListItem } from "./ListItem"
 import { AttendanceDialog } from "./Modal"
+import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 
 export const Attendances = () => {
   const {
@@ -53,7 +54,7 @@ export const Attendances = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => openNew("evaluation")}>
+          <Button onClick={() => openNew(PrismaAttendanceType.EVALUATION)}>
             Nova avaliação
           </Button>
           <Button variant="outline" disabled title="Em breve">

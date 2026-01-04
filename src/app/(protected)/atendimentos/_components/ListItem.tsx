@@ -33,9 +33,14 @@ interface AttendanceListItemProps {
   onEdit: (attendance: Attendance) => void
 }
 
-const typeLabel: Record<AttendanceType, string> = {
+const typeLabel = {
   evaluation: "Avaliação",
   evolution: "Evolução",
+} as const
+
+const getTypeLabel = (type: AttendanceType) => {
+  const key = type.toLowerCase() as keyof typeof typeLabel
+  return typeLabel[key] ?? "Atendimento"
 }
 
 const formatDate = (isoDate: string) => {
@@ -79,7 +84,7 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
       >
         <TableCell>
           <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium capitalize text-primary">
-            {typeLabel[attendance.type] || "Atendimento"}
+            {getTypeLabel(attendance.type)}
           </span>
         </TableCell>
         <TableCell>

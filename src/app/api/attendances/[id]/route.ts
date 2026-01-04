@@ -67,12 +67,20 @@ export async function PUT(
       );
     }
 
+    const prismaType = body.type ? toPrismaAttendanceType(body.type) : undefined
+    if (body.type && !prismaType) {
+      return NextResponse.json(
+        createApiError<Attendance>("Tipo de atendimento inválido"),
+        { status: 400 }
+      )
+    }
+
     const updated = await prisma.attendance.update({
       where: { id },
       data: {
         patientId: body.patientId ?? undefined,
         professionalId: body.professionalId ?? undefined,
-        type: body.type ? toPrismaAttendanceType(body.type) : undefined,
+        type: prismaType,
         date: body.date ? new Date(body.date) : undefined,
         mainComplaint:
           body.mainComplaint !== undefined ? body.mainComplaint : undefined,
