@@ -35,4 +35,4 @@ export const attendanceFormSchema = z.object({
   attachments: z.array(attachmentSchema),
 })
 
-export type AttendanceFormSchema = z.infer<typeof attendanceFormSchema>
+export type AttendanceFormSchema = z.input<typeof attendanceFormSchema>

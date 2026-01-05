@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import type { AttendanceType } from "@/app/types/attendance"
+import type { AttendanceType, AttendanceAttachment } from "@/app/types/attendance"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 
@@ -118,6 +118,18 @@ export const AttendanceDialog = ({
   useEffect(() => {
     if (!open) return
 
+    const normalizeAttachments = (
+      attachments: AttendanceAttachment[] | null | undefined,
+    ): AttendanceFormValues["attachments"] =>
+      attachments?.map((item) => ({
+        id: item.id,
+        name: item.name,
+        size: item.size,
+        type: item.type,
+        url: item.url ?? undefined,
+        content: item.content ?? undefined,
+      })) ?? []
+
     if (attendance) {
       const { date, time } = getDatePartsFromISO(attendance.date)
       form.reset({
@@ -132,7 +144,7 @@ export const AttendanceDialog = ({
         cidCode: attendance.cidCode ?? "",
         cidDescription: attendance.cidDescription ?? "",
         evolutionNotes: attendance.evolutionNotes ?? "",
-        attachments: attendance.attachments ?? [],
+        attachments: normalizeAttachments(attendance.attachments),
       })
     } else {
       const defaults = getDefaultDateParts()

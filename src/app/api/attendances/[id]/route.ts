@@ -36,11 +36,6 @@ export async function GET(
         createApiError<Attendance>("Atendimento não encontrado"),
         { status: 404 }
       );
-      console.info("Updating attendance type normalization", {
-        incoming: body.type,
-        normalizedType,
-        prismaType,
-      })
     }
 
     return NextResponse.json(
@@ -72,7 +67,13 @@ export async function PUT(
       );
     }
 
-    const prismaType = body.type ? toPrismaAttendanceType(body.type) : undefined
+    const typeInput =
+      typeof body.type === "string"
+        ? body.type
+        : typeof body.type === "object" && body.type !== null && "value" in body.type
+          ? (body.type as { value?: string }).value
+          : undefined;
+    const prismaType = typeInput ? toPrismaAttendanceType(typeInput) : undefined;
 
     const updated = await prisma.attendance.update({
       where: { id },
