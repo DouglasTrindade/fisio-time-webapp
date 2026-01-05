@@ -17,6 +17,7 @@ model User {
   updatedAt     DateTime      @updatedAt
   accounts      Account[]
   Appointment   Appointment[]
+  attendances   Attendance[]
   sessions      Session[]
 }
 
@@ -44,6 +45,7 @@ model Patient {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
+  attendances  Attendance[]
 }
 
 model Appointment {
@@ -60,6 +62,27 @@ model Appointment {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id                    String         @id @default(cuid())
+  type                  AttendanceType @default(EVALUATION)
+  date                  DateTime
+  patientId             String
+  professionalId        String
+  patient               Patient        @relation(fields: [patientId], references: [id])
+  professional          User           @relation(fields: [professionalId], references: [id])
+  mainComplaint         String?
+  currentIllnessHistory String?
+  pastMedicalHistory    String?
+  familyHistory         String?
+  observations          String?
+  cidCode               String?
+  cidDescription        String?
+  evolutionNotes        String?
+  attachments           Json?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 }
 
 model Account {
@@ -103,4 +126,9 @@ enum Status {
   CANCELED    @map("canceled")
   WAITING     @map("waiting")
   RESCHEDULED @map("rescheduled")
+}
+
+enum AttendanceType {
+  EVALUATION
+  EVOLUTION
 }

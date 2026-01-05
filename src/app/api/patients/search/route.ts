@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createApiResponse, handleApiError } from "@/lib/api/utils"
-import type { ApiResponse, PatientSearchResult } from "@/app/utils/types/patient"
+import type { ApiResponse, PatientSearchResult } from "@/app/types/patient"
 
 export async function GET(
   request: NextRequest,

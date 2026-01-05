@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createAppointmentSchema, normalizeAppointmentStatus } from "./validation";
+import { createAppointmentSchema, normalizeAppointmentStatus } from "./schema";
 import {
   createApiError,
   createApiResponse,
@@ -8,7 +8,7 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, RecordsResponse } from "@/app/utils/types/api";
+import type { ApiResponse, RecordsResponse } from "@/app/types/api";
 import { Status, type Appointment as PrismaAppointment } from "@prisma/client";
 
 type Appointment = Omit<

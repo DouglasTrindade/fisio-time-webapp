@@ -1,5 +1,5 @@
 
-import { Calendar, Settings, Users, LayoutDashboard } from "lucide-react";
+import { Calendar, Settings, Users, LayoutDashboard, MonitorCheckIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavUser } from "./NavUser";
 import {
@@ -35,6 +35,11 @@ const menuItems = [
     icon: Users,
   },
   {
+    title: "Atendimentos",
+    url: "/atendimentos",
+    icon: MonitorCheckIcon,
+  },
+  {
     title: "Configurações",
     url: "/configuracoes",
     icon: Settings,
@@ -47,9 +52,9 @@ export async function AppSidebar({
   const session = await auth();
   const user = session?.user?.id
     ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { name: true, email: true, image: true },
-      })
+      where: { id: session.user.id },
+      select: { name: true, email: true, image: true },
+    })
     : null;
 
   return (

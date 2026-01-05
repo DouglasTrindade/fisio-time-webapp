@@ -2,12 +2,12 @@
 
 import { createContext, useContext, useMemo, useState } from "react"
 import type { ReactNode } from "react"
-import type { Appointment, AppointmentFilters } from "@/app/utils/types/appointment"
-import type { AppointmentForm, AppointmentPayload } from "@/app/utils/appointments/schema"
-import { createCrudContext } from "@/app/utils/crud/createCrudContext"
-import type { CrudContextValue } from "@/app/utils/crud/types"
-import { appointmentsCrudConfig } from "@/app/utils/appointments/config"
-import { useRecords } from "@/app/utils/hooks/useRecords"
+import type { Appointment, AppointmentFilters } from "@/app/types/appointment"
+import type { AppointmentPayload } from "@/app/(protected)/agendamentos/_components/schema"
+import { createCrudContext } from "@/contexts/crud/createCrudContext"
+import type { CrudContextValue } from "@/contexts/crud/types"
+import { appointmentsCrudConfig } from "@/app/(protected)/agendamentos/_components/config"
+import { useRecords } from "@/app/hooks/useRecords"
 
 type AppointmentsCrudValue = CrudContextValue<
   Appointment,

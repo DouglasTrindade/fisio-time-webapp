@@ -1,13 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { updatePatientSchema, patientParamsSchema } from "../validation";
+import { updatePatientSchema, patientParamsSchema } from "../schema";
 import {
   createApiResponse,
   createApiError,
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, Patient } from "@/app/utils/types/patient";
+import type { ApiResponse, Patient } from "@/app/types/patient";
 
 export async function GET(
   _request: NextRequest,
