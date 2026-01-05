@@ -32,10 +32,7 @@ export const attendanceFormSchema = z.object({
   cidCode: optionalText,
   cidDescription: optionalText,
   evolutionNotes: optionalText,
-  attachments: z.preprocess(
-    (value) => (Array.isArray(value) ? value : []),
-    z.array(attachmentSchema)
-  ),
+  attachments: z.array(attachmentSchema),
 })
 
 export type AttendanceFormSchema = z.infer<typeof attendanceFormSchema>
