@@ -125,6 +125,10 @@ export async function POST(
         pastMedicalHistory: body.pastMedicalHistory,
         familyHistory: body.familyHistory,
         observations: body.observations,
+        cidCode: body.cidCode ?? null,
+        cidDescription: body.cidDescription ?? null,
+        evolutionNotes: body.evolutionNotes ?? null,
+        attachments: body.attachments ?? [],
       },
       include: attendanceInclude,
     });

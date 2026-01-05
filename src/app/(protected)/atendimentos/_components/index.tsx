@@ -57,7 +57,7 @@ export const Attendances = () => {
           <Button onClick={() => openNew(PrismaAttendanceType.EVALUATION)}>
             Nova avaliação
           </Button>
-          <Button variant="outline" disabled title="Em breve">
+          <Button variant="outline" onClick={() => openNew(PrismaAttendanceType.EVOLUTION)}>
             Nova evolução
           </Button>
         </div>

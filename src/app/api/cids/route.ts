@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from "next/server";
+import { cid10Data } from "@/data/cid10";
+import { createApiResponse } from "@/lib/api/utils";
+import type { ApiResponse } from "@/app/types/api";
+import type { CidRecord } from "@/app/types/cid";
+
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+export async function GET(
+  request: NextRequest
+): Promise<NextResponse<ApiResponse<{ records: CidRecord[]; pagination: { page: number; limit: number; total: number; totalPages: number; hasNext: boolean; hasPrev: boolean } }>>> {
+  const url = new URL(request.url);
+  const search = url.searchParams.get("search")?.trim() ?? "";
+  const page = Math.max(Number.parseInt(url.searchParams.get("page") ?? "1", 10), 1);
+  const limit = Math.max(Number.parseInt(url.searchParams.get("limit") ?? "20", 10), 1);
+
+  const normalizedSearch = normalize(search);
+
+  const filtered = normalizedSearch.length
+    ? cid10Data.filter((item) => {
+        const normalizedCode = normalize(item.code);
+        const normalizedDescription = normalize(item.description);
+        return (
+          normalizedCode.includes(normalizedSearch) ||
+          normalizedDescription.includes(normalizedSearch)
+        );
+      })
+    : cid10Data;
+
+  const start = (page - 1) * limit;
+  const records = filtered.slice(start, start + limit);
+  const total = filtered.length;
+  const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+  return NextResponse.json(
+    createApiResponse({
+      records,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    })
+  );
+}

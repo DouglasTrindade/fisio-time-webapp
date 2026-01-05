@@ -15,6 +15,26 @@ const attendanceTypeField = z.preprocess(
   z.enum(["evaluation", "evolution"])
 );
 
+const attachmentSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  type: z.string().min(1),
+  size: z.number().nonnegative(),
+  url: z
+    .string()
+    .url()
+    .optional()
+    .or(z.literal(""))
+    .or(z.null())
+    .transform((value) => (value ? value : null)),
+  content: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .or(z.null())
+    .transform((value) => (value ? value : null)),
+});
+
 export const createAttendanceSchema = z.object({
   patientId: z.string().min(1, "Paciente é obrigatório"),
   professionalId: z.string().min(1, "Profissional é obrigatório"),
@@ -33,6 +53,10 @@ export const createAttendanceSchema = z.object({
   pastMedicalHistory: optionalText,
   familyHistory: optionalText,
   observations: optionalText,
+  cidCode: optionalText,
+  cidDescription: optionalText,
+  evolutionNotes: optionalText,
+  attachments: z.array(attachmentSchema).optional().default([]),
 });
 
 export const updateAttendanceSchema = createAttendanceSchema.partial();

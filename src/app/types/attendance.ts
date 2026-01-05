@@ -1,12 +1,26 @@
-import type { Attendance as PrismaAttendance, AttendanceType as PrismaAttendanceType } from "@prisma/client";
+import type { Attendance as PrismaAttendance, AttendanceType as PrismaAttendanceType, Prisma } from "@prisma/client";
 export type AttendanceType = PrismaAttendanceType;
 
-export interface Attendance
-  extends Omit<PrismaAttendance, "date" | "createdAt" | "updatedAt" | "type"> {
+export interface AttendanceAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url?: string | null;
+  content?: string | null;
+}
+
+type AttendanceBase = Omit<
+  PrismaAttendance,
+  "date" | "createdAt" | "updatedAt" | "type" | "attachments"
+>;
+
+export interface Attendance extends AttendanceBase {
   type: AttendanceType;
   date: string;
   createdAt: string;
   updatedAt: string;
+  attachments?: AttendanceAttachment[] | null;
   patient?: {
     id: string;
     name: string | null;
@@ -27,6 +41,10 @@ export interface AttendanceCreateInput {
   pastMedicalHistory?: string | null;
   familyHistory?: string | null;
   observations?: string | null;
+  cidCode?: string | null;
+  cidDescription?: string | null;
+  evolutionNotes?: string | null;
+  attachments?: AttendanceAttachment[] | Prisma.JsonValue | null;
 }
 
 export type AttendanceUpdateInput = Partial<AttendanceCreateInput>;

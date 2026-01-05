@@ -23,6 +23,8 @@ import {
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { EvaluationFields } from "./Fields/Evaluation"
+import { EvolutionFields } from "./Fields/Evolution"
+import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 
 interface AttendanceDialogProps {
   open: boolean
@@ -106,6 +108,10 @@ export const AttendanceDialog = ({
       pastMedicalHistory: "",
       familyHistory: "",
       observations: "",
+      cidCode: "",
+      cidDescription: "",
+      evolutionNotes: "",
+      attachments: [],
     },
   })
 
@@ -123,6 +129,10 @@ export const AttendanceDialog = ({
         pastMedicalHistory: attendance.pastMedicalHistory ?? "",
         familyHistory: attendance.familyHistory ?? "",
         observations: attendance.observations ?? "",
+        cidCode: attendance.cidCode ?? "",
+        cidDescription: attendance.cidDescription ?? "",
+        evolutionNotes: attendance.evolutionNotes ?? "",
+        attachments: attendance.attachments ?? [],
       })
     } else {
       const defaults = getDefaultDateParts()
@@ -135,12 +145,17 @@ export const AttendanceDialog = ({
         pastMedicalHistory: "",
         familyHistory: "",
         observations: "",
+        cidCode: "",
+        cidDescription: "",
+        evolutionNotes: "",
+        attachments: [],
       })
     }
   }, [attendance, form, open])
 
   const isSubmitting = isCreating || isUpdating
   const typeLabel = getTypeLabel(type)
+  const isEvolution = type === PrismaAttendanceType.EVOLUTION
   const title = attendance ? "Editar atendimento" : `Nova ${typeLabel.toLowerCase()}`
 
   const onSubmit = async (values: AttendanceFormValues) => {
@@ -158,6 +173,10 @@ export const AttendanceDialog = ({
       pastMedicalHistory: values.pastMedicalHistory?.trim() || null,
       familyHistory: values.familyHistory?.trim() || null,
       observations: values.observations?.trim() || null,
+      cidCode: values.cidCode?.trim() || null,
+      cidDescription: values.cidDescription?.trim() || null,
+      evolutionNotes: values.evolutionNotes?.trim() || null,
+      attachments: values.attachments ?? [],
     }
     const payload = attendance ? basePayload : { ...basePayload, type }
     const creationPayload = { ...basePayload, type }
@@ -187,11 +206,19 @@ export const AttendanceDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <EvaluationFields
-              form={form}
-              patients={patients}
-              isLoadingPatients={isLoadingPatients}
-            />
+            {isEvolution ? (
+              <EvolutionFields
+                form={form}
+                patients={patients}
+                isLoadingPatients={isLoadingPatients}
+              />
+            ) : (
+              <EvaluationFields
+                form={form}
+                patients={patients}
+                isLoadingPatients={isLoadingPatients}
+              />
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>

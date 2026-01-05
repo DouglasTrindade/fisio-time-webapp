@@ -2,7 +2,23 @@
 
 import { z } from "zod"
 
-const optionalText = z.string().optional().or(z.literal(""))
+const optionalText = z
+  .string()
+  .optional()
+  .or(z.literal(""))
+
+const optionalNullableString = z
+  .union([z.string(), z.literal(""), z.null(), z.undefined()])
+  .transform((value) => (value && value.length ? value : undefined))
+
+const attachmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  size: z.number().nonnegative(),
+  type: z.string(),
+  url: optionalNullableString,
+  content: optionalNullableString,
+})
 
 export const attendanceFormSchema = z.object({
   patientId: z.string().min(1, "Paciente é obrigatório"),
@@ -13,6 +29,10 @@ export const attendanceFormSchema = z.object({
   pastMedicalHistory: optionalText,
   familyHistory: optionalText,
   observations: optionalText,
+  cidCode: optionalText,
+  cidDescription: optionalText,
+  evolutionNotes: optionalText,
+  attachments: z.array(attachmentSchema).default([]),
 })
 
 export type AttendanceFormSchema = z.infer<typeof attendanceFormSchema>

@@ -77,6 +77,10 @@ model Attendance {
   pastMedicalHistory    String?
   familyHistory         String?
   observations          String?
+  cidCode               String?
+  cidDescription        String?
+  evolutionNotes        String?
+  attachments           Json?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
 }
@@ -125,6 +129,6 @@ enum Status {
 }
 
 enum AttendanceType {
-  EVALUATION @map("evaluation")
-  EVOLUTION  @map("evolution")
+  EVALUATION
+  EVOLUTION
 }

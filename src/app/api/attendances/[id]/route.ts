@@ -36,6 +36,11 @@ export async function GET(
         createApiError<Attendance>("Atendimento não encontrado"),
         { status: 404 }
       );
+      console.info("Updating attendance type normalization", {
+        incoming: body.type,
+        normalizedType,
+        prismaType,
+      })
     }
 
     return NextResponse.json(
@@ -68,12 +73,6 @@ export async function PUT(
     }
 
     const prismaType = body.type ? toPrismaAttendanceType(body.type) : undefined
-    if (body.type && !prismaType) {
-      return NextResponse.json(
-        createApiError<Attendance>("Tipo de atendimento inválido"),
-        { status: 400 }
-      )
-    }
 
     const updated = await prisma.attendance.update({
       where: { id },
@@ -96,6 +95,13 @@ export async function PUT(
           body.familyHistory !== undefined ? body.familyHistory : undefined,
         observations:
           body.observations !== undefined ? body.observations : undefined,
+        cidCode: body.cidCode !== undefined ? body.cidCode : undefined,
+        cidDescription:
+          body.cidDescription !== undefined ? body.cidDescription : undefined,
+        evolutionNotes:
+          body.evolutionNotes !== undefined ? body.evolutionNotes : undefined,
+        attachments:
+          body.attachments !== undefined ? body.attachments : undefined,
       },
       include: attendanceInclude,
     });
