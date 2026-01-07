@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -17,19 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientsContext } from "@/contexts/PatientsContext";
+import { PatientsFilters } from "./Filters";
 
 export const Patients = () => {
   const {
@@ -47,6 +40,9 @@ export const Patients = () => {
     handlePageChange,
     handleSortChange,
   } = usePatientsContext();
+
+  const sortValue = `${filters.sortBy ?? "name"}-${filters.sortOrder ?? "asc"}`;
+  const searchValue = filters.search ?? "";
 
   return (
     <div className="space-y-4">
@@ -77,32 +73,12 @@ export const Patients = () => {
         </Dialog>
       </div>
 
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Buscar pacientes..."
-            value={filters.search}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        <Select
-          value={`${filters.sortBy}-${filters.sortOrder}`}
-          onValueChange={handleSortChange}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name-asc">Nome (A-Z)</SelectItem>
-            <SelectItem value="name-desc">Nome (Z-A)</SelectItem>
-            <SelectItem value="createdAt-desc">Mais recentes</SelectItem>
-            <SelectItem value="createdAt-asc">Mais antigos</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <PatientsFilters
+        search={searchValue}
+        onSearch={handleSearch}
+        sortValue={sortValue}
+        onSortChange={handleSortChange}
+      />
 
       <div className="border rounded-lg">
         <Table>

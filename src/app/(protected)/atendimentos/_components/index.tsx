@@ -1,14 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -18,11 +10,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { AttendanceListItem } from "./ListItem"
 import { AttendanceDialog } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
+import { AttendancesFilters } from "./Filters"
 
 export const Attendances = () => {
   const {
@@ -43,6 +36,7 @@ export const Attendances = () => {
 
   const totalAttendances = pagination?.total ?? records.length
   const sortValue = `${filters.sortBy ?? "date"}-${filters.sortOrder ?? "desc"}`
+  const searchValue = (filters.search as string) ?? ""
 
   return (
     <div className="space-y-4">
@@ -63,30 +57,12 @@ export const Attendances = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-10"
-            placeholder="Buscar paciente ou profissional..."
-            value={(filters.search as string) ?? ""}
-            onChange={(event) => handleSearch(event.target.value)}
-          />
-        </div>
-        <Select value={sortValue} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-full md:w-56">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="date-desc">Data mais recente</SelectItem>
-            <SelectItem value="date-asc">Data mais antiga</SelectItem>
-            <SelectItem value="createdAt-desc">Criados recentemente</SelectItem>
-            <SelectItem value="createdAt-asc">Criados há mais tempo</SelectItem>
-            <SelectItem value="type-asc">Tipo (A-Z)</SelectItem>
-            <SelectItem value="type-desc">Tipo (Z-A)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <AttendancesFilters
+        search={searchValue}
+        onSearch={handleSearch}
+        sortValue={sortValue}
+        onSortChange={handleSortChange}
+      />
 
       <div className="rounded-lg border">
         <Table>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -63,6 +63,19 @@ export const TreatmentPlanEdit = ({
     defaultValues: mapPlanToFormValues(),
   });
 
+  const lockedAttendanceLabel = useMemo(() => {
+    if (!treatmentPlan?.attendance) return undefined;
+    const date = new Date(treatmentPlan.attendance.date);
+    const dateLabel = date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return `${dateLabel} • Plano vinculado`;
+  }, [treatmentPlan?.attendance]);
+
   useEffect(() => {
     if (!treatmentPlan) return;
     form.reset(mapPlanToFormValues(treatmentPlan));
@@ -107,6 +120,7 @@ export const TreatmentPlanEdit = ({
           lockedPatientId={treatmentPlan?.patientId}
           lockedPatientName={treatmentPlan?.patient?.name ?? null}
           lockedAttendanceId={treatmentPlan?.attendanceId}
+          lockedAttendanceLabel={lockedAttendanceLabel}
           disablePatientSelection
           disableAttendanceSelection
         />

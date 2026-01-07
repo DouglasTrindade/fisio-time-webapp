@@ -14,6 +14,7 @@ export interface TreatmentPlan extends PrismaTreatmentPlan {
     date: string | Date;
     type: AttendanceType;
     patientId: string;
+    mainComplaint?: string | null;
   } | null;
 }
 

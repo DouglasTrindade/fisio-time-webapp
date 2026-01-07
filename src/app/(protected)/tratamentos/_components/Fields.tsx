@@ -24,6 +24,7 @@ interface TreatmentPlanFieldsProps {
   lockedPatientId?: string;
   lockedPatientName?: string | null;
   lockedAttendanceId?: string;
+  lockedAttendanceLabel?: string;
   disablePatientSelection?: boolean;
   disableAttendanceSelection?: boolean;
 }
@@ -35,6 +36,7 @@ export const TreatmentPlanFields = ({
   lockedPatientId,
   lockedPatientName,
   lockedAttendanceId,
+  lockedAttendanceLabel,
   disablePatientSelection = false,
   disableAttendanceSelection = false,
 }: TreatmentPlanFieldsProps) => {
@@ -57,6 +59,18 @@ export const TreatmentPlanFields = ({
     }
     form.setValue("attendanceId", "", { shouldValidate: true });
   }, [form, lockedAttendanceId, selectedPatientId]);
+
+  useEffect(() => {
+    if (lockedPatientId && !form.getValues("patientId")) {
+      form.setValue("patientId", lockedPatientId, { shouldDirty: false });
+    }
+  }, [form, lockedPatientId]);
+
+  useEffect(() => {
+    if (lockedAttendanceId && !form.getValues("attendanceId")) {
+      form.setValue("attendanceId", lockedAttendanceId, { shouldDirty: false });
+    }
+  }, [form, lockedAttendanceId]);
 
   const {
     records: evaluations,
@@ -93,7 +107,9 @@ export const TreatmentPlanFields = ({
     return patients;
   }, [lockedPatientId, lockedPatientName, patients]);
 
-  const formatEvaluationLabel = (attendance: Attendance) => {
+  const formatEvaluationLabel = (
+    attendance: Pick<Attendance, "date" | "mainComplaint"> & { title?: string }
+  ) => {
     const date = new Date(attendance.date);
     const dateLabel = date.toLocaleDateString("pt-BR", {
       day: "2-digit",
@@ -102,8 +118,42 @@ export const TreatmentPlanFields = ({
       hour: "2-digit",
       minute: "2-digit",
     });
-    return `${dateLabel} • ${attendance.mainComplaint ?? "Avaliação clínica"}`;
+    const title =
+      attendance.title ??
+      attendance.mainComplaint ??
+      "Avaliação clínica";
+    return `${dateLabel} • ${title}`;
   };
+
+  const evaluationOptions = useMemo(() => {
+    const options = evaluations.map((attendance) => ({
+      id: attendance.id,
+      label: formatEvaluationLabel(attendance),
+    }));
+    if (
+      lockedAttendanceId &&
+      lockedAttendanceLabel &&
+      !options.some((option) => option.id === lockedAttendanceId)
+    ) {
+      options.push({
+        id: lockedAttendanceId,
+        label: lockedAttendanceLabel,
+      });
+    }
+    return options;
+  }, [evaluations, lockedAttendanceId, lockedAttendanceLabel]);
+
+  const selectedPatientLabel = useMemo(() => {
+    const currentPatientId = form.getValues("patientId");
+    const match = patientOptions.find((patient) => patient.id === currentPatientId);
+    return match?.name ?? lockedPatientName ?? null;
+  }, [form, lockedPatientName, patientOptions]);
+
+  const selectedAttendanceLabel = useMemo(() => {
+    const currentAttendanceId = form.getValues("attendanceId");
+    const match = evaluationOptions.find((option) => option.id === currentAttendanceId);
+    return match?.label ?? lockedAttendanceLabel ?? null;
+  }, [evaluationOptions, form, lockedAttendanceLabel]);
 
   return (
     <div className="space-y-4">
@@ -124,7 +174,11 @@ export const TreatmentPlanFields = ({
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione um paciente" />
+                  <SelectValue
+                    placeholder={
+                      selectedPatientLabel ?? "Selecione um paciente"
+                    }
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -163,7 +217,11 @@ export const TreatmentPlanFields = ({
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma avaliação" />
+                  <SelectValue
+                    placeholder={
+                      selectedAttendanceLabel ?? "Selecione uma avaliação"
+                    }
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -175,14 +233,14 @@ export const TreatmentPlanFields = ({
                   <SelectItem value="__loading__" disabled>
                     Carregando avaliações...
                   </SelectItem>
-                ) : evaluations.length === 0 ? (
+                ) : evaluationOptions.length === 0 ? (
                   <SelectItem value="__empty__" disabled>
                     Nenhuma avaliação encontrada
                   </SelectItem>
                 ) : (
-                  evaluations.map((attendance) => (
+                  evaluationOptions.map((attendance) => (
                     <SelectItem key={attendance.id} value={attendance.id}>
-                      {formatEvaluationLabel(attendance)}
+                      {attendance.label}
                     </SelectItem>
                   ))
                 )}
