@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator"
 import {
   CalendarDays,
   Mail,
-  NotebookText,
   Phone,
   UserRound,
 } from "lucide-react"
@@ -27,6 +26,8 @@ interface AboutPatientProps {
   onCreateEvolutionHref?: string
   onCreateEvaluation?: () => void
   onCreateEvolution?: () => void
+  onViewTreatmentPlansHref?: string
+  onViewTreatmentPlans?: () => void
 }
 
 export const AboutPatient = ({

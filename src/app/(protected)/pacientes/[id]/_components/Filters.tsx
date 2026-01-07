@@ -56,7 +56,7 @@ export const Filters = ({
           Limpar filtros
         </Button>
       </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-3">
+      <CardContent className="flex items-center gap-4">
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select value={status} onValueChange={(value) => onStatusChange(value as FiltersProps["status"])}>

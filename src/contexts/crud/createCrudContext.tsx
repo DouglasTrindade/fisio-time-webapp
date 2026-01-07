@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useMemo, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
 import { useRecords, useCreateRecord } from "@/app/hooks/useRecords"
 import { useUpdateRecord, useDeleteRecord } from "@/app/hooks/useRecord"
@@ -19,8 +19,25 @@ export function createCrudContext<
     TFilters
   > | null>(null)
 
-  const CrudProvider = ({ children }: { children: ReactNode }) => {
-    const [filters, setFilters] = useState<TFilters>(config.defaultFilters)
+  const CrudProvider = ({
+    children,
+    initialFilters,
+  }: {
+    children: ReactNode
+    initialFilters?: Partial<TFilters>
+  }) => {
+    const [filters, setFilters] = useState<TFilters>(() => ({
+      ...config.defaultFilters,
+      ...(initialFilters ?? {}),
+    }))
+
+    useEffect(() => {
+      if (!initialFilters) return
+      setFilters((previous) => ({
+        ...previous,
+        ...initialFilters,
+      }))
+    }, [initialFilters])
 
     const { records, pagination, isLoading, isFetching, refetch } = useRecords<TRecord>(
       config.endpoint,

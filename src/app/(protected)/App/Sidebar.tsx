@@ -1,5 +1,14 @@
 
-import { Calendar, Settings, Users, LayoutDashboard, MonitorCheckIcon } from "lucide-react";
+import {
+  Calendar,
+  Settings,
+  Users,
+  LayoutDashboard,
+  MonitorCheckIcon,
+  BriefcaseMedical,
+  ChartPie,
+  CircleArrowUp
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavUser } from "./NavUser";
 import {
@@ -43,6 +52,29 @@ const menuItems = [
     title: "Atendimentos",
     url: "/atendimentos",
     icon: MonitorCheckIcon,
+  },
+  {
+    title: "Tratamentos",
+    url: "/tratamentos",
+    icon: BriefcaseMedical,
+  },
+  {
+    title: "Financeiro",
+    isSection: true,
+  },
+  {
+    title: "Notas Fiscais (NFS-e)",
+    url: "/notas-fiscais",
+    icon: CircleArrowUp,
+  },
+  {
+    title: "Relatórios",
+    isSection: true,
+  },
+  {
+    title: "Relatórios (Atendimentos)",
+    url: "/atendimentos",
+    icon: ChartPie,
   },
   {
     title: "Configuração Geral",

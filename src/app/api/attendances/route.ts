@@ -26,6 +26,7 @@ export async function GET(
       getPaginationParams(request);
     const url = new URL(request.url);
     const typeParam = url.searchParams.get("type");
+    const patientId = url.searchParams.get("patientId") || "";
     const prismaFilterType = toPrismaAttendanceType(typeParam);
 
     if (page < 1 || limit < 1 || limit > 100) {
@@ -61,6 +62,7 @@ export async function GET(
           }
         : {}),
       ...(prismaFilterType ? { type: prismaFilterType } : {}),
+      ...(patientId ? { patientId } : {}),
     };
 
     const validSortFields = ["date", "createdAt", "type"];

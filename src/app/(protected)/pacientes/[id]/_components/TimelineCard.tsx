@@ -20,6 +20,7 @@ interface TimelineCardProps {
   onNavigate?: () => void
   onEdit?: (entry: HistoryEntry) => void
   onDelete?: (entry: HistoryEntry) => void
+  onOpenTreatmentPlan?: (entry: HistoryEntry) => void
   isFirst?: boolean
   isLast?: boolean
 }
@@ -29,6 +30,7 @@ export const TimelineCard = ({
   onNavigate,
   onEdit,
   onDelete,
+  onOpenTreatmentPlan,
   isFirst,
   isLast,
 }: TimelineCardProps) => {
@@ -121,7 +123,12 @@ export const TimelineCard = ({
           </div>
           <div className="flex gap-2">
             {entry.type === "evaluation" &&
-              <Button size="sm" variant="outline" onClick={() => console.log("plano de tratamento")}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onOpenTreatmentPlan?.(entry)}
+                disabled={!onOpenTreatmentPlan}
+              >
                 Plano de tratamento
               </Button>
             }

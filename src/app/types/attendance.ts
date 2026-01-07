@@ -58,4 +58,5 @@ export interface AttendanceFilters extends Record<string, unknown> {
   sortBy?: "date" | "createdAt" | "type";
   sortOrder?: "asc" | "desc";
   type?: AttendanceType | string;
+  patientId?: string;
 }

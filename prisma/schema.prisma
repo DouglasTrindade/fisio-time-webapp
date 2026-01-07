@@ -22,30 +22,31 @@ model User {
 }
 
 model Patient {
-  id           String        @id @default(cuid())
-  name         String?
-  phone        String
-  email        String?
-  birthDate    DateTime?
-  notes        String?
-  cpf          String?
-  rg           String?
-  maritalStatus String?
-  gender       String?
-  profession   String?
-  companyName  String?
-  cep          String?
-  country      String?
-  state        String?
-  city         String?
-  street       String?
-  number       String?
-  neighborhood String?
-  complement   String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  appointments Appointment[]
-  attendances  Attendance[]
+  id             String          @id @default(cuid())
+  name           String?
+  phone          String
+  email          String?
+  birthDate      DateTime?
+  notes          String?
+  cpf            String?
+  rg             String?
+  maritalStatus  String?
+  gender         String?
+  profession     String?
+  companyName    String?
+  cep            String?
+  country        String?
+  state          String?
+  city           String?
+  street         String?
+  number         String?
+  neighborhood   String?
+  complement     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  attendances    Attendance[]
+  treatmentPlans TreatmentPlan[]
 }
 
 model Appointment {
@@ -85,6 +86,23 @@ model Attendance {
   attachments           Json?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
+  treatmentPlan         TreatmentPlan?
+}
+
+model TreatmentPlan {
+  id              String     @id @default(cuid())
+  patientId       String
+  attendanceId    String     @unique
+  procedure       String
+  sessionQuantity Int
+  resource        String?
+  conducts        String?
+  objectives      String?
+  prognosis       String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  patient         Patient    @relation(fields: [patientId], references: [id])
+  attendance      Attendance @relation(fields: [attendanceId], references: [id])
 }
 
 model Account {

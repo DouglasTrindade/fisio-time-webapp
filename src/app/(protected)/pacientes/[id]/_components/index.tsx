@@ -87,6 +87,14 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
   }, [entries, filters])
 
   const handleResetFilters = () => setFilters(defaultFilters)
+  const handleOpenTreatmentPlan = (entry: HistoryEntry) => {
+    const params = new URLSearchParams({
+      patientId: patient.id,
+      attendanceId: entry.id,
+      patientName: patient.name,
+    })
+    router.push(`/tratamentos?${params.toString()}`)
+  }
 
   return (
     <>
@@ -130,6 +138,7 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
                   onNavigate={() => router.push(`/atendimentos/${entry.id}`)}
                   onEdit={(item) => setAttendanceToEdit(item)}
                   onDelete={(item) => setAttendanceToDelete(item)}
+                  onOpenTreatmentPlan={handleOpenTreatmentPlan}
                 />
               ))}
             </div>
