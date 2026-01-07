@@ -20,8 +20,6 @@ export interface Attendance extends AttendanceBase {
   date: string;
   createdAt: string;
   updatedAt: string;
-  cifCode?: string | null;
-  cifDescription?: string | null;
   attachments?: AttendanceAttachment[] | null;
   patient?: {
     id: string;
