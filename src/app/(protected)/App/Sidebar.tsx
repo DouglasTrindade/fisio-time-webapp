@@ -8,6 +8,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -19,6 +20,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 const menuItems = [
+  {
+    title: "Navegação Principal",
+    isSection: true,
+  },
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -38,6 +43,10 @@ const menuItems = [
     title: "Atendimentos",
     url: "/atendimentos",
     icon: MonitorCheckIcon,
+  },
+  {
+    title: "Configuração Geral",
+    isSection: true,
   },
   {
     title: "Configurações",
@@ -67,16 +76,25 @@ export async function AppSidebar({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems.map((item) =>
+                item.isSection ? (
+                  <SidebarGroupLabel
+                    key={item.title}
+                    className="px-2 pt-4 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
+                  >
+                    {item.title}
+                  </SidebarGroupLabel>
+                ) : (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        {item.icon ? <item.icon /> : null}
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
