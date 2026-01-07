@@ -11,10 +11,12 @@ import { PersonalFields } from "./PersonalFields";
 import { AddressFields } from "./AddressFields";
 import { useRecord } from "@/app/hooks/useRecord";
 import type { PatientApiData } from "@/app/types/patient";
-import { usePatientContext } from "@/contexts/PatientsContext";
+import { usePatientsContextOptional } from "@/contexts/PatientsContext";
 
 interface PatientsEditProps {
   patientId: string;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 const mapPatientToFormValues = (
@@ -43,7 +45,8 @@ const mapPatientToFormValues = (
   complement: patient?.complement ?? "",
 })
 
-export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
+export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProps) => {
+  const patientContext = usePatientsContextOptional()
   const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
     "/patients",
     patientId,
@@ -54,10 +57,11 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
     }
   )
 
-  const { handleUpdate, isUpdating, closeEdit } = usePatientContext()
+  const [isStandaloneUpdating, setIsStandaloneUpdating] = useState(false)
   const [step, setStep] = useState(0);
   const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
+  const isUpdating = patientContext?.isUpdating ?? isStandaloneUpdating;
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
@@ -78,19 +82,44 @@ export const PatientsEdit = ({ patientId }: PatientsEditProps) => {
     setStep(0);
   }, [patientId]);
 
+  const closeModal = () => {
+    if (patientContext) {
+      patientContext.closeEdit()
+    }
+    onClose?.()
+  }
+
   const onSubmit = async (values: PatientSchema) => {
     try {
-      await handleUpdate(patientId, values)
+      if (patientContext) {
+        await patientContext.handleUpdate(patientId, values)
+      } else {
+        setIsStandaloneUpdating(true)
+        const response = await fetch(`/api/patients/${patientId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        })
 
-      closeEdit()
+        if (!response.ok) {
+          throw new Error("Não foi possível atualizar o paciente")
+        }
+      }
+
+      onSuccess?.()
+      closeModal()
     } catch (error) {
       console.error("Erro ao atualizar paciente:", error)
+    } finally {
+      setIsStandaloneUpdating(false)
     }
   }
 
   const handleClose = () => {
     setStep(0);
-    closeEdit();
+    closeModal();
   };
 
   const handleStepClick = (

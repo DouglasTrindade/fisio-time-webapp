@@ -43,6 +43,8 @@ export interface AttendanceCreateInput {
   observations?: string | null;
   cidCode?: string | null;
   cidDescription?: string | null;
+  cifCode?: string | null;
+  cifDescription?: string | null;
   evolutionNotes?: string | null;
   attachments?: AttendanceAttachment[] | Prisma.JsonValue | null;
 }

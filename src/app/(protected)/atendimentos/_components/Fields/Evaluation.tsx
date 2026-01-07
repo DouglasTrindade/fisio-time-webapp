@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import type { UseFormReturn } from "react-hook-form"
 import type { Patient } from "@/app/types/patient"
 import type { AttendanceFormSchema } from "../schema"
@@ -10,41 +11,62 @@ interface EvaluationFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
   patients: Patient[]
   isLoadingPatients: boolean
+  lockedPatient?: Pick<Patient, "id" | "name">
 }
 
-export const EvaluationFields = ({ form, patients, isLoadingPatients }: EvaluationFieldsProps) => {
+export const EvaluationFields = ({
+  form,
+  patients,
+  isLoadingPatients,
+  lockedPatient,
+}: EvaluationFieldsProps) => {
+  useEffect(() => {
+    if (lockedPatient) {
+      form.setValue("patientId", lockedPatient.id, { shouldDirty: true })
+    }
+  }, [form, lockedPatient])
+
   return (
     <>
-      <FormField
-        control={form.control}
-        name="patientId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Paciente</FormLabel>
-            <Select value={field.value || undefined} onValueChange={field.onChange} disabled={isLoadingPatients}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder={isLoadingPatients ? "Carregando..." : "Selecione um paciente"} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {patients.length === 0 ? (
-                  <SelectItem value="__empty" disabled>
-                    {isLoadingPatients ? "Carregando pacientes..." : "Nenhum paciente cadastrado"}
-                  </SelectItem>
-                ) : (
-                  patients.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.name || "Paciente sem nome"}
+      {lockedPatient ? (
+        <div className="rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Paciente:{" "}
+          <span className="font-semibold text-foreground">
+            {lockedPatient.name || "Paciente"}
+          </span>
+        </div>
+      ) : (
+        <FormField
+          control={form.control}
+          name="patientId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Paciente</FormLabel>
+              <Select value={field.value || undefined} onValueChange={field.onChange} disabled={isLoadingPatients}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingPatients ? "Carregando..." : "Selecione um paciente"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {patients.length === 0 ? (
+                    <SelectItem value="__empty" disabled>
+                      {isLoadingPatients ? "Carregando pacientes..." : "Nenhum paciente cadastrado"}
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                  ) : (
+                    patients.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.name || "Paciente sem nome"}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField

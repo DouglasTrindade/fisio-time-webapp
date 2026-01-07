@@ -110,6 +110,8 @@ export const AttendanceDialog = ({
       observations: "",
       cidCode: "",
       cidDescription: "",
+      cifCode: "",
+      cifDescription: "",
       evolutionNotes: "",
       attachments: [],
     },
@@ -143,6 +145,8 @@ export const AttendanceDialog = ({
         observations: attendance.observations ?? "",
         cidCode: attendance.cidCode ?? "",
         cidDescription: attendance.cidDescription ?? "",
+        cifCode: attendance.cifCode ?? "",
+        cifDescription: attendance.cifDescription ?? "",
         evolutionNotes: attendance.evolutionNotes ?? "",
         attachments: normalizeAttachments(attendance.attachments),
       })
@@ -159,6 +163,8 @@ export const AttendanceDialog = ({
         observations: "",
         cidCode: "",
         cidDescription: "",
+        cifCode: "",
+        cifDescription: "",
         evolutionNotes: "",
         attachments: [],
       })
@@ -187,6 +193,8 @@ export const AttendanceDialog = ({
       observations: values.observations?.trim() || null,
       cidCode: values.cidCode?.trim() || null,
       cidDescription: values.cidDescription?.trim() || null,
+      cifCode: values.cifCode?.trim() || null,
+      cifDescription: values.cifDescription?.trim() || null,
       evolutionNotes: values.evolutionNotes?.trim() || null,
       attachments: values.attachments ?? [],
     }

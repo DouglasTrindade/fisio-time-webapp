@@ -31,6 +31,8 @@ export const attendanceFormSchema = z.object({
   observations: optionalText,
   cidCode: optionalText,
   cidDescription: optionalText,
+  cifCode: optionalText,
+  cifDescription: optionalText,
   evolutionNotes: optionalText,
   attachments: z.array(attachmentSchema),
 })

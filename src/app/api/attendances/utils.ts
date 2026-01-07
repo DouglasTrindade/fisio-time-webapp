@@ -16,6 +16,8 @@ export type AttendanceWithRelations = {
   observations: string | null;
   cidCode: string | null;
   cidDescription: string | null;
+  cifCode: string | null;
+  cifDescription: string | null;
   evolutionNotes: string | null;
   attachments: AttendanceAttachment[] | null;
   createdAt: Date;
@@ -52,6 +54,8 @@ export const formatAttendance = (
   attendance: AttendanceWithRelations
 ): Attendance => ({
   ...attendance,
+  cifCode: attendance.cifCode,
+  cifDescription: attendance.cifDescription,
   type: attendance.type,
   date: attendance.date.toISOString(),
   createdAt: attendance.createdAt.toISOString(),

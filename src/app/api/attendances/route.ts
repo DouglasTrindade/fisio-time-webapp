@@ -133,6 +133,8 @@ export async function POST(
         observations: body.observations,
         cidCode: body.cidCode ?? null,
         cidDescription: body.cidDescription ?? null,
+        cifCode: body.cifCode ?? null,
+        cifDescription: body.cifDescription ?? null,
         evolutionNotes: body.evolutionNotes ?? null,
         attachments: body.attachments ?? [],
       },

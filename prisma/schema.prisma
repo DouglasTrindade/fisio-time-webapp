@@ -79,6 +79,8 @@ model Attendance {
   observations          String?
   cidCode               String?
   cidDescription        String?
+  cifCode               String?
+  cifDescription        String?
   evolutionNotes        String?
   attachments           Json?
   createdAt             DateTime       @default(now())
