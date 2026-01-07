@@ -1,10 +1,12 @@
-import { useRef, useState, type ChangeEvent } from "react"
+import { useEffect, useRef, useState, type ChangeEvent } from "react"
 import type { UseFormReturn } from "react-hook-form"
 import type { AttendanceFormSchema } from "../schema"
 import type { Patient } from "@/app/types/patient"
 import { useDebouncedValue } from "@/app/hooks/useDebouncedValue"
 import { useCidSearch } from "@/app/hooks/useCidSearch"
+import { useCifSearch } from "@/app/hooks/useCifSearch"
 import type { CidRecord } from "@/app/types/cid"
+import type { CifRecord } from "@/app/types/cif"
 import {
   FormField,
   FormItem,
@@ -23,11 +25,13 @@ interface EvolutionFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
   patients: Patient[]
   isLoadingPatients: boolean
+  lockedPatient?: Pick<Patient, "id" | "name">
 }
 
 const MIN_QUERY_LENGTH = 2
 
 const formatCidOption = (record: CidRecord) => `${record.code} - ${record.description}`
+const formatCifOption = (record: CifRecord) => `${record.code} - ${record.description}`
 const formatFileSize = (bytes: number) => {
   if (!bytes) return "0 KB"
   if (bytes < 1024) return `${bytes} B`
@@ -49,14 +53,25 @@ const readFileAsDataUrl = (file: File) =>
     reader.readAsDataURL(file)
   })
 
-export const EvolutionFields = ({ form, patients, isLoadingPatients }: EvolutionFieldsProps) => {
+export const EvolutionFields = ({
+  form,
+  patients,
+  isLoadingPatients,
+  lockedPatient,
+}: EvolutionFieldsProps) => {
   const [cidQuery, setCidQuery] = useState("")
   const [isAttachmentsLoading, setIsAttachmentsLoading] = useState(false)
   const debouncedQuery = useDebouncedValue(cidQuery, 400)
+  const [cifQuery, setCifQuery] = useState("")
+  const debouncedCifQuery = useDebouncedValue(cifQuery, 400)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { data: cidOptions = [], isFetching: isSearchingCid } = useCidSearch(debouncedQuery, {
     enabled: debouncedQuery.length >= MIN_QUERY_LENGTH,
+    limit: 10,
+  })
+  const { data: cifOptions = [], isFetching: isSearchingCif } = useCifSearch(debouncedCifQuery, {
+    enabled: debouncedCifQuery.length >= MIN_QUERY_LENGTH,
     limit: 10,
   })
 
@@ -64,6 +79,10 @@ export const EvolutionFields = ({ form, patients, isLoadingPatients }: Evolution
   const selectedCidDescription = form.watch("cidDescription")
   const selectedCidLabel =
     selectedCidCode && selectedCidDescription ? formatCidOption({ code: selectedCidCode, description: selectedCidDescription }) : ""
+  const selectedCifCode = form.watch("cifCode")
+  const selectedCifDescription = form.watch("cifDescription")
+  const selectedCifLabel =
+    selectedCifCode && selectedCifDescription ? formatCifOption({ code: selectedCifCode, description: selectedCifDescription }) : ""
 
   const handleCidSelect = (record: CidRecord) => {
     form.setValue("cidCode", record.code, { shouldDirty: true })
@@ -74,6 +93,17 @@ export const EvolutionFields = ({ form, patients, isLoadingPatients }: Evolution
   const handleClearCid = () => {
     form.setValue("cidCode", "", { shouldDirty: true })
     form.setValue("cidDescription", "", { shouldDirty: true })
+  }
+
+  const handleCifSelect = (record: CifRecord) => {
+    form.setValue("cifCode", record.code, { shouldDirty: true })
+    form.setValue("cifDescription", record.description, { shouldDirty: true })
+    setCifQuery("")
+  }
+
+  const handleClearCif = () => {
+    form.setValue("cifCode", "", { shouldDirty: true })
+    form.setValue("cifDescription", "", { shouldDirty: true })
   }
 
   const handleFilesSelected = async (
@@ -114,38 +144,53 @@ export const EvolutionFields = ({ form, patients, isLoadingPatients }: Evolution
     onChange((currentValue ?? []).filter((item) => item.id !== id))
   }
 
+  useEffect(() => {
+    if (lockedPatient) {
+      form.setValue("patientId", lockedPatient.id, { shouldDirty: true })
+    }
+  }, [form, lockedPatient])
+
   return (
     <>
-      <FormField
-        control={form.control}
-        name="patientId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Paciente</FormLabel>
-            <Select value={field.value || undefined} onValueChange={field.onChange} disabled={isLoadingPatients}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder={isLoadingPatients ? "Carregando..." : "Selecione um paciente"} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {patients.length === 0 ? (
-                  <SelectItem value="__empty" disabled>
-                    {isLoadingPatients ? "Carregando pacientes..." : "Nenhum paciente cadastrado"}
-                  </SelectItem>
-                ) : (
-                  patients.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.name || "Paciente sem nome"}
+      {lockedPatient ? (
+        <div className="rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Paciente:{" "}
+          <span className="font-semibold text-foreground">
+            {lockedPatient.name || "Paciente"}
+          </span>
+        </div>
+      ) : (
+        <FormField
+          control={form.control}
+          name="patientId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Paciente</FormLabel>
+              <Select value={field.value || undefined} onValueChange={field.onChange} disabled={isLoadingPatients}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingPatients ? "Carregando..." : "Selecione um paciente"} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {patients.length === 0 ? (
+                    <SelectItem value="__empty" disabled>
+                      {isLoadingPatients ? "Carregando pacientes..." : "Nenhum paciente cadastrado"}
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                  ) : (
+                    patients.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.name || "Paciente sem nome"}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField
@@ -227,6 +272,66 @@ export const EvolutionFields = ({ form, patients, isLoadingPatients }: Evolution
                 <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
                   <span>{selectedCidLabel}</span>
                   <Button variant="ghost" size="icon" onClick={handleClearCid}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="cifCode"
+        render={() => (
+          <FormItem className="space-y-2">
+            <FormLabel>CIF - Funcionalidade</FormLabel>
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  placeholder="Digite o código ou nome da classificação funcional"
+                  value={cifQuery}
+                  onChange={(event) => setCifQuery(event.target.value)}
+                />
+              </div>
+              {cifQuery.length < MIN_QUERY_LENGTH ? (
+                <FormDescription>Digite ao menos {MIN_QUERY_LENGTH} caracteres para buscar.</FormDescription>
+              ) : (
+                <div className="rounded-md border bg-background shadow-sm">
+                  {isSearchingCif ? (
+                    <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Buscando resultados...
+                    </div>
+                  ) : cifOptions.length === 0 ? (
+                    <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+                  ) : (
+                    <ul className="max-h-48 overflow-y-auto">
+                      {cifOptions.map((option) => (
+                        <li key={option.code}>
+                          <button
+                            type="button"
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                            onClick={() => handleCifSelect(option)}
+                          >
+                            <span className="font-semibold">{option.code}</span>{" "}
+                            <span className="text-muted-foreground">{option.description}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              {selectedCifLabel && (
+                <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
+                  <span>{selectedCifLabel}</span>
+                  <Button variant="ghost" size="icon" onClick={handleClearCif}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>

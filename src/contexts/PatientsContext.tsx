@@ -105,3 +105,4 @@ const usePatientsContextBase = () => {
 
 export const usePatientsContext = usePatientsContextBase
 export const usePatientContext = usePatientsContextBase
+export const usePatientsContextOptional = () => useContext(PatientsContext)

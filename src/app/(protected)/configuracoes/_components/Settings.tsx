@@ -146,7 +146,7 @@ export const Settings = () => {
                     type="submit"
                     disabled={updateUser.isPending || !form.formState.isDirty}
                   >
-                    {updateUser.isPending ? "Salvando..." : "Salvar alterações"}
+                    {updateUser.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>
               </form>

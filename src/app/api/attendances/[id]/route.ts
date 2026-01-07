@@ -99,6 +99,9 @@ export async function PUT(
         cidCode: body.cidCode !== undefined ? body.cidCode : undefined,
         cidDescription:
           body.cidDescription !== undefined ? body.cidDescription : undefined,
+        cifCode: body.cifCode !== undefined ? body.cifCode : undefined,
+        cifDescription:
+          body.cifDescription !== undefined ? body.cifDescription : undefined,
         evolutionNotes:
           body.evolutionNotes !== undefined ? body.evolutionNotes : undefined,
         attachments:

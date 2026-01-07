@@ -18,7 +18,7 @@ function Separator({
   className,
   orientation = "horizontal",
   border = "solid",
-  borderSize = "2",
+  borderSize = "0",
   decorative = true,
   ...props
 }: SeparatorProps) {

@@ -20,6 +20,8 @@ export interface Attendance extends AttendanceBase {
   date: string;
   createdAt: string;
   updatedAt: string;
+  cifCode?: string | null;
+  cifDescription?: string | null;
   attachments?: AttendanceAttachment[] | null;
   patient?: {
     id: string;
@@ -43,6 +45,8 @@ export interface AttendanceCreateInput {
   observations?: string | null;
   cidCode?: string | null;
   cidDescription?: string | null;
+  cifCode?: string | null;
+  cifDescription?: string | null;
   evolutionNotes?: string | null;
   attachments?: AttendanceAttachment[] | Prisma.JsonValue | null;
 }

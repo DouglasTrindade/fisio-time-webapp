@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,7 @@ interface PatientListItemProps {
 export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { handleDelete, isDeleting } = usePatientContext();
+  const router = useRouter();
 
   const handleDeleteClick = async () => {
     await handleDelete(patient.id);
@@ -51,12 +53,18 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
 
   return (
     <>
-      <TableRow>
+      <TableRow
+        className="cursor-pointer hover:bg-muted/50"
+        onClick={() => router.push(`/pacientes/${patient.id}`)}
+      >
         <TableCell className="font-medium">{patient.name}</TableCell>
         <TableCell>{patient.phone}</TableCell>
         <TableCell>{patient.email || "-"}</TableCell>
         <TableCell>{formatDate(patient.createdAt)}</TableCell>
-        <TableCell className="text-right">
+        <TableCell
+          className="text-right"
+          onClick={(event) => event.stopPropagation()}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">

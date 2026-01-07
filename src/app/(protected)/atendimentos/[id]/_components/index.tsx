@@ -63,6 +63,10 @@ export const AttendancesShow = ({ attendance }: { attendance: AttendanceWithRela
     attendance.cidCode && attendance.cidDescription
       ? `${attendance.cidCode} - ${attendance.cidDescription}`
       : attendance.cidCode || attendance.cidDescription || "-"
+  const cifLabel =
+    attendance.cifCode && attendance.cifDescription
+      ? `${attendance.cifCode} - ${attendance.cifDescription}`
+      : attendance.cifCode || attendance.cifDescription || "-"
 
   return (
     <div className="space-y-6">
@@ -135,6 +139,10 @@ export const AttendancesShow = ({ attendance }: { attendance: AttendanceWithRela
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">CID - Doença</p>
             <p className="mt-2 text-sm text-muted-foreground">{cidLabel}</p>
+          </div>
+          <div className="rounded-lg border p-4">
+            <p className="text-sm font-semibold">CIF - Funcionalidade</p>
+            <p className="mt-2 text-sm text-muted-foreground">{cifLabel}</p>
           </div>
           <div className="rounded-lg border p-4">
             <p className="text-sm font-semibold">Evolução</p>
