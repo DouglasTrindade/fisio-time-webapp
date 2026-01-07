@@ -13,6 +13,7 @@ const TreatmentsPage = async ({ searchParams }: TreatmentsPageProps) => {
   const initialPatientId = identify(params.patientId ?? null);
   const initialAttendanceId = identify(params.attendanceId ?? null);
   const initialPatientName = identify(params.patientName ?? null) ?? null;
+  const initialAttendanceLabel = identify(params.attendanceLabel ?? null) ?? null;
 
   return (
     <TreatmentPlansProvider
@@ -24,6 +25,7 @@ const TreatmentsPage = async ({ searchParams }: TreatmentsPageProps) => {
         initialPatientId={initialPatientId}
         initialAttendanceId={initialAttendanceId}
         initialPatientName={initialPatientName}
+        initialAttendanceLabel={initialAttendanceLabel}
       />
     </TreatmentPlansProvider>
   );

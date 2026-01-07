@@ -30,6 +30,7 @@ const treatmentPlanInclude = {
       date: true,
       type: true,
       patientId: true,
+      mainComplaint: true,
     },
   },
 } as const;

@@ -88,10 +88,18 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
 
   const handleResetFilters = () => setFilters(defaultFilters)
   const handleOpenTreatmentPlan = (entry: HistoryEntry) => {
+    const dateLabel = new Date(entry.date).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
     const params = new URLSearchParams({
       patientId: patient.id,
       attendanceId: entry.id,
       patientName: patient.name,
+      attendanceLabel: `${dateLabel} • ${entry.title}`,
     })
     router.push(`/tratamentos?${params.toString()}`)
   }

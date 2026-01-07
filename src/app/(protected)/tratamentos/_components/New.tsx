@@ -21,6 +21,7 @@ interface TreatmentPlanNewProps {
   lockedPatientId?: string;
   lockedPatientName?: string | null;
   lockedAttendanceId?: string;
+  lockedAttendanceLabel?: string;
   onSuccess?: () => void;
 }
 
@@ -37,6 +38,7 @@ export const TreatmentPlanNew = ({
   lockedPatientId,
   lockedPatientName,
   lockedAttendanceId,
+  lockedAttendanceLabel,
   onSuccess,
 }: TreatmentPlanNewProps) => {
   const { handleCreate, isCreating } = useTreatmentPlansContext();
@@ -103,6 +105,7 @@ export const TreatmentPlanNew = ({
           lockedPatientId={lockedPatientId}
           lockedPatientName={lockedPatientName}
           lockedAttendanceId={lockedAttendanceId}
+          lockedAttendanceLabel={lockedAttendanceLabel}
           disablePatientSelection={Boolean(lockedPatientId)}
           disableAttendanceSelection={Boolean(lockedAttendanceId)}
         />

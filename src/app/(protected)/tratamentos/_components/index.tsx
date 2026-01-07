@@ -2,14 +2,6 @@
 
 import { useMemo, useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -25,24 +17,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useTreatmentPlansContext } from "@/contexts/TreatmentPlansContext";
 import { TreatmentPlanListItem } from "./ListItem";
 import { TreatmentPlanNew } from "./New";
 import { TreatmentPlanEdit } from "./Edit";
 import { useRecords } from "@/app/hooks/useRecords";
 import type { Patient } from "@/app/types/patient";
+import { TreatmentPlansFilters } from "./Filters";
 
 interface TreatmentPlansProps {
   initialPatientId?: string;
   initialAttendanceId?: string;
   initialPatientName?: string | null;
+  initialAttendanceLabel?: string | null;
 }
 
 export const TreatmentPlans = ({
   initialPatientId,
   initialAttendanceId,
   initialPatientName,
+  initialAttendanceLabel,
 }: TreatmentPlansProps) => {
   const {
     records,
@@ -75,6 +70,7 @@ export const TreatmentPlans = ({
   const patientFilterValue = (filters.patientId as string) ?? "";
   const sortValue = `${filters.sortBy ?? "createdAt"}-${filters.sortOrder ?? "desc"}`;
   const totalPlans = pagination?.total ?? records.length;
+  const searchValue = (filters.search as string) ?? "";
   const defaultPatientForForm =
     typeof filters.patientId === "string" && filters.patientId.length > 0
       ? filters.patientId
@@ -93,12 +89,14 @@ export const TreatmentPlans = ({
     patientId?: string;
     attendanceId?: string;
     patientName?: string | null;
+    attendanceLabel?: string | null;
   } | null>(() =>
     initialAttendanceId
       ? {
           patientId: initialPatientId,
           attendanceId: initialAttendanceId,
           patientName: initialPatientName ?? null,
+          attendanceLabel: initialAttendanceLabel ?? null,
         }
       : null
   );
@@ -175,51 +173,16 @@ export const TreatmentPlans = ({
         </Button>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-10"
-            placeholder="Buscar por procedimento ou objetivo..."
-            value={(filters.search as string) ?? ""}
-            onChange={(event) => handleSearch(event.target.value)}
-          />
-        </div>
-
-        <Select
-          value={patientFilterValue || "__all__"}
-          onValueChange={(value) =>
-            handlePatientFilter(value === "__all__" ? "" : value)
-          }
-          disabled={isLoadingPatients}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Filtrar por paciente" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">Todos os pacientes</SelectItem>
-            {patientSelectOptions.map((patient) => (
-              <SelectItem key={patient.value} value={patient.value}>
-                {patient.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={sortValue} onValueChange={handleSortChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="createdAt-desc">Mais recentes</SelectItem>
-            <SelectItem value="createdAt-asc">Mais antigos</SelectItem>
-            <SelectItem value="updatedAt-desc">Atualizados recentemente</SelectItem>
-            <SelectItem value="updatedAt-asc">Atualizados há mais tempo</SelectItem>
-            <SelectItem value="procedure-asc">Procedimento (A-Z)</SelectItem>
-            <SelectItem value="procedure-desc">Procedimento (Z-A)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <TreatmentPlansFilters
+        search={searchValue}
+        onSearch={handleSearch}
+        patientValue={patientFilterValue}
+        onPatientChange={handlePatientFilter}
+        patientOptions={patientSelectOptions}
+        isPatientDisabled={isLoadingPatients}
+        sortValue={sortValue}
+        onSortChange={handleSortChange}
+      />
 
       <div className="rounded-lg border">
         <Table>
@@ -334,6 +297,7 @@ export const TreatmentPlans = ({
               lockedPatientId={prefillContext?.patientId}
               lockedPatientName={prefillContext?.patientName}
               lockedAttendanceId={prefillContext?.attendanceId}
+              lockedAttendanceLabel={prefillContext?.attendanceLabel ?? undefined}
               onSuccess={handleDialogClose}
             />
           )}
