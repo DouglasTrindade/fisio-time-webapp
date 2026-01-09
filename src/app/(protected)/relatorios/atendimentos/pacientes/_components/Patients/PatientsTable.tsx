@@ -1,8 +1,14 @@
 "use client"
 
-import type { PatientAttendanceReport } from "@/app/types/reports"
+import { useMemo } from "react"
+import type { PatientAttendanceReport, PatientAttendanceRow } from "@/app/types/reports"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Download, FileSpreadsheet } from "lucide-react"
+import type { ExportColumn } from "@/app/hooks/exportUtils"
+import { useExportCsv } from "@/app/hooks/useExportCsv"
+import { useExportXlsx } from "@/app/hooks/useExportXlsx"
 
 interface PatientsTableProps {
   report?: PatientAttendanceReport | null
@@ -10,7 +16,30 @@ interface PatientsTableProps {
 }
 
 export const PatientsTable = ({ report, isLoading }: PatientsTableProps) => {
-  const hasPatients = Boolean(report && report.patients.length > 0)
+  const rows = report?.patients ?? []
+  const hasPatients = rows.length > 0
+  const exportColumns = useMemo<ExportColumn<PatientAttendanceRow>[]>(
+    () => [
+      { header: "Paciente", accessor: (patient) => patient.name },
+      { header: "Idade", accessor: (patient) => (patient.age ? `${patient.age} anos` : "—") },
+      { header: "Atendimentos", accessor: (patient) => patient.attendances },
+    ],
+    [],
+  )
+
+  const exportCsv = useExportCsv<PatientAttendanceRow>()
+  const exportXlsx = useExportXlsx<PatientAttendanceRow>()
+
+  const handleExportCsv = () => {
+    exportCsv(rows, exportColumns, { filename: "relatorio-pacientes" })
+  }
+
+  const handleExportXlsx = () => {
+    exportXlsx(rows, exportColumns, {
+      filename: "relatorio-pacientes",
+      sheetName: "Pacientes",
+    })
+  }
 
   return (
     <Card>
@@ -18,6 +47,26 @@ export const PatientsTable = ({ report, isLoading }: PatientsTableProps) => {
         <div>
           <CardTitle>Pacientes atendidos</CardTitle>
           <CardDescription>Ordenado por volume de atendimentos no período</CardDescription>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            disabled={!hasPatients}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportXlsx}
+            disabled={!hasPatients}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            XLSX
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -32,7 +81,7 @@ export const PatientsTable = ({ report, isLoading }: PatientsTableProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {report!.patients.slice(0, 8).map((patient) => (
+                {rows.slice(0, 8).map((patient) => (
                   <TableRow key={patient.id}>
                     <TableCell className="font-medium">{patient.name}</TableCell>
                     <TableCell>{patient.age ? `${patient.age} anos` : "—"}</TableCell>
@@ -41,9 +90,9 @@ export const PatientsTable = ({ report, isLoading }: PatientsTableProps) => {
                 ))}
               </TableBody>
             </Table>
-            {report!.patients.length > 8 ? (
+            {rows.length > 8 ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                Exibindo 8 de {report!.patients.length} pacientes.
+                Exibindo 8 de {rows.length} pacientes.
               </p>
             ) : null}
           </div>
