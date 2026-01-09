@@ -1,91 +1,20 @@
 
-import {
-  Calendar,
-  Settings,
-  Users,
-  LayoutDashboard,
-  MonitorCheckIcon,
-  BriefcaseMedical,
-  ChartPie,
-  CircleArrowUp
-} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { NavUser } from "./NavUser";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-
-const menuItems = [
-  {
-    title: "Navegação Principal",
-    isSection: true,
-  },
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Agendamentos",
-    url: "/agendamentos",
-    icon: Calendar,
-  },
-  {
-    title: "Pacientes",
-    url: "/pacientes",
-    icon: Users,
-  },
-  {
-    title: "Atendimentos",
-    url: "/atendimentos",
-    icon: MonitorCheckIcon,
-  },
-  {
-    title: "Tratamentos",
-    url: "/tratamentos",
-    icon: BriefcaseMedical,
-  },
-  {
-    title: "Financeiro",
-    isSection: true,
-  },
-  {
-    title: "Notas Fiscais (NFS-e)",
-    url: "/notas-fiscais",
-    icon: CircleArrowUp,
-  },
-  {
-    title: "Relatórios",
-    isSection: true,
-  },
-  {
-    title: "Relatórios (Atendimentos)",
-    url: "/atendimentos",
-    icon: ChartPie,
-  },
-  {
-    title: "Configuração Geral",
-    isSection: true,
-  },
-  {
-    title: "Configurações",
-    url: "/configuracoes",
-    icon: Settings,
-  },
-];
+import { NavUser } from "./NavUser";
+import { SidebarNavigation } from "./SidebarNavigation";
+import { menuItems } from "./sidebar.config";
 
 export async function AppSidebar({
   ...props
@@ -107,27 +36,7 @@ export async function AppSidebar({
         <Separator border="solid" borderSize="0" className="my-2" />
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) =>
-                item.isSection ? (
-                  <SidebarGroupLabel
-                    key={item.title}
-                    className="px-2 pt-4 text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
-                  >
-                    {item.title}
-                  </SidebarGroupLabel>
-                ) : (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url}>
-                        {item.icon ? <item.icon /> : null}
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              )}
-            </SidebarMenu>
+            <SidebarNavigation items={menuItems} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
