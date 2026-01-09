@@ -7,6 +7,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumbs } from "./components/Breadcrumb";
 import { BackButton } from "./components/BackButton";
+import { NotificationsDropdown } from "./notificacoes/_components/Dropdown";
+import { notificationsData } from "./notificacoes/data";
 
 export default function DashboardLayout({
   children,
@@ -26,6 +28,9 @@ export default function DashboardLayout({
             />
             <Breadcrumbs />
             <BackButton />
+            <div className="ml-auto flex items-center gap-2">
+              <NotificationsDropdown notifications={notificationsData} />
+            </div>
           </div>
         </header>
         <main className="p-4">{children}</main>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   BadgeCheck,
   Bell,
@@ -105,9 +106,11 @@ export function NavUser({ user }: NavUserProps) {
                   <BadgeCheck />
                   Conta
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notificações
+                <DropdownMenuItem asChild>
+                  <Link href="/notificacoes" className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    Notificações
+                  </Link>
                 </DropdownMenuItem>
                 <ModeToggle />
               </DropdownMenuGroup>
