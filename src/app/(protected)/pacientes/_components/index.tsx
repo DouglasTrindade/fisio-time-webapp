@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Download, FileSpreadsheet } from "lucide-react";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
@@ -24,6 +25,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientsContext } from "@/contexts/PatientsContext";
 import { PatientsFilters } from "./Filters";
 import { ClientOnly } from "@/components/ClientOnly";
+import type { ExportColumn } from "@/app/hooks/exportUtils";
+import type { Patient } from "@/app/types/patient";
+import { useExportCsv } from "@/app/hooks/useExportCsv";
+import { useExportXlsx } from "@/app/hooks/useExportXlsx";
+
+const formatDate = (value?: Date | string | null) => {
+  if (!value) return "-";
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};
 
 export const Patients = () => {
   const {
@@ -41,6 +58,33 @@ export const Patients = () => {
     handlePageChange,
     handleSortChange,
   } = usePatientsContext();
+  const exportCsv = useExportCsv<Patient>();
+  const exportXlsx = useExportXlsx<Patient>();
+  const patientsList = patients ?? [];
+  const exportColumns = useMemo<ExportColumn<Patient>[]>(
+    () => [
+      { header: "Nome", accessor: (patient) => patient.name },
+      { header: "Telefone", accessor: (patient) => patient.phone ?? "" },
+      { header: "Email", accessor: (patient) => patient.email ?? "" },
+      { header: "Cidade", accessor: (patient) => patient.city ?? "" },
+      { header: "Estado", accessor: (patient) => patient.state ?? "" },
+      { header: "Nascimento", accessor: (patient) => formatDate(patient.birthDate ?? null) },
+      { header: "Cadastro", accessor: (patient) => formatDate(patient.createdAt) },
+      { header: "CPF", accessor: (patient) => patient.cpf ?? "" },
+    ],
+    [],
+  );
+
+  const handleExportCsv = () => {
+    exportCsv(patientsList, exportColumns, { filename: "pacientes" });
+  };
+
+  const handleExportXlsx = () => {
+    exportXlsx(patientsList, exportColumns, {
+      filename: "pacientes",
+      sheetName: "Pacientes",
+    });
+  };
 
   const sortValue = `${filters.sortBy ?? "name"}-${filters.sortOrder ?? "asc"}`;
   const searchValue = filters.search ?? "";
@@ -48,32 +92,53 @@ export const Patients = () => {
   return (
     <ClientOnly>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold">Pacientes</h1>
-          <p className="text-muted-foreground">
-            {pagination?.total || 0} pacientes cadastrados
-          </p>
-        </div>
+            <p className="text-muted-foreground">
+              {pagination?.total || 0} pacientes cadastrados
+            </p>
+          </div>
 
-        <Dialog
-          open={isNewDialogOpen}
-          onOpenChange={(open) => (open ? openNew() : closeNew())}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Paciente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Novo Paciente</DialogTitle>
-            </DialogHeader>
-            <PatientsNew />
-          </DialogContent>
-        </Dialog>
-      </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={handleExportCsv}
+                disabled={patientsList.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Exportar CSV
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleExportXlsx}
+                disabled={patientsList.length === 0}
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Exportar XLSX
+              </Button>
+            </div>
+
+            <Dialog
+              open={isNewDialogOpen}
+              onOpenChange={(open) => (open ? openNew() : closeNew())}
+            >
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Paciente
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Novo Paciente</DialogTitle>
+                </DialogHeader>
+                <PatientsNew />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
 
       <PatientsFilters
         search={searchValue}

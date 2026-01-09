@@ -26,40 +26,15 @@ import {
 } from "@/components/ui/alert-dialog"
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
-import type { AttendanceType } from "@/app/types/attendance"
+import {
+  formatAttendanceDate,
+  formatAttendanceTime,
+  getAttendanceTypeLabel,
+} from "./utils"
 
 interface AttendanceListItemProps {
   attendance: Attendance
   onEdit: (attendance: Attendance) => void
-}
-
-const typeLabel = {
-  evaluation: "Avaliação",
-  evolution: "Evolução",
-} as const
-
-const getTypeLabel = (type: AttendanceType) => {
-  const key = type.toLowerCase() as keyof typeof typeLabel
-  return typeLabel[key] ?? "Atendimento"
-}
-
-const formatDate = (isoDate: string) => {
-  const date = new Date(isoDate)
-  if (Number.isNaN(date.getTime())) return "-"
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
-}
-
-const formatTime = (isoDate: string) => {
-  const date = new Date(isoDate)
-  if (Number.isNaN(date.getTime())) return "-"
-  return date.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
 }
 
 export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemProps) => {
@@ -84,14 +59,14 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
       >
         <TableCell>
           <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium capitalize text-primary">
-            {getTypeLabel(attendance.type)}
+            {getAttendanceTypeLabel(attendance.type)}
           </span>
         </TableCell>
         <TableCell>
           <div className="flex flex-col">
-            <span className="font-medium">{formatDate(attendance.date)}</span>
+            <span className="font-medium">{formatAttendanceDate(attendance.date)}</span>
             <span className="text-xs text-muted-foreground">
-              {formatTime(attendance.date)}
+              {formatAttendanceTime(attendance.date)}
             </span>
           </div>
         </TableCell>

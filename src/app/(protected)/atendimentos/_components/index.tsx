@@ -10,12 +10,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, FileSpreadsheet } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { AttendanceListItem } from "./ListItem"
 import { AttendanceDialog } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { AttendancesFilters } from "./Filters"
+import type { Attendance } from "@/app/types/attendance"
+import { useExportCsv } from "@/app/hooks/useExportCsv"
+import { useExportXlsx } from "@/app/hooks/useExportXlsx"
+import { useAttendanceExportColumns } from "./useAttendanceExportColumns"
 
 export const Attendances = () => {
   const {
@@ -33,6 +37,20 @@ export const Attendances = () => {
     handlePageChange,
     handleSortChange,
   } = useAttendancesContext()
+  const exportCsv = useExportCsv<Attendance>()
+  const exportXlsx = useExportXlsx<Attendance>()
+  const exportColumns = useAttendanceExportColumns()
+
+  const handleExportCsv = () => {
+    exportCsv(records, exportColumns, { filename: "atendimentos" })
+  }
+
+  const handleExportXlsx = () => {
+    exportXlsx(records, exportColumns, {
+      filename: "atendimentos",
+      sheetName: "Atendimentos",
+    })
+  }
 
   const totalAttendances = pagination?.total ?? records.length
   const sortValue = `${filters.sortBy ?? "date"}-${filters.sortOrder ?? "desc"}`
@@ -47,13 +65,33 @@ export const Attendances = () => {
             {totalAttendances} registro{totalAttendances === 1 ? "" : "s"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => openNew(PrismaAttendanceType.EVALUATION)}>
-            Nova avaliação
-          </Button>
-          <Button variant="outline" onClick={() => openNew(PrismaAttendanceType.EVOLUTION)}>
-            Nova evolução
-          </Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportCsv}
+              disabled={records.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Exportar CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExportXlsx}
+              disabled={records.length === 0}
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Exportar XLSX
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openNew(PrismaAttendanceType.EVALUATION)}>
+              Nova avaliação
+            </Button>
+            <Button variant="outline" onClick={() => openNew(PrismaAttendanceType.EVOLUTION)}>
+              Nova evolução
+            </Button>
+          </div>
         </div>
       </div>
 
