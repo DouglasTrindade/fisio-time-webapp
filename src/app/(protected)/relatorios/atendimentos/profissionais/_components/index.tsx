@@ -1,0 +1,1 @@
+export { ProfessionalsReport } from "./Professionals"

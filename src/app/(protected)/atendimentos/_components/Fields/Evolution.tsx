@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
 import type { UseFormReturn } from "react-hook-form"
 import type { AttendanceFormSchema } from "../schema"

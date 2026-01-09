@@ -245,28 +245,14 @@ const UpcomingGroup = ({
   onEdit: (appointment: Appointment) => void;
 }) => {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-white/5 bg-[#07070d] p-4 shadow-[0_35px_70px_-60px_rgba(0,0,0,0.95)] transition hover:border-white/10 md:flex-row md:items-stretch">
-      <div className="flex w-full items-center justify-between rounded-2xl bg-white/5 px-6 py-4 text-white md:w-32 md:flex-col md:justify-center">
-        <div className="text-center">
-          <p className="text-3xl font-bold">{group.dayNumber}</p>
-          <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">
-            {group.weekday}
-          </p>
-        </div>
-        <div className="hidden text-xs text-muted-foreground md:block">
-          {group.appointments.length} evento
-          {group.appointments.length !== 1 ? "s" : ""}
-        </div>
-      </div>
-      <div className="flex-1 space-y-3">
-        {group.appointments.map((appointment) => (
-          <UpcomingAppointmentItem
-            key={appointment.id}
-            appointment={appointment}
-            onEdit={onEdit}
-          />
-        ))}
-      </div>
+    <div className="flex items-center gap-4 rounded-3xl border border-white/5 bg-[#07070d] p-4 shadow-[0_35px_70px_-60px_rgba(0,0,0,0.95)] transition hover:border-white/10">
+      {group.appointments.map((appointment) => (
+        <UpcomingAppointmentItem
+          key={appointment.id}
+          appointment={appointment}
+          onEdit={onEdit}
+        />
+      ))}
     </div>
   );
 };
@@ -288,7 +274,7 @@ const UpcomingAppointmentItem = ({
       className="group flex items-start gap-4 rounded-2xl border border-white/5 bg-[#10101a] p-4 text-left transition hover:border-white/20 hover:bg-[#151524]"
     >
       <span
-        className={`inline-flex h-12 w-1.5 rounded-full bg-gradient-to-b ${accentClass}`}
+        className={`inline-flex h-12 w-1.5 rounded-full bg-linear-to-b ${accentClass}`}
       />
       <div className="flex flex-1 flex-col gap-1 text-white">
         <p className="text-base font-semibold">

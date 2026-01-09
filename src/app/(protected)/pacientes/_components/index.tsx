@@ -23,6 +23,7 @@ import { PatientListItem } from "./ListItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientsContext } from "@/contexts/PatientsContext";
 import { PatientsFilters } from "./Filters";
+import { ClientOnly } from "@/components/ClientOnly";
 
 export const Patients = () => {
   const {
@@ -45,10 +46,11 @@ export const Patients = () => {
   const searchValue = filters.search ?? "";
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Pacientes</h1>
+    <ClientOnly>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Pacientes</h1>
           <p className="text-muted-foreground">
             {pagination?.total || 0} pacientes cadastrados
           </p>
@@ -159,23 +161,24 @@ export const Patients = () => {
         </div>
       )}
 
-      {editingPatientId && (
-        <Dialog
-          open={!!editingPatientId}
-          onOpenChange={(open) => {
-            if (!open) closeEdit();
-          }}
-        >
-          <DialogContent className="sm:max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Editar Paciente</DialogTitle>
-            </DialogHeader>
-            <PatientsEdit
-              patientId={editingPatientId}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+        {editingPatientId && (
+          <Dialog
+            open={!!editingPatientId}
+            onOpenChange={(open) => {
+              if (!open) closeEdit();
+            }}
+          >
+            <DialogContent className="sm:max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Editar Paciente</DialogTitle>
+              </DialogHeader>
+              <PatientsEdit
+                patientId={editingPatientId}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </ClientOnly>
   );
 };
