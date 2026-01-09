@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { ModeToggle } from "@/components/ModeToggle";
 
 type NavUserProps = {
   user: {
@@ -108,6 +109,7 @@ export function NavUser({ user }: NavUserProps) {
                   <Bell />
                   Notificações
                 </DropdownMenuItem>
+                <ModeToggle />
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <SignOutButton>

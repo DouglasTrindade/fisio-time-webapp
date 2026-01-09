@@ -1,30 +1,42 @@
 "use client";
 
-import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ModeToggle() {
-  const { setTheme } = useTheme();
+type ModeToggleProps = {
+  label?: string;
+};
+
+export function ModeToggle({ label = "Tema" }: ModeToggleProps) {
+  const { theme, setTheme } = useTheme();
+  const iconState = theme === "dark" ? "dark" : "light";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="gap-2 [&>svg:last-child]:hidden cursor-pointer">
+        <span className="relative flex h-4 w-4 items-center justify-center">
+          <Sun
+            className="h-4 w-4 rotate-0 scale-100 transition-all data-[state=dark]:-rotate-90 data-[state=dark]:scale-0"
+            data-state={iconState}
+            color="gray"
+          />
+          <Moon
+            className="absolute h-4 w-4 rotate-90 scale-0 transition-all data-[state=dark]:rotate-0 data-[state=dark]:scale-100"
+            data-state={iconState}
+            color="gray"
+          />
+          <span className="sr-only">Alternar tema</span>
+        </span>
+        <span>{label}</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent alignOffset={-4} className="min-w-32">
         <DropdownMenuItem onClick={() => setTheme("light")}>
           Light
         </DropdownMenuItem>
@@ -34,7 +46,7 @@ export function ModeToggle() {
         <DropdownMenuItem onClick={() => setTheme("system")}>
           System
         </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }
