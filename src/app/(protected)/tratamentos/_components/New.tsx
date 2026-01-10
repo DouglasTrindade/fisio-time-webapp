@@ -10,8 +10,8 @@ import {
   treatmentPlanFormSchema,
   type TreatmentPlanFormSchema,
 } from "./schema";
-import { useTreatmentPlansContext } from "@/contexts/TreatmentPlansContext";
 import type { Patient } from "@/app/types/patient";
+import type { TreatmentPlanCreateInput } from "@/app/types/treatment-plan";
 
 interface TreatmentPlanNewProps {
   patients: Patient[];
@@ -23,6 +23,8 @@ interface TreatmentPlanNewProps {
   lockedAttendanceId?: string;
   lockedAttendanceLabel?: string;
   onSuccess?: () => void;
+  onCreate: (data: TreatmentPlanCreateInput) => Promise<unknown>;
+  isCreating: boolean;
 }
 
 const sanitizeOptional = (value?: string | null) => {
@@ -40,8 +42,9 @@ export const TreatmentPlanNew = ({
   lockedAttendanceId,
   lockedAttendanceLabel,
   onSuccess,
+  onCreate,
+  isCreating,
 }: TreatmentPlanNewProps) => {
-  const { handleCreate, isCreating } = useTreatmentPlansContext();
 
   const form = useForm<TreatmentPlanFormSchema>({
     resolver: zodResolver(treatmentPlanFormSchema),
@@ -68,7 +71,7 @@ export const TreatmentPlanNew = ({
 
   const onSubmit = async (values: TreatmentPlanFormSchema) => {
     try {
-      await handleCreate({
+      await onCreate({
         patientId: values.patientId,
         attendanceId: values.attendanceId,
         procedure: values.procedure.trim(),

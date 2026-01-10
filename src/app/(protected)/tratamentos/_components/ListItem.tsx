@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { TreatmentPlan } from "@/app/types/treatment-plan";
-import { useTreatmentPlansContext } from "@/contexts/TreatmentPlansContext";
 
 interface TreatmentPlanListItemProps {
   plan: TreatmentPlan;
   onEdit: (id: string) => void;
+  onDelete: (id: string) => Promise<unknown>;
+  isDeleting: boolean;
 }
 
 const formatDate = (dateInput: string | Date) => {
@@ -53,12 +54,13 @@ const formatDateTime = (dateInput: string | Date) => {
 export const TreatmentPlanListItem = ({
   plan,
   onEdit,
+  onDelete,
+  isDeleting,
 }: TreatmentPlanListItemProps) => {
-  const { handleDelete, isDeleting } = useTreatmentPlansContext();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleDeleteClick = async () => {
-    await handleDelete(plan.id);
+    await onDelete(plan.id);
     setIsConfirmOpen(false);
   };
 

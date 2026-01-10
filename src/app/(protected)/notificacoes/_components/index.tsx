@@ -128,11 +128,18 @@ export const NotificationsPage = ({ notifications }: NotificationsPageProps) => 
 
       <div className="space-y-3">
         {filteredNotifications.map((notification) => (
-          <button
+          <div
             key={notification.id}
-            type="button"
             className="w-full text-left"
+            role="button"
+            tabIndex={0}
             onClick={() => handleOpenDetails(notification)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault()
+                handleOpenDetails(notification)
+              }
+            }}
           >
             <NotificationCard.Root
               unread={notification.status === "unread"}
@@ -173,7 +180,7 @@ export const NotificationsPage = ({ notifications }: NotificationsPageProps) => 
                 ) : null}
               </NotificationCard.Content>
             </NotificationCard.Root>
-          </button>
+          </div>
         ))}
 
         {filteredNotifications.length === 0 ? (

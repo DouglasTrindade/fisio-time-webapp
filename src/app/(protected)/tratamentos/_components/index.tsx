@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useRef, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -9,28 +9,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useTreatmentPlansContext } from "@/contexts/TreatmentPlansContext";
-import { TreatmentPlanListItem } from "./ListItem";
-import { TreatmentPlanNew } from "./New";
-import { TreatmentPlanEdit } from "./Edit";
-import { useRecords } from "@/app/hooks/useRecords";
-import type { Patient } from "@/app/types/patient";
-import { TreatmentPlansFilters } from "./Filters";
+} from "@/components/ui/dialog"
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { TreatmentPlanListItem } from "./ListItem"
+import { TreatmentPlanNew } from "./New"
+import { TreatmentPlanEdit } from "./Edit"
+import { useRecords, useCreateRecord } from "@/app/hooks/useRecords"
+import { useUpdateRecord, useDeleteRecord } from "@/app/hooks/useRecord"
+import type {
+  TreatmentPlan,
+  TreatmentPlanCreateInput,
+  TreatmentPlanFilters,
+  TreatmentPlanUpdateInput,
+} from "@/app/types/treatment-plan"
+import type { Patient } from "@/app/types/patient"
+import { TreatmentPlansFilters } from "./Filters"
+import { treatmentPlansCrudConfig } from "./config"
 
 interface TreatmentPlansProps {
-  initialPatientId?: string;
-  initialAttendanceId?: string;
-  initialPatientName?: string | null;
-  initialAttendanceLabel?: string | null;
+  initialPatientId?: string
+  initialAttendanceId?: string
+  initialPatientName?: string | null
+  initialAttendanceLabel?: string | null
 }
 
 export const TreatmentPlans = ({
@@ -39,23 +46,19 @@ export const TreatmentPlans = ({
   initialPatientName,
   initialAttendanceLabel,
 }: TreatmentPlansProps) => {
+  const [filters, setFilters] = useState<TreatmentPlanFilters>(() => ({
+    ...treatmentPlansCrudConfig.defaultFilters,
+    ...(initialPatientId ? { patientId: initialPatientId } : {}),
+    ...(initialAttendanceId ? { attendanceId: initialAttendanceId } : {}),
+  }))
+
+  const filterParams = useMemo(() => ({ ...filters }), [filters])
   const {
     records,
     isLoading,
     isFetching,
     pagination,
-    filters,
-    isDialogOpen,
-    editingPlanId,
-    openNew,
-    openEdit,
-    closeDialog,
-    setFilters,
-    handleSearch,
-    handlePatientFilter,
-    handleSortChange,
-    handlePageChange,
-  } = useTreatmentPlansContext();
+  } = useRecords<TreatmentPlan>(treatmentPlansCrudConfig.endpoint, filterParams)
 
   const {
     records: patientOptions,
@@ -65,31 +68,89 @@ export const TreatmentPlans = ({
     page: 1,
     sortBy: "name",
     sortOrder: "asc",
-  });
+  })
 
-  const patientFilterValue = (filters.patientId as string) ?? "";
-  const sortValue = `${filters.sortBy ?? "createdAt"}-${filters.sortOrder ?? "desc"}`;
-  const totalPlans = pagination?.total ?? records.length;
-  const searchValue = (filters.search as string) ?? "";
-  const defaultPatientForForm =
-    typeof filters.patientId === "string" && filters.patientId.length > 0
-      ? filters.patientId
-      : undefined;
+  const createMutation = useCreateRecord<TreatmentPlan, TreatmentPlanCreateInput>(
+    treatmentPlansCrudConfig.endpoint,
+  )
+  const updateMutation = useUpdateRecord<TreatmentPlan, TreatmentPlanUpdateInput>(
+    treatmentPlansCrudConfig.endpoint,
+  )
+  const deleteMutation = useDeleteRecord(treatmentPlansCrudConfig.endpoint)
 
-  const patientSelectOptions = useMemo(
-    () =>
-      patientOptions.map((patient) => ({
-        value: patient.id,
-        label: patient.name ?? "Paciente sem nome",
-      })),
-    [patientOptions]
-  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
+
+  const openNew = useCallback(() => {
+    setEditingPlanId(null)
+    setIsDialogOpen(true)
+  }, [])
+
+  const openEdit = useCallback((id: string) => {
+    setEditingPlanId(id)
+    setIsDialogOpen(true)
+  }, [])
+
+  const closeDialog = useCallback(() => {
+    setIsDialogOpen(false)
+    setEditingPlanId(null)
+  }, [])
+
+  const handleSearch = useCallback((value: string) => {
+    setFilters((previous) => ({
+      ...previous,
+      search: value,
+      page: 1,
+    }))
+  }, [])
+
+  const handlePatientFilter = useCallback((patientId: string) => {
+    setFilters((previous) => ({
+      ...previous,
+      patientId,
+      attendanceId: "",
+      page: 1,
+    }))
+  }, [])
+
+  const handleSortChange = useCallback((value: string) => {
+    const [field, order] = value.split("-")
+    setFilters((previous) => ({
+      ...previous,
+      sortBy: field as TreatmentPlanFilters["sortBy"],
+      sortOrder: (order as "asc" | "desc") ?? "desc",
+      page: 1,
+    }))
+  }, [])
+
+  const handlePageChange = useCallback((page: number) => {
+    setFilters((previous) => ({
+      ...previous,
+      page,
+    }))
+  }, [])
+
+  const handleCreate = useCallback(
+    (data: TreatmentPlanCreateInput) => createMutation.mutateAsync(data),
+    [createMutation],
+  )
+
+  const handleUpdate = useCallback(
+    (id: string, data: TreatmentPlanUpdateInput) =>
+      updateMutation.mutateAsync({ id, data }),
+    [updateMutation],
+  )
+
+  const handleDelete = useCallback(
+    (id: string) => deleteMutation.mutateAsync(id),
+    [deleteMutation],
+  )
 
   const [prefillContext, setPrefillContext] = useState<{
-    patientId?: string;
-    attendanceId?: string;
-    patientName?: string | null;
-    attendanceLabel?: string | null;
+    patientId?: string
+    attendanceId?: string
+    patientName?: string | null
+    attendanceLabel?: string | null
   } | null>(() =>
     initialAttendanceId
       ? {
@@ -98,20 +159,20 @@ export const TreatmentPlans = ({
           patientName: initialPatientName ?? null,
           attendanceLabel: initialAttendanceLabel ?? null,
         }
-      : null
-  );
-  const openedAttendanceRef = useRef<string | null>(null);
+      : null,
+  )
+  const openedAttendanceRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!prefillContext) {
-      openedAttendanceRef.current = null;
+      openedAttendanceRef.current = null
       if (filters.attendanceId) {
         setFilters((previous) => ({
           ...previous,
           attendanceId: "",
-        }));
+        }))
       }
-      return;
+      return
     }
 
     if (
@@ -122,15 +183,13 @@ export const TreatmentPlans = ({
         ...previous,
         attendanceId: prefillContext.attendanceId,
         page: 1,
-      }));
+      }))
     }
-  }, [filters.attendanceId, prefillContext, setFilters]);
+  }, [filters.attendanceId, prefillContext, setFilters])
 
   const targetedPlan = prefillContext
-    ? records.find(
-        (plan) => plan.attendanceId === prefillContext.attendanceId
-      )
-    : undefined;
+    ? records.find((plan) => plan.attendanceId === prefillContext.attendanceId)
+    : undefined
 
   useEffect(() => {
     if (
@@ -140,23 +199,41 @@ export const TreatmentPlans = ({
       isLoading ||
       isFetching
     ) {
-      return;
+      return
     }
 
     if (targetedPlan) {
-      openEdit(targetedPlan.id);
+      openEdit(targetedPlan.id)
     } else {
-      openNew();
+      openNew()
     }
-    openedAttendanceRef.current = prefillContext.attendanceId;
-  }, [isFetching, isLoading, openEdit, openNew, prefillContext, targetedPlan]);
+    openedAttendanceRef.current = prefillContext.attendanceId
+  }, [isFetching, isLoading, openEdit, openNew, prefillContext, targetedPlan])
 
-  const handleDialogClose = () => {
-    closeDialog();
+  const handleDialogClose = useCallback(() => {
+    closeDialog()
     if (prefillContext) {
-      setPrefillContext(null);
+      setPrefillContext(null)
     }
-  };
+  }, [closeDialog, prefillContext])
+
+  const patientFilterValue = (filters.patientId as string) ?? ""
+  const sortValue = `${filters.sortBy ?? "createdAt"}-${filters.sortOrder ?? "desc"}`
+  const totalPlans = pagination?.total ?? records.length
+  const searchValue = (filters.search as string) ?? ""
+  const defaultPatientForForm =
+    typeof filters.patientId === "string" && filters.patientId.length > 0
+      ? filters.patientId
+      : undefined
+
+  const patientSelectOptions = useMemo(
+    () =>
+      patientOptions.map((patient) => ({
+        value: patient.id,
+        label: patient.name ?? "Paciente sem nome",
+      })),
+    [patientOptions],
+  )
 
   return (
     <div className="space-y-4">
@@ -164,7 +241,8 @@ export const TreatmentPlans = ({
         <div>
           <h1 className="text-2xl font-bold">Planos de tratamento</h1>
           <p className="text-muted-foreground">
-            {totalPlans} plano{totalPlans === 1 ? "" : "s"} cadastrado{totalPlans === 1 ? "" : "s"}
+            {totalPlans} plano{totalPlans === 1 ? "" : "s"} cadastrado
+            {totalPlans === 1 ? "" : "s"}
           </p>
         </div>
         <Button onClick={openNew}>
@@ -229,6 +307,8 @@ export const TreatmentPlans = ({
                   key={plan.id}
                   plan={plan}
                   onEdit={openEdit}
+                  onDelete={handleDelete}
+                  isDeleting={deleteMutation.isPending}
                 />
               ))
             )}
@@ -272,7 +352,9 @@ export const TreatmentPlans = ({
       <Dialog
         open={isDialogOpen}
         onOpenChange={(open) => {
-          if (!open) handleDialogClose();
+          if (!open) {
+            handleDialogClose()
+          }
         }}
       >
         <DialogContent className="sm:max-w-2xl">
@@ -287,6 +369,8 @@ export const TreatmentPlans = ({
               patients={patientOptions}
               isLoadingPatients={isLoadingPatients}
               onSuccess={handleDialogClose}
+              onUpdate={handleUpdate}
+              isUpdating={updateMutation.isPending}
             />
           ) : (
             <TreatmentPlanNew
@@ -299,10 +383,12 @@ export const TreatmentPlans = ({
               lockedAttendanceId={prefillContext?.attendanceId}
               lockedAttendanceLabel={prefillContext?.attendanceLabel ?? undefined}
               onSuccess={handleDialogClose}
+              onCreate={handleCreate}
+              isCreating={createMutation.isPending}
             />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  );
-};
+  )
+}

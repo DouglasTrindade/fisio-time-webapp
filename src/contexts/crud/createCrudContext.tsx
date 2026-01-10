@@ -85,13 +85,15 @@ export function createCrudContext<
     return <CrudContext.Provider value={value}>{children}</CrudContext.Provider>
   }
 
+  const useCrudOptional = () => useContext(CrudContext)
+
   const useCrud = () => {
-    const context = useContext(CrudContext)
+    const context = useCrudOptional()
     if (!context) {
       throw new Error("useCrud must be used within a CrudProvider")
     }
     return context
   }
 
-  return { CrudProvider, useCrud }
+  return { CrudProvider, useCrud, useCrudOptional }
 }
