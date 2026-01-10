@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
 import { Calendar } from "./Calendar";
@@ -70,6 +70,10 @@ export const Appointments = () => {
     closeDialog,
   } = useAppointmentsContext();
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
+  const handleDayCreate = useCallback((date: Date) => {
+    handleDateSelect(date);
+    openNew(date);
+  }, [handleDateSelect, openNew]);
 
   if (process.env.NODE_ENV !== "production") {
     console.debug("[Appointments] selectedDate=", selectedDate?.toISOString(), "records=", appointments.length, appointments[0]);
@@ -142,13 +146,21 @@ export const Appointments = () => {
           </p>
         </div>
 
-        <Button onClick={openNew}>
+        <Button onClick={() => openNew()}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Agendamento
         </Button>
       </div>
 
-      <Calendar onDateSelect={handleDateSelect} />
+      <Calendar
+        appointments={appointments}
+        selectedDate={selectedDate}
+        isLoading={isFetching}
+        onDateSelect={handleDateSelect}
+        onCreateFromDate={handleDayCreate}
+        onEventClick={openEdit}
+        onCreateNew={() => openNew()}
+      />
 
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

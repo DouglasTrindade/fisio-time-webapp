@@ -7,7 +7,7 @@ import type { AttendanceType, AttendanceAttachment } from "@/app/types/attendanc
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 
-import { attendanceFormSchema, type AttendanceFormSchema as AttendanceFormValues } from "./schema"
+import { attendanceFormSchema, type AttendanceFormSchema as AttendanceFormValues } from "./Fields/schema"
 import { useRecords } from "@/app/hooks/useRecords"
 import type { Patient } from "@/app/types/patient"
 import type { Attendance } from "@/app/types/attendance"

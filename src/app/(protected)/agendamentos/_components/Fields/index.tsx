@@ -12,7 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { UseFormReturn } from "react-hook-form";
 import { DateTime } from "luxon";
 import { useRecords } from "@/app/hooks/useRecords";
-import { AppointmentForm } from "@/app/(protected)/agendamentos/_components/schema";
+import { AppointmentForm } from "@/app/(protected)/agendamentos/_components/Fields/schema";
 import { Patient } from "@/app/types/patient";
 import { InputMask } from "@/components/ui/input-mask";
 import { Status } from "@prisma/client";
