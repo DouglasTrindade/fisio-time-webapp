@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-import { AppointmentForm, AppointmentPayload, appointmentSchema } from "@/app/(protected)/agendamentos/_components/schema";
+import { AppointmentForm, AppointmentPayload, appointmentSchema } from "@/app/(protected)/agendamentos/_components/Fields/schema";
 import { Status } from "@prisma/client";
 import { z } from "zod";
 

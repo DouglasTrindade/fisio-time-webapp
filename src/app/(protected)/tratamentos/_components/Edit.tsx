@@ -10,7 +10,7 @@ import { TreatmentPlanFields } from "./Fields";
 import {
   treatmentPlanFormSchema,
   type TreatmentPlanFormSchema,
-} from "./schema";
+} from "./Fields/schema";
 import { useRecord } from "@/app/hooks/useRecord";
 import type { TreatmentPlan } from "@/app/types/treatment-plan";
 import type { Patient } from "@/app/types/patient";

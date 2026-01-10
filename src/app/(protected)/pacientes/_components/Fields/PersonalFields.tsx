@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { InputMask } from "@/components/ui/input-mask"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import type { PatientSchema } from "@/app/(protected)/pacientes/_components/schema"
+import type { PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema"
 
 interface PersonalFieldsProps {
   form: UseFormReturn<PatientSchema>

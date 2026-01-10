@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { AttendanceType as PrismaAttendanceType } from "@prisma/client";
 import { PatientShow } from "./_components";
 import type { HistoryEntry, ProfessionalOption } from "./_components/types";
 
@@ -44,7 +45,8 @@ const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
   });
 
   const entries: HistoryEntry[] = attendances.map((attendance) => {
-    const type = attendance.type === "EVALUATION" ? "evaluation" : "evolution";
+    const type =
+      attendance.type === PrismaAttendanceType.EVALUATION ? "evaluation" : "evolution";
     const title =
       type === "evaluation"
         ? attendance.mainComplaint ?? "Avaliação clínica"

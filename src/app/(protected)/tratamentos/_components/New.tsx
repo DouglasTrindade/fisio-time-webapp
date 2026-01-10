@@ -9,7 +9,7 @@ import { TreatmentPlanFields } from "./Fields";
 import {
   treatmentPlanFormSchema,
   type TreatmentPlanFormSchema,
-} from "./schema";
+} from "./Fields/schema";
 import type { Patient } from "@/app/types/patient";
 import type { TreatmentPlanCreateInput } from "@/app/types/treatment-plan";
 

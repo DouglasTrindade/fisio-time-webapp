@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/schema";
-import { PersonalFields } from "./PersonalFields";
-import { AddressFields } from "./AddressFields";
+import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema";
+import { PersonalFields } from "./Fields/PersonalFields";
+import { AddressFields } from "./Fields/AddressFields";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
 export const PatientsNew = () => {

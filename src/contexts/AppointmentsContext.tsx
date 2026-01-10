@@ -9,9 +9,10 @@ import {
 } from "react"
 import type { ReactNode } from "react"
 import type { Appointment, AppointmentFilters } from "@/app/types/appointment"
-import type { AppointmentPayload } from "@/app/(protected)/agendamentos/_components/schema"
+import type { AppointmentPayload } from "@/app/(protected)/agendamentos/_components/Fields/schema"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import { appointmentsCrudConfig } from "@/app/(protected)/agendamentos/_components/config"
+import { useRecords } from "@/app/hooks/useRecords"
 
 interface AppointmentsUiContextValue {
   calendarAppointments: Appointment[]
@@ -20,7 +21,7 @@ interface AppointmentsUiContextValue {
   isDialogOpen: boolean
   editingAppointment: Appointment | null
   handleDateSelect: (date: Date) => void
-  openNew: () => void
+  openNew: (date?: Date | null) => void
   openEdit: (appointment: Appointment) => void
   closeDialog: () => void
 }
@@ -34,41 +35,40 @@ const { CrudProvider, useCrud } = createCrudContext<
 
 const AppointmentsUiContext = createContext<AppointmentsUiContextValue | null>(null)
 
-const toQueryDate = (date: Date | null) => {
-  if (!date) return undefined
-  const adjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return adjusted.toISOString().slice(0, 10)
-}
-
 const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
-  const { setFilters, records, isFetching } = useCrud()
+  const { records, isFetching } = useCrud()
+  const {
+    records: calendarAppointments,
+    isLoading: isCalendarLoading,
+  } = useRecords<Appointment>(appointmentsCrudConfig.endpoint, {
+    page: 1,
+    limit: 100,
+    sortBy: "date",
+    sortOrder: "asc",
+  })
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
 
-  const syncDateFilter = useCallback((date: Date | null) => {
-    setSelectedDate(date)
-    const queryDate = toQueryDate(date)
-    setFilters((prev) => ({ ...prev, date: queryDate }))
-  }, [setFilters])
-
   const handleDateSelect = useCallback((date: Date) => {
-    syncDateFilter(date)
+    setSelectedDate(date)
     setEditingAppointment(null)
     setIsDialogOpen(false)
-  }, [syncDateFilter])
+  }, [])
 
-  const openNew = useCallback(() => {
-    syncDateFilter(null)
+  const openNew = useCallback((date?: Date | null) => {
+    if (date) {
+      setSelectedDate(date)
+    }
     setEditingAppointment(null)
     setIsDialogOpen(true)
-  }, [syncDateFilter])
+  }, [])
 
   const openEdit = useCallback((appointment: Appointment) => {
     setEditingAppointment(appointment)
-    syncDateFilter(new Date(appointment.date))
+    setSelectedDate(new Date(appointment.date))
     setIsDialogOpen(true)
-  }, [syncDateFilter])
+  }, [])
 
   const closeDialog = useCallback(() => {
     setIsDialogOpen(false)
@@ -77,8 +77,8 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      calendarAppointments: records,
-      isCalendarLoading: isFetching,
+      calendarAppointments,
+      isCalendarLoading,
       selectedDate,
       isDialogOpen,
       editingAppointment,
@@ -88,8 +88,8 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
       closeDialog,
     }),
     [
-      records,
-      isFetching,
+      calendarAppointments,
+      isCalendarLoading,
       selectedDate,
       isDialogOpen,
       editingAppointment,

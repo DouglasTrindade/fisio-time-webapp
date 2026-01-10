@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
 import type { UseFormReturn } from "react-hook-form"
-import type { AttendanceFormSchema } from "../schema"
+import type { AttendanceFormSchema } from "./schema"
 import type { Patient } from "@/app/types/patient"
 import { useDebouncedValue } from "@/app/hooks/useDebouncedValue"
 import { useCidSearch } from "@/app/hooks/useCidSearch"

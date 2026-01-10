@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import {
   attendanceFormSchema,
   type AttendanceFormSchema,
-} from "@/app/(protected)/atendimentos/_components/schema"
+} from "@/app/(protected)/atendimentos/_components/Fields/schema"
 import { EvaluationFields } from "@/app/(protected)/atendimentos/_components/Fields/Evaluation"
 import { EvolutionFields } from "@/app/(protected)/atendimentos/_components/Fields/Evolution"
 import type { PatientSummary } from "./types"
@@ -45,7 +45,7 @@ interface HistoryAttendanceDialogProps {
   attendanceId?: string
 }
 
-export const HistoryAttendanceDialog = ({
+export const HistoryAttendanceModal = ({
   type,
   patient,
   open,

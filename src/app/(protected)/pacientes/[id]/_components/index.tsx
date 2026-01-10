@@ -23,7 +23,7 @@ import { AboutPatient } from "./AboutPatient"
 import { TimelineCard } from "./TimelineCard"
 import { Filters } from "./Filters"
 import { PatientsEdit } from "../../_components/Edit"
-import { HistoryAttendanceDialog } from "./HistoryAttendanceDialog"
+import { HistoryAttendanceModal } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { apiRequest } from "@/app/services/api"
 import type { ApiResponse } from "@/app/types/api"
@@ -137,22 +137,22 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
                 </Card>
               ) : (
                 <div className="space-y-4">
-              {filteredEntries.map((entry, index) => (
-                <TimelineCard
-                  key={entry.id}
-                  entry={entry}
-                  isFirst={index === 0}
-                  isLast={index === filteredEntries.length - 1}
-                  onNavigate={() => router.push(`/atendimentos/${entry.id}`)}
-                  onEdit={(item) => setAttendanceToEdit(item)}
-                  onDelete={(item) => setAttendanceToDelete(item)}
-                  onOpenTreatmentPlan={handleOpenTreatmentPlan}
-                />
-              ))}
+                  {filteredEntries.map((entry, index) => (
+                    <TimelineCard
+                      key={entry.id}
+                      entry={entry}
+                      isFirst={index === 0}
+                      isLast={index === filteredEntries.length - 1}
+                      onNavigate={() => router.push(`/atendimentos/${entry.id}`)}
+                      onEdit={(item) => setAttendanceToEdit(item)}
+                      onDelete={(item) => setAttendanceToDelete(item)}
+                      onOpenTreatmentPlan={handleOpenTreatmentPlan}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </section>
+          </section>
         </div>
       </div>
 
@@ -186,7 +186,7 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
             </DialogTitle>
           </DialogHeader>
           {attendanceToEdit && (
-            <HistoryAttendanceDialog
+            <HistoryAttendanceModal
               type={
                 attendanceToEdit.type === "evolution"
                   ? PrismaAttendanceType.EVOLUTION
@@ -263,7 +263,7 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
             </DialogTitle>
           </DialogHeader>
           {newAttendanceType && (
-            <HistoryAttendanceDialog
+            <HistoryAttendanceModal
               type={newAttendanceType}
               patient={patient}
               open={newAttendanceType !== null}

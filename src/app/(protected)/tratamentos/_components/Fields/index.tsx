@@ -79,12 +79,12 @@ export const TreatmentPlanFields = ({
     "/attendances",
     selectedPatientId
       ? {
-          patientId: selectedPatientId,
-          type: "EVALUATION",
-          limit: 100,
-          sortBy: "date",
-          sortOrder: "desc",
-        }
+        patientId: selectedPatientId,
+        type: "EVALUATION",
+        limit: 100,
+        sortBy: "date",
+        sortOrder: "desc",
+      }
       : undefined,
     {
       enabled: Boolean(selectedPatientId),
