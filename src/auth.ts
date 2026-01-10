@@ -16,7 +16,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
+      const expiration = typeof token.exp === "number" ? token.exp * 1000 : null;
+
       session.user.id = token.id as string;
+      if (expiration) {
+        session.expires = new Date(expiration).toISOString() as unknown as Date & string;
+        if (Date.now() >= expiration) {
+          session.expires = new Date() as unknown as Date & string;;
+        }
+      }
+
       return session;
     },
   },

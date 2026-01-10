@@ -23,13 +23,13 @@ export default {
         });
 
         if (!user || !user.password) {
-          throw new Error("USER_NOT_FOUND");
+          throw new Error("INVALID_CREDENTIALS");
         }
 
         const isValid = await bcrypt.compare(data.password, user.password);
 
         if (!isValid) {
-          throw new Error("INVALID_PASSWORD");
+          throw new Error("INVALID_CREDENTIALS");
         }
 
         return user;
