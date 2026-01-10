@@ -1,52 +1,52 @@
 -- Criar tabela de usuários
-CREATE TABLE IF NOT EXISTS "User" (
+CREATE TABLE IF NOT EXISTS "users" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "email" TEXT NOT NULL,
-    "emailVerified" TIMESTAMP(3),
+    "email_verified" TIMESTAMP(3),
     "password" TEXT,
     "image" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- Criar tabela de pacientes
-CREATE TABLE IF NOT EXISTS "Patient" (
+CREATE TABLE IF NOT EXISTS "patients" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email" TEXT,
-    "birthDate" TIMESTAMP(3),
+    "birth_date" TIMESTAMP(3),
     "notes" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Patient_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "patients_pkey" PRIMARY KEY ("id")
 );
 
 -- Criar tabela de agendamentos
-CREATE TABLE IF NOT EXISTS "Appointment" (
+CREATE TABLE IF NOT EXISTS "appointments" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'confirmed',
-    "professionalId" TEXT NOT NULL,
-    "patientId" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "professional_id" TEXT NOT NULL,
+    "patient_id" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "appointments_pkey" PRIMARY KEY ("id")
 );
 
 -- Criar tabela de contas (NextAuth)
-CREATE TABLE IF NOT EXISTS "Account" (
-    "userId" TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS "accounts" (
+    "user_id" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
-    "providerAccountId" TEXT NOT NULL,
+    "provider_account_id" TEXT NOT NULL,
     "refresh_token" TEXT,
     "access_token" TEXT,
     "expires_at" INTEGER,
@@ -54,45 +54,45 @@ CREATE TABLE IF NOT EXISTS "Account" (
     "scope" TEXT,
     "id_token" TEXT,
     "session_state" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("provider", "providerAccountId")
+    CONSTRAINT "accounts_pkey" PRIMARY KEY ("provider", "provider_account_id")
 );
 
 -- Criar tabela de sessões (NextAuth)
-CREATE TABLE IF NOT EXISTS "Session" (
-    "sessionToken" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS "sessions" (
+    "session_token" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Session_pkey" PRIMARY KEY ("sessionToken")
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("session_token")
 );
 
 -- Criar tabela de tokens de verificação (NextAuth)
-CREATE TABLE IF NOT EXISTS "VerificationToken" (
+CREATE TABLE IF NOT EXISTS "verification_tokens" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("identifier", "token")
+    CONSTRAINT "verification_tokens_pkey" PRIMARY KEY ("identifier", "token")
 );
 
 -- Criar índices únicos
-CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
-CREATE UNIQUE INDEX IF NOT EXISTS "Session_sessionToken_key" ON "Session"("sessionToken");
+CREATE UNIQUE INDEX IF NOT EXISTS "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX IF NOT EXISTS "sessions_session_token_key" ON "sessions"("session_token");
 
 -- Criar chaves estrangeiras
-ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_professionalId_fkey" 
-    FOREIGN KEY ("professionalId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "appointments" ADD CONSTRAINT "appointments_professional_id_fkey" 
+    FOREIGN KEY ("professional_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_patientId_fkey" 
-    FOREIGN KEY ("patientId") REFERENCES "Patient"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "appointments" ADD CONSTRAINT "appointments_patient_id_fkey" 
+    FOREIGN KEY ("patient_id") REFERENCES "patients"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" 
-    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" 
+    FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" 
-    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" 
+    FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
