@@ -5,7 +5,7 @@ import {
   BriefcaseMedical,
   Calendar,
   ChartPie,
-  ChevronDown,
+  ChevronRight,
   CircleArrowUp,
   LayoutDashboard,
   MonitorCheckIcon,
@@ -118,7 +118,12 @@ export function SidebarNavigation({ items }: SidebarNavigationProps) {
                       ) : null}
                       <span>{item.title}</span>
                     </span>
-                    <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 data-[state=open]:rotate-180" />
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 transition-transform duration-200",
+                        isOpen && "rotate-90"
+                      )}
+                    />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent
