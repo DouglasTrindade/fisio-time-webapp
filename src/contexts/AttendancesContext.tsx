@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, useContext, useMemo, useState } from "react"
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react"
 import type { ReactNode } from "react"
 import type {
   Attendance,
@@ -12,16 +18,8 @@ import type {
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { attendancesCrudConfig } from "@/app/(protected)/atendimentos/_components/config"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
-import type { CrudContextValue } from "@/contexts/crud/types"
 
-type AttendancesCrudValue = CrudContextValue<
-  Attendance,
-  AttendanceCreateInput,
-  AttendanceUpdateInput,
-  AttendanceFilters
->
-
-interface AttendancesContextValue extends AttendancesCrudValue {
+interface AttendancesUiContextValue {
   isDialogOpen: boolean
   creatingType: AttendanceType
   editingAttendance: Attendance | null
@@ -40,51 +38,72 @@ const { CrudProvider, useCrud } = createCrudContext<
   AttendanceFilters
 >(attendancesCrudConfig)
 
-const AttendancesContext = createContext<AttendancesContextValue | null>(null)
+const AttendancesUiContext = createContext<AttendancesUiContextValue | null>(null)
 
-const AttendancesProviderInner = ({ children }: { children: ReactNode }) => {
-  const crud = useCrud()
+const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
+  const { setFilters } = useCrud()
   const [dialogState, setDialogState] = useState<{
     type: AttendanceType
     attendance: Attendance | null
   } | null>(null)
 
-  const handleSearch = (value: string) => {
-    crud.setFilters((prev) => ({ ...prev, search: value, page: 1 }))
-  }
+  const handleSearch = useCallback(
+    (value: string) => {
+      setFilters((prev) => ({ ...prev, search: value, page: 1 }))
+    },
+    [setFilters],
+  )
 
-  const handlePageChange = (page: number) => {
-    crud.setFilters((prev) => ({ ...prev, page }))
-  }
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setFilters((prev) => ({ ...prev, page }))
+    },
+    [setFilters],
+  )
 
-  const handleSortChange = (sortValue: string) => {
-    const [field, order] = sortValue.split("-")
-    crud.setFilters((prev) => ({
-      ...prev,
-      sortBy: field as AttendanceFilters["sortBy"],
-      sortOrder: (order as "asc" | "desc") ?? "desc",
-      page: 1,
-    }))
-  }
+  const handleSortChange = useCallback(
+    (sortValue: string) => {
+      const [field, order] = sortValue.split("-")
+      setFilters((prev) => ({
+        ...prev,
+        sortBy: field as AttendanceFilters["sortBy"],
+        sortOrder: (order as "asc" | "desc") ?? "desc",
+        page: 1,
+      }))
+    },
+    [setFilters],
+  )
+
+  const openNew = useCallback(
+    (type: AttendanceType) => setDialogState({ type, attendance: null }),
+    [],
+  )
+
+  const openEdit = useCallback(
+    (attendance: Attendance) =>
+      setDialogState({ type: attendance.type, attendance }),
+    [],
+  )
+
+  const closeDialog = useCallback(() => setDialogState(null), [])
 
   const value = useMemo(
     () => ({
-      ...crud,
       isDialogOpen: !!dialogState,
       creatingType: dialogState?.type ?? PrismaAttendanceType.EVALUATION,
       editingAttendance: dialogState?.attendance ?? null,
-      openNew: (type: AttendanceType) =>
-        setDialogState({ type, attendance: null }),
-      openEdit: (attendance: Attendance) =>
-        setDialogState({ type: attendance.type, attendance }),
-      closeDialog: () => setDialogState(null),
+      openNew,
+      openEdit,
+      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,
     }),
     [
-      crud,
       dialogState,
+      openNew,
+      openEdit,
+      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,
@@ -92,22 +111,23 @@ const AttendancesProviderInner = ({ children }: { children: ReactNode }) => {
   )
 
   return (
-    <AttendancesContext.Provider value={value}>
+    <AttendancesUiContext.Provider value={value}>
       {children}
-    </AttendancesContext.Provider>
+    </AttendancesUiContext.Provider>
   )
 }
 
 export const AttendancesProvider = ({ children }: { children: ReactNode }) => (
   <CrudProvider>
-    <AttendancesProviderInner>{children}</AttendancesProviderInner>
+    <AttendancesUiProvider>{children}</AttendancesUiProvider>
   </CrudProvider>
 )
 
 export const useAttendancesContext = () => {
-  const context = useContext(AttendancesContext)
-  if (!context) {
+  const crud = useCrud()
+  const ui = useContext(AttendancesUiContext)
+  if (!ui) {
     throw new Error("useAttendancesContext must be used within AttendancesProvider")
   }
-  return context
+  return { ...crud, ...ui }
 }

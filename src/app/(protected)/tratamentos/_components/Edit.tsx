@@ -13,14 +13,16 @@ import {
 } from "./schema";
 import { useRecord } from "@/app/hooks/useRecord";
 import type { TreatmentPlan } from "@/app/types/treatment-plan";
-import { useTreatmentPlansContext } from "@/contexts/TreatmentPlansContext";
 import type { Patient } from "@/app/types/patient";
+import type { TreatmentPlanUpdateInput } from "@/app/types/treatment-plan";
 
 interface TreatmentPlanEditProps {
   planId: string;
   patients: Patient[];
   isLoadingPatients: boolean;
   onSuccess?: () => void;
+  onUpdate: (id: string, data: TreatmentPlanUpdateInput) => Promise<unknown>;
+  isUpdating: boolean;
 }
 
 const sanitizeOptional = (value?: string | null) => {
@@ -46,8 +48,9 @@ export const TreatmentPlanEdit = ({
   patients,
   isLoadingPatients,
   onSuccess,
+  onUpdate,
+  isUpdating,
 }: TreatmentPlanEditProps) => {
-  const { handleUpdate, isUpdating } = useTreatmentPlansContext();
   const {
     data: treatmentPlan,
     isLoading,
@@ -83,7 +86,7 @@ export const TreatmentPlanEdit = ({
 
   const onSubmit = async (values: TreatmentPlanFormSchema) => {
     try {
-      await handleUpdate(planId, {
+      await onUpdate(planId, {
         patientId: values.patientId,
         attendanceId: values.attendanceId,
         procedure: values.procedure.trim(),

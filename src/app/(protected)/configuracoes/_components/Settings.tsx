@@ -42,11 +42,11 @@ const sections: Array<{
   description: string
   icon: typeof UserRound
 }> = [
-  { id: "profile", label: "Perfil", description: "Informações públicas e avatar.", icon: UserRound },
-  { id: "account", label: "Conta", description: "Preferências da conta.", icon: ShieldCheck },
-  { id: "billing", label: "Cobrança", description: "Planos e pagamentos.", icon: CreditCard },
-  { id: "notifications", label: "Notificações", description: "Alertas e e-mails.", icon: BellRing },
-]
+    { id: "profile", label: "Perfil", description: "Informações públicas e avatar.", icon: UserRound },
+    { id: "account", label: "Conta", description: "Preferências da conta.", icon: ShieldCheck },
+    { id: "billing", label: "Cobrança", description: "Planos e pagamentos.", icon: CreditCard },
+    { id: "notifications", label: "Notificações", description: "Alertas e e-mails.", icon: BellRing },
+  ]
 
 export const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile")

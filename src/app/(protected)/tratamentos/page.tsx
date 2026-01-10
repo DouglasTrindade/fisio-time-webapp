@@ -1,5 +1,4 @@
 import { TreatmentPlans } from "./_components";
-import { TreatmentPlansProvider } from "@/contexts/TreatmentPlansContext";
 
 interface TreatmentsPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -16,18 +15,12 @@ const TreatmentsPage = async ({ searchParams }: TreatmentsPageProps) => {
   const initialAttendanceLabel = identify(params.attendanceLabel ?? null) ?? null;
 
   return (
-    <TreatmentPlansProvider
-      initialFilters={
-        initialPatientId ? { patientId: initialPatientId, page: 1 } : undefined
-      }
-    >
-      <TreatmentPlans
-        initialPatientId={initialPatientId}
-        initialAttendanceId={initialAttendanceId}
-        initialPatientName={initialPatientName}
-        initialAttendanceLabel={initialAttendanceLabel}
-      />
-    </TreatmentPlansProvider>
+    <TreatmentPlans
+      initialPatientId={initialPatientId}
+      initialAttendanceId={initialAttendanceId}
+      initialPatientName={initialPatientName}
+      initialAttendanceLabel={initialAttendanceLabel}
+    />
   );
 };
 
