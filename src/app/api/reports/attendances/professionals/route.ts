@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { endOfDay, startOfDay, subDays, differenceInCalendarDays } from "date-fns"
 
 import { prisma } from "@/lib/prisma"
+import { AttendanceType } from "@prisma/client"
 import { createApiError, createApiResponse, handleApiError } from "@/lib/api/utils"
 import type { ApiResponse } from "@/app/types/api"
 import type { ProfessionalsAttendanceReport } from "@/app/types/reports"
@@ -96,7 +97,7 @@ export async function GET(
           evolutions: 0,
         }
 
-      if (attendance.type === "EVALUATION") {
+      if (attendance.type === AttendanceType.EVALUATION) {
         existing.evaluations += 1
         evaluations += 1
       } else {

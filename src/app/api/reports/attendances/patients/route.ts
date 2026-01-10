@@ -9,6 +9,7 @@ import {
 } from "date-fns"
 
 import { prisma } from "@/lib/prisma"
+import { AttendanceType } from "@prisma/client"
 import {
   createApiError,
   createApiResponse,
@@ -179,7 +180,7 @@ export async function GET(
           evolutions: 0,
           total: 0,
         }
-      if (attendance.type === "EVALUATION") {
+      if (attendance.type === AttendanceType.EVALUATION) {
         bucket.evaluations += 1
       } else {
         bucket.evolutions += 1
@@ -242,7 +243,7 @@ export async function GET(
     })
 
     const totalAttendances = attendances.length
-    const evaluations = attendances.filter((item) => item.type === "EVALUATION").length
+    const evaluations = attendances.filter((item) => item.type === AttendanceType.EVALUATION).length
     const evolutions = totalAttendances - evaluations
     const uniquePatients = patientMap.size
 
