@@ -77,6 +77,12 @@ export const HistoryAttendanceModal = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: "",
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
     },
   })
 
@@ -98,6 +104,12 @@ export const HistoryAttendanceModal = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: "",
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
     })
   }, [attendanceId, form, open, patient.id, type])
 
@@ -131,6 +143,12 @@ export const HistoryAttendanceModal = ({
             cifDescription: response.data.cifDescription ?? "",
             evolutionNotes: response.data.evolutionNotes ?? "",
             attachments: (response.data.attachments ?? []) as AttendanceFormSchema["attachments"],
+            launchToFinance: false,
+            financeAmount: "",
+            financePaymentMethod: "",
+            financeAccount: "",
+            financePaid: false,
+            financePaidAt: "",
           })
         }
       } catch (error) {

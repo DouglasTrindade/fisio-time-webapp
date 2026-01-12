@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Loader2, Paperclip, Search, X } from "lucide-react"
+import { FinanceFields } from "./Finance"
 
 interface EvolutionFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
@@ -426,6 +427,8 @@ export const EvolutionFields = ({
           )
         }}
       />
+
+      <FinanceFields form={form} />
     </>
   )
 }

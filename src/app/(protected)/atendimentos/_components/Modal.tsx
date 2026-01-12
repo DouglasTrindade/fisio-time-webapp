@@ -114,6 +114,12 @@ export const AttendanceDialog = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: "",
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
     },
   })
 
@@ -149,6 +155,12 @@ export const AttendanceDialog = ({
         cifDescription: attendance.cifDescription ?? "",
         evolutionNotes: attendance.evolutionNotes ?? "",
         attachments: normalizeAttachments(attendance.attachments),
+        launchToFinance: false,
+        financeAmount: "",
+        financePaymentMethod: "",
+        financeAccount: "",
+        financePaid: false,
+        financePaidAt: "",
       })
     } else {
       const defaults = getDefaultDateParts()
@@ -167,6 +179,12 @@ export const AttendanceDialog = ({
         cifDescription: "",
         evolutionNotes: "",
         attachments: [],
+        launchToFinance: false,
+        financeAmount: "",
+        financePaymentMethod: "",
+        financeAccount: "",
+        financePaid: false,
+        financePaidAt: "",
       })
     }
   }, [attendance, form, open])
