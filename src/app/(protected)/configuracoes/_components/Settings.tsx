@@ -34,7 +34,7 @@ import { useRecord, useUpdateRecord } from "@/app/hooks/useRecord"
 import type { UserProfile } from "@/app/types/user"
 import { userSettingsSchema, type UserSettingsValues } from "./schema"
 
-type SettingsSection = "profile" | "account" | "billing" | "notifications"
+type SettingsSection = "profile" | "billing" | "notifications"
 
 const sections: Array<{
   id: SettingsSection
@@ -42,19 +42,16 @@ const sections: Array<{
   description: string
   icon: typeof UserRound
 }> = [
-    { id: "profile", label: "Perfil", description: "Informações públicas e avatar.", icon: UserRound },
-    { id: "account", label: "Conta", description: "Preferências da conta.", icon: ShieldCheck },
-    { id: "billing", label: "Cobrança", description: "Planos e pagamentos.", icon: CreditCard },
-    { id: "notifications", label: "Notificações", description: "Alertas e e-mails.", icon: BellRing },
-  ]
+  { id: "profile", label: "Perfil", description: "Informações públicas e avatar.", icon: UserRound },
+  { id: "billing", label: "Cobrança", description: "Planos e pagamentos.", icon: CreditCard },
+  { id: "notifications", label: "Notificações", description: "Alertas e e-mails.", icon: BellRing },
+]
 
 export const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
 
   const renderSection = useMemo(() => {
     switch (activeSection) {
-      case "account":
-        return <AccountSettings />
       case "billing":
         return <BillingSettings />
       case "notifications":
@@ -222,49 +219,6 @@ const ProfileSettings = () => {
             </form>
           </Form>
         )}
-      </CardContent>
-    </Card>
-  )
-}
-
-const AccountSettings = () => {
-  return (
-    <Card className="border-border/70 bg-card/85 shadow-lg">
-      <CardHeader>
-        <CardTitle>Conta</CardTitle>
-        <CardDescription>Atualize dados privados da sua conta.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-5">
-          <div className="grid gap-3">
-            <label className="text-sm font-medium">Nome</label>
-            <Input placeholder="Seu nome" />
-            <p className="text-xs text-muted-foreground">Nome exibido em perfis e notificações.</p>
-          </div>
-          <div className="grid gap-3">
-            <label className="text-sm font-medium">Data de nascimento</label>
-            <Input type="date" />
-          </div>
-          <div className="grid gap-3">
-            <label className="text-sm font-medium">Idioma</label>
-            <Select defaultValue="pt-BR">
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione um idioma" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
-                <SelectItem value="en-US">Inglês (EUA)</SelectItem>
-                <SelectItem value="es-ES">Espanhol</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Idioma utilizado nos e-mails e no painel.
-            </p>
-          </div>
-          <div className="flex justify-end pt-2">
-            <Button>Atualizar conta</Button>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )

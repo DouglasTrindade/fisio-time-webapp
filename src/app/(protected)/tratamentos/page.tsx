@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { TreatmentPlans } from "./_components";
+import { RecordsPageSkeleton } from "@/app/(protected)/components/loading-fallbacks";
 
 interface TreatmentsPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -15,12 +17,14 @@ const TreatmentsPage = async ({ searchParams }: TreatmentsPageProps) => {
   const initialAttendanceLabel = identify(params.attendanceLabel ?? null) ?? null;
 
   return (
-    <TreatmentPlans
-      initialPatientId={initialPatientId}
-      initialAttendanceId={initialAttendanceId}
-      initialPatientName={initialPatientName}
-      initialAttendanceLabel={initialAttendanceLabel}
-    />
+    <Suspense fallback={<RecordsPageSkeleton />}>
+      <TreatmentPlans
+        initialPatientId={initialPatientId}
+        initialAttendanceId={initialAttendanceId}
+        initialPatientName={initialPatientName}
+        initialAttendanceLabel={initialAttendanceLabel}
+      />
+    </Suspense>
   );
 };
 
