@@ -102,10 +102,6 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <BadgeCheck />
-                  Conta
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/notificacoes" className="flex items-center gap-2">
                     <Bell className="h-4 w-4" />
