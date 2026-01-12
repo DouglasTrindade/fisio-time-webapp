@@ -9,7 +9,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import type { CitiesAttendanceReport } from "@/app/types/reports"
+import type { CitiesAttendanceReport } from "@/types/reports"
 
 const chartConfig = {
   attendances: {

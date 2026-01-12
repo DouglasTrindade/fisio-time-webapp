@@ -16,9 +16,9 @@ import { AttendanceListItem } from "./ListItem"
 import { AttendanceDialog } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { AttendancesFilters } from "./Filters"
-import type { Attendance } from "@/app/types/attendance"
-import { useExportCsv } from "@/app/hooks/useExportCsv"
-import { useExportXlsx } from "@/app/hooks/useExportXlsx"
+import type { Attendance } from "@/types/attendance"
+import { useExportCsv } from "@/hooks/useExportCsv"
+import { useExportXlsx } from "@/hooks/useExportXlsx"
 import { useAttendanceExportColumns } from "./useAttendanceExportColumns"
 
 export const Attendances = () => {

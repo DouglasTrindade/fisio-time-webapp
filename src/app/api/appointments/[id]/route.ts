@@ -11,7 +11,7 @@ import {
   appointmentParamsSchema,
   normalizeAppointmentStatus,
 } from "../schema";
-import type { Appointment, ApiResponse } from "@/app/types/appointment";
+import type { Appointment, ApiResponse } from "@/types/appointment";
 
 export async function GET(
   _request: NextRequest,

@@ -1,6 +1,6 @@
 "use client"
 
-import type { AppNotification } from "@/app/types/notification"
+import type { AppNotification } from "@/types/notification"
 import {
   Dialog,
   DialogContent,

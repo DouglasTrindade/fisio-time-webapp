@@ -3,7 +3,7 @@
 import { MapPin } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import type { CitiesAttendanceReport } from "@/app/types/reports"
+import type { CitiesAttendanceReport } from "@/types/reports"
 
 interface HighlightsCardProps {
   report?: CitiesAttendanceReport | null

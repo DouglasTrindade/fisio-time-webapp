@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import type { AppNotification, NotificationStatus, NotificationCategory } from "@/app/types/notification"
+import type { AppNotification, NotificationStatus, NotificationCategory } from "@/types/notification"
 import { NotificationCard } from "./Card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

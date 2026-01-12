@@ -15,8 +15,8 @@ import {
   createApiResponse,
   handleApiError,
 } from "@/lib/api/utils"
-import type { ApiResponse } from "@/app/types/api"
-import type { PatientAttendanceReport } from "@/app/types/reports"
+import type { ApiResponse } from "@/types/api"
+import type { PatientAttendanceReport } from "@/types/reports"
 
 type GenderKey = "masculino" | "feminino" | "outro" | "naoInformado"
 

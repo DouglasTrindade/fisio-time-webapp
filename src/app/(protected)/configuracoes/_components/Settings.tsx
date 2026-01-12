@@ -30,8 +30,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 
-import { useRecord, useUpdateRecord } from "@/app/hooks/useRecord"
-import type { UserProfile } from "@/app/types/user"
+import { useRecord, useUpdateRecord } from "@/hooks/useRecord"
+import type { UserProfile } from "@/types/user"
 import { userSettingsSchema, type UserSettingsValues } from "./schema"
 
 type SettingsSection = "profile" | "account" | "billing" | "notifications"

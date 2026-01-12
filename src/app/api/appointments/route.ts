@@ -8,7 +8,7 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, RecordsResponse } from "@/app/types/api";
+import type { ApiResponse, RecordsResponse } from "@/types/api";
 import { Status, type Appointment as PrismaAppointment } from "@prisma/client";
 
 type Appointment = Omit<

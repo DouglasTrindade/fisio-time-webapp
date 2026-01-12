@@ -4,9 +4,9 @@ import { useMemo, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { subDays, format } from "date-fns"
 
-import { apiRequest } from "@/app/services/api"
-import type { ApiResponse } from "@/app/types/api"
-import type { PatientAttendanceReport } from "@/app/types/reports"
+import { apiRequest } from "@/services/api"
+import type { ApiResponse } from "@/types/api"
+import type { PatientAttendanceReport } from "@/types/reports"
 
 import { ReportHeader } from "@/app/(protected)/relatorios/components/ReportHeader"
 import {

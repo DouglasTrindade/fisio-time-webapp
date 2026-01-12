@@ -20,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import type { TreatmentPlan } from "@/app/types/treatment-plan";
+import type { TreatmentPlan } from "@/types/treatment-plan";
 
 interface TreatmentPlanListItemProps {
   plan: TreatmentPlan;

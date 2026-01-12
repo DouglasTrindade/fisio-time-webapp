@@ -7,7 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import type { PatientAttendanceReport } from "@/app/types/reports"
+import type { PatientAttendanceReport } from "@/types/reports"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 const ageChartConfig = {

@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo } from "react"
-import type { Attendance } from "@/app/types/attendance"
-import type { ExportColumn } from "@/app/hooks/exportUtils"
+import type { Attendance } from "@/types/attendance"
+import type { ExportColumn } from "@/hooks/exportUtils"
 import {
   formatAttendanceDate,
   formatAttendanceTime,

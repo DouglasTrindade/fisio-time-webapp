@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type { PatientFilters } from "@/app/types/patient"
+import type { PatientFilters } from "@/types/patient";
 
 export const patientsCrudConfig = {
   endpoint: "/patients",
@@ -11,4 +11,4 @@ export const patientsCrudConfig = {
     sortBy: "createdAt",
     sortOrder: "desc",
   },
-} satisfies { endpoint: string; defaultFilters: PatientFilters }
+} satisfies { endpoint: string; defaultFilters: PatientFilters };

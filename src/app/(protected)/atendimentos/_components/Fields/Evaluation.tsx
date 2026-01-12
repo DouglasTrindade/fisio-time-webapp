@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import type { UseFormReturn } from "react-hook-form"
-import type { Patient } from "@/app/types/patient"
+import type { Patient } from "@/types/patient"
 import type { AttendanceFormSchema } from "./schema"
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"

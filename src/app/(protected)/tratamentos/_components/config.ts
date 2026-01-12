@@ -1,6 +1,6 @@
 "use client"
 
-import type { TreatmentPlanFilters } from "@/app/types/treatment-plan";
+import type { TreatmentPlanFilters } from "@/types/treatment-plan";
 
 export const treatmentPlansCrudConfig = {
   endpoint: "/treatment-plans",

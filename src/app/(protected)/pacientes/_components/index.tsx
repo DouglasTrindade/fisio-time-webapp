@@ -25,10 +25,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientsContext } from "@/contexts/PatientsContext";
 import { PatientsFilters } from "./Filters";
 import { ClientOnly } from "@/components/ClientOnly";
-import type { ExportColumn } from "@/app/hooks/exportUtils";
-import type { Patient } from "@/app/types/patient";
-import { useExportCsv } from "@/app/hooks/useExportCsv";
-import { useExportXlsx } from "@/app/hooks/useExportXlsx";
+import type { ExportColumn } from "@/hooks/exportUtils";
+import type { Patient } from "@/types/patient";
+import { useExportCsv } from "@/hooks/useExportCsv";
+import { useExportXlsx } from "@/hooks/useExportXlsx";
 
 const formatDate = (value?: Date | string | null) => {
   if (!value) return "-";

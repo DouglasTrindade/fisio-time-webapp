@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
-import { useRecords, useCreateRecord } from "@/app/hooks/useRecords"
-import { useUpdateRecord, useDeleteRecord } from "@/app/hooks/useRecord"
+import { useRecords, useCreateRecord } from "@/hooks/useRecords"
+import { useUpdateRecord, useDeleteRecord } from "@/hooks/useRecord"
 import type { CrudConfig, CrudContextValue } from "./types"
 
 export function createCrudContext<

@@ -14,7 +14,7 @@ import type {
   AttendanceFilters,
   AttendanceUpdateInput,
   AttendanceType,
-} from "@/app/types/attendance"
+} from "@/types/attendance"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { attendancesCrudConfig } from "@/app/(protected)/atendimentos/_components/config"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"

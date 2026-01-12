@@ -5,7 +5,7 @@ import { Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
 import { Calendar } from "./Calendar";
 import { AppointmentsModal } from "./Modal";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
-import type { Appointment } from "@/app/types/appointment";
+import type { Appointment } from "@/types/appointment";
 import { Status } from "@prisma/client";
 
 const statusFilters: {

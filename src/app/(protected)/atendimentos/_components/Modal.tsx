@@ -3,16 +3,16 @@
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import type { AttendanceType, AttendanceAttachment } from "@/app/types/attendance"
+import type { AttendanceType, AttendanceAttachment } from "@/types/attendance"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 
 import { attendanceFormSchema, type AttendanceFormSchema as AttendanceFormValues } from "./Fields/schema"
-import { useRecords } from "@/app/hooks/useRecords"
-import type { Patient } from "@/app/types/patient"
-import type { Attendance } from "@/app/types/attendance"
+import { useRecords } from "@/hooks/useRecords"
+import type { Patient } from "@/types/patient"
+import type { Attendance } from "@/types/attendance"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
-import { handleApiError } from "@/app/services/handleApiError"
+import { handleApiError } from "@/services/handleApiError"
 
 import {
   Dialog,

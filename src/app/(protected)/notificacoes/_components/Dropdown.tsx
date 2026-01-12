@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Bell, Eye } from "lucide-react"
 
-import type { AppNotification } from "@/app/types/notification"
+import type { AppNotification } from "@/types/notification"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

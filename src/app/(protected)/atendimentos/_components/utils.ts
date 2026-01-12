@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttendanceType } from "@/app/types/attendance";
+import type { AttendanceType } from "@/types/attendance";
 
 const typeLabels: Record<string, string> = {
   evaluation: "Avaliação",

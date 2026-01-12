@@ -8,8 +8,8 @@ import {
   getPaginationParams,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, RecordsResponse } from "@/app/types/api";
-import type { Attendance } from "@/app/types/attendance";
+import type { ApiResponse, RecordsResponse } from "@/types/api";
+import type { Attendance } from "@/types/attendance";
 import { AttendanceType } from "@prisma/client";
 import {
   attendanceInclude,

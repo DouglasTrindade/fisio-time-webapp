@@ -3,8 +3,8 @@ import { differenceInCalendarDays, endOfDay, startOfDay, subDays } from "date-fn
 
 import { prisma } from "@/lib/prisma"
 import { createApiError, createApiResponse, handleApiError } from "@/lib/api/utils"
-import type { ApiResponse } from "@/app/types/api"
-import type { CitiesAttendanceReport } from "@/app/types/reports"
+import type { ApiResponse } from "@/types/api"
+import type { CitiesAttendanceReport } from "@/types/reports"
 
 const DEFAULT_RANGE_DAYS = 30
 

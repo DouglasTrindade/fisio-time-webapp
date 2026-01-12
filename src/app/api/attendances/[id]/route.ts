@@ -10,8 +10,8 @@ import {
   attendanceParamsSchema,
   updateAttendanceSchema,
 } from "../schema";
-import type { ApiResponse } from "@/app/types/api";
-import type { Attendance } from "@/app/types/attendance";
+import type { ApiResponse } from "@/types/api";
+import type { Attendance } from "@/types/attendance";
 import {
   attendanceInclude,
   formatAttendance,

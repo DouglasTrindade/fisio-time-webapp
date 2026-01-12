@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { Appointment } from "@/app/types/appointment"
+import type { Appointment } from "@/types/appointment"
 import { Status } from "@prisma/client"
 import {
   addMonths,

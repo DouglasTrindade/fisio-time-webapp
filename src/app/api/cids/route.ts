@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cid10Data } from "@/data/cid10";
 import { createApiResponse } from "@/lib/api/utils";
-import type { ApiResponse } from "@/app/types/api";
-import type { CidRecord } from "@/app/types/cid";
+import type { ApiResponse } from "@/types/api";
+import type { CidRecord } from "@/types/cid";
 
 const normalize = (value: string) =>
   value

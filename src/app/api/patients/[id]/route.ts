@@ -7,7 +7,7 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, Patient } from "@/app/types/patient";
+import type { ApiResponse, Patient } from "@/types/patient";
 
 export async function GET(
   _request: NextRequest,

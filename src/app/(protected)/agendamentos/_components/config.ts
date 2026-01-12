@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import type { AppointmentFilters } from "@/app/types/appointment"
+import type { AppointmentFilters } from "@/types/appointment";
 
 export const appointmentsCrudConfig = {
   endpoint: "/appointments",
@@ -11,4 +11,4 @@ export const appointmentsCrudConfig = {
     sortOrder: "asc",
     date: undefined,
   },
-} satisfies { endpoint: string; defaultFilters: AppointmentFilters }
+} satisfies { endpoint: string; defaultFilters: AppointmentFilters };

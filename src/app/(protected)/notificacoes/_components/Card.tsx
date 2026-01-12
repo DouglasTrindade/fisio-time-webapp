@@ -4,7 +4,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
-import type { NotificationCategory, AppNotification } from "@/app/types/notification"
+import type { NotificationCategory, AppNotification } from "@/types/notification"
 import {
   Bell,
   MessageSquare,

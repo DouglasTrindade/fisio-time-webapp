@@ -1,9 +1,9 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { apiRequest } from "@/app/services/api"
-import type { ApiResponse, RecordsResponse } from "@/app/types/api"
-import type { CidRecord } from "@/app/types/cid"
+import { apiRequest } from "@/services/api"
+import type { ApiResponse, RecordsResponse } from "@/types/api"
+import type { CidRecord } from "@/types/cid"
 
 interface UseCidSearchOptions {
   enabled?: boolean

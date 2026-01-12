@@ -8,11 +8,11 @@ import {
   useState,
 } from "react"
 import type { ReactNode } from "react"
-import type { Appointment, AppointmentFilters } from "@/app/types/appointment"
+import type { Appointment, AppointmentFilters } from "@/types/appointment"
 import type { AppointmentPayload } from "@/app/(protected)/agendamentos/_components/Fields/schema"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import { appointmentsCrudConfig } from "@/app/(protected)/agendamentos/_components/config"
-import { useRecords } from "@/app/hooks/useRecords"
+import { useRecords } from "@/hooks/useRecords"
 
 interface AppointmentsUiContextValue {
   calendarAppointments: Appointment[]

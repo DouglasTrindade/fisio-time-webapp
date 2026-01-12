@@ -8,7 +8,7 @@ import {
   useState,
 } from "react"
 import type { ReactNode } from "react"
-import type { Patient, PatientFilters } from "@/app/types/patient"
+import type { Patient, PatientFilters } from "@/types/patient"
 import type { PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import { patientsCrudConfig } from "@/app/(protected)/pacientes/_components/config"

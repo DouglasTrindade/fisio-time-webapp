@@ -10,8 +10,8 @@ import {
   treatmentPlanFormSchema,
   type TreatmentPlanFormSchema,
 } from "./Fields/schema";
-import type { Patient } from "@/app/types/patient";
-import type { TreatmentPlanCreateInput } from "@/app/types/treatment-plan";
+import type { Patient } from "@/types/patient";
+import type { TreatmentPlanCreateInput } from "@/types/treatment-plan";
 
 interface TreatmentPlanNewProps {
   patients: Patient[];

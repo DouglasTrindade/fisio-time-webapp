@@ -13,9 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { TreatmentPlanFormSchema } from "./schema";
-import type { Patient } from "@/app/types/patient";
-import type { Attendance } from "@/app/types/attendance";
-import { useRecords } from "@/app/hooks/useRecords";
+import type { Patient } from "@/types/patient";
+import type { Attendance } from "@/types/attendance";
+import { useRecords } from "@/hooks/useRecords";
 
 interface TreatmentPlanFieldsProps {
   form: UseFormReturn<TreatmentPlanFormSchema>;

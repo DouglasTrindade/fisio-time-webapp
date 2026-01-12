@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema";
 import { PersonalFields } from "./Fields/PersonalFields";
 import { AddressFields } from "./Fields/AddressFields";
-import { useRecord } from "@/app/hooks/useRecord";
-import type { PatientApiData } from "@/app/types/patient";
+import { useRecord } from "@/hooks/useRecord";
+import type { PatientApiData } from "@/types/patient";
 import { usePatientsContextOptional } from "@/contexts/PatientsContext";
 
 interface PatientsEditProps {

@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator"
 import type { Attendance as PrismaAttendance, Patient, User } from "@prisma/client"
 import { AttendanceType } from "@prisma/client"
-import type { AttendanceAttachment } from "@/app/types/attendance"
+import type { AttendanceAttachment } from "@/types/attendance"
 
 type AttendanceWithRelations = PrismaAttendance & {
   patient: Patient | null

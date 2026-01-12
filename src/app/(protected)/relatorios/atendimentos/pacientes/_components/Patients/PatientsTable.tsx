@@ -1,14 +1,14 @@
 "use client"
 
 import { useMemo } from "react"
-import type { PatientAttendanceReport, PatientAttendanceRow } from "@/app/types/reports"
+import type { PatientAttendanceReport, PatientAttendanceRow } from "@/types/reports"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Download, FileSpreadsheet } from "lucide-react"
-import type { ExportColumn } from "@/app/hooks/exportUtils"
-import { useExportCsv } from "@/app/hooks/useExportCsv"
-import { useExportXlsx } from "@/app/hooks/useExportXlsx"
+import type { ExportColumn } from "@/hooks/exportUtils"
+import { useExportCsv } from "@/hooks/useExportCsv"
+import { useExportXlsx } from "@/hooks/useExportXlsx"
 
 interface PatientsTableProps {
   report?: PatientAttendanceReport | null

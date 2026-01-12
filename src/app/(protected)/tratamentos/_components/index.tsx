@@ -21,15 +21,15 @@ import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { TreatmentPlanListItem } from "./ListItem"
 import { TreatmentPlanNew } from "./New"
 import { TreatmentPlanEdit } from "./Edit"
-import { useRecords, useCreateRecord } from "@/app/hooks/useRecords"
-import { useUpdateRecord, useDeleteRecord } from "@/app/hooks/useRecord"
+import { useRecords, useCreateRecord } from "@/hooks/useRecords"
+import { useUpdateRecord, useDeleteRecord } from "@/hooks/useRecord"
 import type {
   TreatmentPlan,
   TreatmentPlanCreateInput,
   TreatmentPlanFilters,
   TreatmentPlanUpdateInput,
-} from "@/app/types/treatment-plan"
-import type { Patient } from "@/app/types/patient"
+} from "@/types/treatment-plan"
+import type { Patient } from "@/types/patient"
 import { TreatmentPlansFilters } from "./Filters"
 import { treatmentPlansCrudConfig } from "./config"
 

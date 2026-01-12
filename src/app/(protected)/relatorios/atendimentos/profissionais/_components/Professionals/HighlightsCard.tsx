@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import type { ProfessionalsAttendanceReport } from "@/app/types/reports"
+import type { ProfessionalsAttendanceReport } from "@/types/reports"
 
 interface HighlightsCardProps {
   report?: ProfessionalsAttendanceReport | null

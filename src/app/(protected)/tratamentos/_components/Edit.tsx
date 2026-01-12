@@ -11,10 +11,10 @@ import {
   treatmentPlanFormSchema,
   type TreatmentPlanFormSchema,
 } from "./Fields/schema";
-import { useRecord } from "@/app/hooks/useRecord";
-import type { TreatmentPlan } from "@/app/types/treatment-plan";
-import type { Patient } from "@/app/types/patient";
-import type { TreatmentPlanUpdateInput } from "@/app/types/treatment-plan";
+import { useRecord } from "@/hooks/useRecord";
+import type { TreatmentPlan } from "@/types/treatment-plan";
+import type { Patient } from "@/types/patient";
+import type { TreatmentPlanUpdateInput } from "@/types/treatment-plan";
 
 interface TreatmentPlanEditProps {
   planId: string;

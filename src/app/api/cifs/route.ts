@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import type { ApiResponse } from "@/app/types/api"
-import type { CifRecord } from "@/app/types/cif"
+import type { ApiResponse } from "@/types/api"
+import type { CifRecord } from "@/types/cif"
 import { cifData } from "@/data/cif"
 import { createApiResponse } from "@/lib/api/utils"
 

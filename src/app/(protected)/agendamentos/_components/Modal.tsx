@@ -21,8 +21,8 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Form } from "@/components/ui/form";
 import { Fields } from "./Fields";
 import { Button } from "@/components/ui/button";
-import type { Appointment, ApiResponse } from "@/app/types/appointment";
-import { handleApiError } from "@/app/services/handleApiError";
+import type { Appointment, ApiResponse } from "@/types/appointment";
+import { handleApiError } from "@/services/handleApiError";
 
 interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDate?: string; appointment?: Appointment | null }
 

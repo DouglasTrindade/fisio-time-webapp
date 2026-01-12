@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createApiResponse, handleApiError } from "@/lib/api/utils";
-import type { ApiResponse } from "@/app/types/patient";
+import type { ApiResponse } from "@/types/patient";
 
 interface PatientStats {
   total: number;

@@ -1,4 +1,4 @@
-import type { AppNotification } from "@/app/types/notification";
+import type { AppNotification } from "@/types/notification";
 
 const now = new Date();
 

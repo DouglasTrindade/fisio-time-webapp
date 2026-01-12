@@ -8,7 +8,7 @@ import type {
   PatientFilters,
   PaginatedResponse,
   Patient,
-} from "@/app/types/patient"
+} from "@/types/patient"
 
 export async function createPatient(data: PatientCreateInput) {
   try {

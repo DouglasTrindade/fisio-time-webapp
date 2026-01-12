@@ -16,10 +16,10 @@ import {
 import { EvaluationFields } from "@/app/(protected)/atendimentos/_components/Fields/Evaluation"
 import { EvolutionFields } from "@/app/(protected)/atendimentos/_components/Fields/Evolution"
 import type { PatientSummary } from "./types"
-import type { Patient } from "@/app/types/patient"
-import type { Attendance } from "@/app/types/attendance"
-import type { ApiResponse } from "@/app/types/api"
-import { apiRequest } from "@/app/services/api"
+import type { Patient } from "@/types/patient"
+import type { Attendance } from "@/types/attendance"
+import type { ApiResponse } from "@/types/api"
+import { apiRequest } from "@/services/api"
 
 const getDefaultDateParts = () => {
   const now = new Date()

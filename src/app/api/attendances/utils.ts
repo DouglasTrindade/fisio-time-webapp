@@ -1,7 +1,7 @@
-import type { Attendance } from "@/app/types/attendance";
+import type { Attendance } from "@/types/attendance";
 import { AttendanceType } from "@prisma/client";
 
-import type { AttendanceAttachment } from "@/app/types/attendance";
+import type { AttendanceAttachment } from "@/types/attendance";
 
 export type AttendanceWithRelations = {
   id: string;

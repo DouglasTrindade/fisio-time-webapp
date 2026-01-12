@@ -1,6 +1,6 @@
 "use client"
 
-import type { PatientAttendanceReport } from "@/app/types/reports"
+import type { PatientAttendanceReport } from "@/types/reports"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface HighlightsCardProps {

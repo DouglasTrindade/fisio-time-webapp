@@ -25,8 +25,8 @@ import { Filters } from "./Filters"
 import { PatientsEdit } from "../../_components/Edit"
 import { HistoryAttendanceModal } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
-import { apiRequest } from "@/app/services/api"
-import type { ApiResponse } from "@/app/types/api"
+import { apiRequest } from "@/services/api"
+import type { ApiResponse } from "@/types/api"
 import { toast } from "sonner"
 import type {
   HistoryEntry,

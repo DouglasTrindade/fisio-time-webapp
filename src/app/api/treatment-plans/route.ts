@@ -8,8 +8,8 @@ import {
   handleApiError,
   validateJsonBody,
 } from "@/lib/api/utils";
-import type { ApiResponse, RecordsResponse } from "@/app/types/api";
-import type { TreatmentPlan } from "@/app/types/treatment-plan";
+import type { ApiResponse, RecordsResponse } from "@/types/api";
+import type { TreatmentPlan } from "@/types/treatment-plan";
 import { AttendanceType, type Prisma } from "@prisma/client";
 
 const sanitizeText = (value?: string | null) => {

@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Download, FileSpreadsheet } from "lucide-react"
-import type { CitiesAttendanceReport, CityAttendanceEntry } from "@/app/types/reports"
-import type { ExportColumn } from "@/app/hooks/exportUtils"
-import { useExportCsv } from "@/app/hooks/useExportCsv"
-import { useExportXlsx } from "@/app/hooks/useExportXlsx"
+import type { CitiesAttendanceReport, CityAttendanceEntry } from "@/types/reports"
+import type { ExportColumn } from "@/hooks/exportUtils"
+import { useExportCsv } from "@/hooks/useExportCsv"
+import { useExportXlsx } from "@/hooks/useExportXlsx"
 
 interface CitiesTableProps {
   report?: CitiesAttendanceReport | null

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import type { Attendance } from "@/app/types/attendance"
+import type { Attendance } from "@/types/attendance"
 import {
   TableCell,
   TableRow,
