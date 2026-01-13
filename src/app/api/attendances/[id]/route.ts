@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { AttendanceType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   createApiResponse,
@@ -18,6 +19,31 @@ import {
   toPrismaAttendanceType,
   type AttendanceWithRelations,
 } from "../utils";
+
+const resolveAttendanceType = (
+  raw: unknown,
+): AttendanceType | undefined => {
+  const typeInput =
+    typeof raw === "string"
+      ? raw
+      : typeof raw === "object" && raw !== null && "value" in raw
+        ? (raw as { value?: string }).value
+        : undefined
+  return typeInput ? toPrismaAttendanceType(typeInput) : undefined
+}
+
+const parseFinanceAmount = (value?: unknown) => {
+  if (typeof value !== "string" && typeof value !== "number") return null
+  const normalized = String(value).trim()
+  if (!normalized) return null
+  return new Prisma.Decimal(normalized)
+}
+
+const parseFinanceDate = (value?: unknown) => {
+  if (typeof value !== "string" || !value.trim()) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
 
 export async function GET(
   _request: NextRequest,
@@ -67,19 +93,17 @@ export async function PUT(
       );
     }
 
-    const typeInput =
-      typeof body.type === "string"
-        ? body.type
-        : typeof body.type === "object" && body.type !== null && "value" in body.type
-          ? (body.type as { value?: string }).value
-          : undefined;
-    const prismaType = typeInput ? toPrismaAttendanceType(typeInput) : undefined;
+    const prismaType = resolveAttendanceType(body.type);
 
     const updated = await prisma.attendance.update({
       where: { id },
       data: {
-        patientId: body.patientId ?? undefined,
-        professionalId: body.professionalId ?? undefined,
+        ...(body.patientId
+          ? { patient: { connect: { id: body.patientId } } }
+          : {}),
+        ...(body.professionalId
+          ? { professional: { connect: { id: body.professionalId } } }
+          : {}),
         type: prismaType,
         date: body.date ? new Date(body.date) : undefined,
         mainComplaint:
@@ -106,6 +130,24 @@ export async function PUT(
           body.evolutionNotes !== undefined ? body.evolutionNotes : undefined,
         attachments:
           body.attachments !== undefined ? body.attachments : undefined,
+        launchToFinance:
+          body.launchToFinance !== undefined ? body.launchToFinance : undefined,
+        financeAmount:
+          body.financeAmount !== undefined
+            ? parseFinanceAmount(body.financeAmount)
+            : undefined,
+        financePaymentMethod:
+          body.financePaymentMethod !== undefined
+            ? body.financePaymentMethod
+            : undefined,
+        financeAccount:
+          body.financeAccount !== undefined ? body.financeAccount : undefined,
+        financePaid:
+          body.financePaid !== undefined ? body.financePaid : undefined,
+        financePaidAt:
+          body.financePaidAt !== undefined
+            ? parseFinanceDate(body.financePaidAt)
+            : undefined,
       },
       include: attendanceInclude,
     });

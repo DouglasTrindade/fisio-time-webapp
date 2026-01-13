@@ -1,5 +1,5 @@
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 
 import type { AttendanceAttachment } from "@/types/attendance";
 
@@ -20,6 +20,12 @@ export type AttendanceWithRelations = {
   cifDescription: string | null;
   evolutionNotes: string | null;
   attachments: AttendanceAttachment[] | null;
+  launchToFinance: boolean;
+  financeAmount: Prisma.Decimal | null;
+  financePaymentMethod: string | null;
+  financeAccount: string | null;
+  financePaid: boolean;
+  financePaidAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   patient: { id: string; name: string | null } | null;
@@ -56,7 +62,15 @@ export const formatAttendance = (
   ...attendance,
   cifCode: attendance.cifCode,
   cifDescription: attendance.cifDescription,
-  type: attendance.type,
+  type: attendance.type === AttendanceType.EVOLUTION ? "evolution" : "evaluation",
+  launchToFinance: attendance.launchToFinance,
+  financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
+  financePaymentMethod: attendance.financePaymentMethod,
+  financeAccount: attendance.financeAccount,
+  financePaid: attendance.financePaid,
+  financePaidAt: attendance.financePaidAt
+    ? attendance.financePaidAt.toISOString()
+    : null,
   date: attendance.date.toISOString(),
   createdAt: attendance.createdAt.toISOString(),
   updatedAt: attendance.updatedAt.toISOString(),

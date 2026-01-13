@@ -11,7 +11,7 @@ const optionalText = z
   });
 
 const attendanceTypeField = z.preprocess(
-  (value) => (typeof value === "string" ? value.toLowerCase() : value),
+  (value) => (typeof value === "string" ? value.trim().toLowerCase() : value),
   z.enum(["evaluation", "evolution"])
 );
 
@@ -40,10 +40,7 @@ export const createAttendanceSchema = z.object({
   professionalId: z.string().min(1, "Profissional é obrigatório"),
   type: attendanceTypeField.default("evaluation"),
   date: z
-    .union([
-      z.string().datetime("Data inválida"),
-      z.date(),
-    ])
+    .union([z.string().datetime("Data inválida"), z.date()])
     .transform((value) => {
       if (value instanceof Date) return value.toISOString();
       return value;
@@ -59,6 +56,12 @@ export const createAttendanceSchema = z.object({
   cifDescription: optionalText,
   evolutionNotes: optionalText,
   attachments: z.array(attachmentSchema).optional().default([]),
+  launchToFinance: z.boolean().optional().default(false),
+  financeAmount: optionalText,
+  financePaymentMethod: optionalText,
+  financeAccount: optionalText,
+  financePaid: z.boolean().optional().default(false),
+  financePaidAt: optionalText,
 });
 
 export const updateAttendanceSchema = createAttendanceSchema.partial();

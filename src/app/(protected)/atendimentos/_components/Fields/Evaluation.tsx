@@ -8,7 +8,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { FinanceFields } from "./Finance"
 
 interface EvaluationFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
@@ -176,7 +175,6 @@ export const EvaluationFields = ({
         </div>
       </div>
 
-      <FinanceFields form={form} />
     </>
   )
 }

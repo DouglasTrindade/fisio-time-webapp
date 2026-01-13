@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { AttendanceType, AttendanceAttachment } from "@/types/attendance"
@@ -24,6 +24,8 @@ import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
 import { EvaluationFields } from "./Fields/Evaluation"
 import { EvolutionFields } from "./Fields/Evolution"
+import { FinanceFields } from "./Fields/Finance"
+import { cn } from "@/lib/utils"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 
 interface AttendanceDialogProps {
@@ -69,12 +71,49 @@ const combineDateAndTime = (date: string, time: string) => {
   return iso.toISOString()
 }
 
+const normalizeNullableText = (value?: string | null) => {
+  if (!value) return null
+  const trimmed = value.trim()
+  return trimmed.length ? trimmed : null
+}
+
+const formatFinancePaidAtDate = (isoDate?: string | null) => {
+  if (!isoDate) return ""
+  const date = new Date(isoDate)
+  if (Number.isNaN(date.getTime())) return ""
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return localDate.toISOString().slice(0, 10)
+}
+
+const getFinanceDefaults = (attendance?: Attendance | null) => {
+  if (!attendance || !attendance.launchToFinance) {
+    return {
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: "",
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
+    }
+  }
+
+  return {
+    launchToFinance: true,
+    financeAmount: attendance.financeAmount ?? "",
+    financePaymentMethod: attendance.financePaymentMethod ?? "",
+    financeAccount: attendance.financeAccount ?? "",
+    financePaid: attendance.financePaid ?? false,
+    financePaidAt: formatFinancePaidAtDate(attendance.financePaidAt ?? null),
+  }
+}
+
 export const AttendanceDialog = ({
   open,
   onOpenChange,
   type,
   attendance,
 }: AttendanceDialogProps) => {
+  const [activeTab, setActiveTab] = useState<"clinical" | "finance">("clinical")
   const { data: session } = useSession()
   const professionalId = session?.user?.id ?? ""
   const patientsQuery = useMemo(
@@ -114,16 +153,14 @@ export const AttendanceDialog = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
-      launchToFinance: false,
-      financeAmount: "",
-      financePaymentMethod: "",
-      financeAccount: "",
-      financePaid: false,
-      financePaidAt: "",
+      ...getFinanceDefaults(),
     },
   })
 
   useEffect(() => {
+    if (open) {
+      setActiveTab("clinical")
+    }
     if (!open) return
 
     const normalizeAttachments = (
@@ -155,12 +192,7 @@ export const AttendanceDialog = ({
         cifDescription: attendance.cifDescription ?? "",
         evolutionNotes: attendance.evolutionNotes ?? "",
         attachments: normalizeAttachments(attendance.attachments),
-        launchToFinance: false,
-        financeAmount: "",
-        financePaymentMethod: "",
-        financeAccount: "",
-        financePaid: false,
-        financePaidAt: "",
+        ...getFinanceDefaults(attendance),
       })
     } else {
       const defaults = getDefaultDateParts()
@@ -179,12 +211,7 @@ export const AttendanceDialog = ({
         cifDescription: "",
         evolutionNotes: "",
         attachments: [],
-        launchToFinance: false,
-        financeAmount: "",
-        financePaymentMethod: "",
-        financeAccount: "",
-        financePaid: false,
-        financePaidAt: "",
+        ...getFinanceDefaults(),
       })
     }
   }, [attendance, form, open])
@@ -199,6 +226,24 @@ export const AttendanceDialog = ({
       toast.error("Não foi possível identificar o profissional logado.")
       return
     }
+
+    const financePayload = values.launchToFinance
+      ? {
+          launchToFinance: true,
+          financeAmount: normalizeNullableText(values.financeAmount),
+          financePaymentMethod: normalizeNullableText(values.financePaymentMethod),
+          financeAccount: normalizeNullableText(values.financeAccount),
+          financePaid: values.financePaid,
+          financePaidAt: normalizeNullableText(values.financePaidAt),
+        }
+      : {
+          launchToFinance: false,
+          financeAmount: null,
+          financePaymentMethod: null,
+          financeAccount: null,
+          financePaid: false,
+          financePaidAt: null,
+        }
 
     const basePayload = {
       patientId: values.patientId,
@@ -215,6 +260,7 @@ export const AttendanceDialog = ({
       cifDescription: values.cifDescription?.trim() || null,
       evolutionNotes: values.evolutionNotes?.trim() || null,
       attachments: values.attachments ?? [],
+      ...financePayload,
     }
     const payload = attendance ? basePayload : { ...basePayload, type }
     const creationPayload = { ...basePayload, type }
@@ -243,19 +289,52 @@ export const AttendanceDialog = ({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {isEvolution ? (
-              <EvolutionFields
-                form={form}
-                patients={patients}
-                isLoadingPatients={isLoadingPatients}
-              />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <div className="rounded-lg border bg-muted/30 p-1 text-sm font-medium text-muted-foreground">
+              <div className="grid grid-cols-2 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("clinical")}
+                  className={cn(
+                    "rounded-md px-3 py-2 transition-colors",
+                    activeTab === "clinical"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  {isEvolution ? "Dados clínicos" : "Avaliação"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("finance")}
+                  className={cn(
+                    "rounded-md px-3 py-2 transition-colors",
+                    activeTab === "finance"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  Financeiro
+                </button>
+              </div>
+            </div>
+
+            {activeTab === "clinical" ? (
+              isEvolution ? (
+                <EvolutionFields
+                  form={form}
+                  patients={patients}
+                  isLoadingPatients={isLoadingPatients}
+                />
+              ) : (
+                <EvaluationFields
+                  form={form}
+                  patients={patients}
+                  isLoadingPatients={isLoadingPatients}
+                />
+              )
             ) : (
-              <EvaluationFields
-                form={form}
-                patients={patients}
-                isLoadingPatients={isLoadingPatients}
-              />
+              <FinanceFields form={form} />
             )}
 
             <div className="flex justify-end gap-2 pt-2">

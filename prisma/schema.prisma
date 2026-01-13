@@ -89,6 +89,12 @@ model Attendance {
   attachments           Json?
   cifCode               String?        @map("cif_code")
   cifDescription        String?        @map("cif_description")
+  launchToFinance       Boolean        @default(false) @map("launch_to_finance")
+  financeAmount         Decimal?       @map("finance_amount")
+  financePaymentMethod  String?        @map("finance_payment_method")
+  financeAccount        String?        @map("finance_account")
+  financePaid           Boolean        @default(false) @map("finance_paid")
+  financePaidAt         DateTime?      @map("finance_paid_at")
   patient               Patient        @relation(fields: [patientId], references: [id])
   professional          User           @relation(fields: [professionalId], references: [id])
   treatmentPlan         TreatmentPlan?
@@ -162,6 +168,6 @@ enum Status {
 }
 
 enum AttendanceType {
-  EVALUATION @map("evaluation")
-  EVOLUTION  @map("evolution")
+  EVALUATION
+  EVOLUTION
 }

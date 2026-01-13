@@ -10,13 +10,40 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse } from "@/types/api";
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 import {
   attendanceInclude,
   formatAttendance,
   toPrismaAttendanceType,
   type AttendanceWithRelations,
 } from "./utils";
+
+const resolveAttendanceType = (
+  raw: unknown,
+  fallback: AttendanceType = AttendanceType.EVALUATION,
+): AttendanceType => {
+  const typeInput =
+    typeof raw === "string"
+      ? raw
+      : typeof raw === "object" && raw !== null && "value" in raw
+        ? (raw as { value?: string }).value
+        : undefined
+
+  return toPrismaAttendanceType(typeInput) ?? fallback
+}
+
+const parseFinanceAmount = (value?: unknown) => {
+  if (typeof value !== "string" && typeof value !== "number") return null
+  const normalized = String(value).trim()
+  if (!normalized) return null
+  return new Prisma.Decimal(normalized)
+}
+
+const parseFinanceDate = (value?: unknown) => {
+  if (typeof value !== "string" || !value.trim()) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
 
 export async function GET(
   request: NextRequest
@@ -113,14 +140,7 @@ export async function POST(
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
     const body = await validateJsonBody(request, createAttendanceSchema);
-    const typeInput =
-      typeof body.type === "string"
-        ? body.type
-        : typeof body.type === "object" && body.type !== null && "value" in body.type
-          ? (body.type as { value?: string }).value
-          : undefined;
-    const prismaType =
-      toPrismaAttendanceType(typeInput) ?? AttendanceType.EVALUATION;
+    const prismaType = resolveAttendanceType(body.type);
 
     const attendance = await prisma.attendance.create({
       data: {
@@ -139,6 +159,12 @@ export async function POST(
         cifDescription: body.cifDescription ?? null,
         evolutionNotes: body.evolutionNotes ?? null,
         attachments: body.attachments ?? [],
+        launchToFinance: body.launchToFinance ?? false,
+        financeAmount: parseFinanceAmount(body.financeAmount),
+        financePaymentMethod: body.financePaymentMethod ?? null,
+        financeAccount: body.financeAccount ?? null,
+        financePaid: body.financePaid ?? false,
+        financePaidAt: parseFinanceDate(body.financePaidAt),
       },
       include: attendanceInclude,
     });
