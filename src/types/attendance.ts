@@ -45,6 +45,9 @@ export interface Attendance extends AttendanceBase {
     id: string;
     name: string | null;
   } | null;
+  treatmentPlan?: {
+    id: string;
+  } | null;
 }
 
 export interface AttendanceCreateInput {

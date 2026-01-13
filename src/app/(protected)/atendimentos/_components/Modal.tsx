@@ -45,6 +45,19 @@ const getTypeLabel = (type: AttendanceType) => {
   return typeLabels[key] ?? "Atendimento"
 }
 
+const normalizeDialogType = (
+  value?: AttendanceType | string | null,
+): AttendanceType => {
+  if (!value) {
+    return PrismaAttendanceType.EVALUATION
+  }
+  const normalized =
+    typeof value === "string" ? value.toLowerCase() : value.toString().toLowerCase()
+  return normalized === "evolution"
+    ? PrismaAttendanceType.EVOLUTION
+    : PrismaAttendanceType.EVALUATION
+}
+
 const getDefaultDateParts = () => {
   const now = new Date()
   now.setSeconds(0, 0)
@@ -217,8 +230,9 @@ export const AttendanceDialog = ({
   }, [attendance, form, open])
 
   const isSubmitting = isCreating || isUpdating
-  const typeLabel = getTypeLabel(type)
-  const isEvolution = type === PrismaAttendanceType.EVOLUTION
+  const dialogType = attendance ? normalizeDialogType(attendance.type) : normalizeDialogType(type)
+  const typeLabel = getTypeLabel(dialogType)
+  const isEvolution = dialogType === PrismaAttendanceType.EVOLUTION
   const title = attendance ? "Editar atendimento" : `Nova ${typeLabel.toLowerCase()}`
 
   const onSubmit = async (values: AttendanceFormValues) => {
@@ -262,8 +276,8 @@ export const AttendanceDialog = ({
       attachments: values.attachments ?? [],
       ...financePayload,
     }
-    const payload = attendance ? basePayload : { ...basePayload, type }
-    const creationPayload = { ...basePayload, type }
+    const payload = attendance ? basePayload : { ...basePayload, type: dialogType }
+    const creationPayload = { ...basePayload, type: dialogType }
     try {
       if (attendance) {
         await handleUpdate(attendance.id, payload)

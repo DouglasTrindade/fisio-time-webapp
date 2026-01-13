@@ -23,6 +23,7 @@ export type HistoryEntry = {
   cidDescription?: string | null;
   cifCode?: string | null;
   cifDescription?: string | null;
+  hasTreatmentPlan?: boolean;
 };
 
 export type ProfessionalOption = {

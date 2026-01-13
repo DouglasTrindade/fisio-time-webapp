@@ -215,7 +215,9 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir atendimento</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir este registro? Essa ação não pode ser desfeita.
+              {attendanceToDelete?.hasTreatmentPlan
+                ? `Esta ${attendanceToDelete.type === "evaluation" ? "avaliação" : "evolução"} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
+                : "Tem certeza que deseja excluir este registro? Essa ação não pode ser desfeita."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

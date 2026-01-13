@@ -152,7 +152,13 @@ export async function DELETE(
       );
     }
 
-    await prisma.attendance.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.treatmentPlan.deleteMany({
+        where: { attendanceId: id },
+      });
+
+      await tx.attendance.delete({ where: { id } });
+    });
 
     return NextResponse.json(
       createApiResponse<null>(null, "Atendimento excluído com sucesso")

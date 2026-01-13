@@ -30,11 +30,13 @@ export type AttendanceWithRelations = {
   updatedAt: Date;
   patient: { id: string; name: string | null } | null;
   professional: { id: string; name: string | null } | null;
+  treatmentPlan: { id: string } | null;
 };
 
 export const attendanceInclude = {
   patient: { select: { id: true, name: true } },
   professional: { select: { id: true, name: true } },
+  treatmentPlan: { select: { id: true } },
 } as const;
 
 export const toPrismaAttendanceType = (
@@ -60,6 +62,7 @@ export const formatAttendance = (
   attendance: AttendanceWithRelations
 ): Attendance => ({
   ...attendance,
+  treatmentPlan: attendance.treatmentPlan,
   cifCode: attendance.cifCode,
   cifDescription: attendance.cifDescription,
   type: attendance.type === AttendanceType.EVOLUTION ? "evolution" : "evaluation",

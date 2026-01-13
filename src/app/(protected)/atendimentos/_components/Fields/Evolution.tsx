@@ -224,125 +224,127 @@ export const EvolutionFields = ({
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name="cidCode"
-        render={() => (
-          <FormItem className="space-y-2">
-            <FormLabel>CID - Doença</FormLabel>
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  placeholder="Digite o código ou nome da doença"
-                  value={cidQuery}
-                  onChange={(event) => setCidQuery(event.target.value)}
-                />
+      <div className="grid grid-cols-2 items-start gap-4">
+        <FormField
+          control={form.control}
+          name="cidCode"
+          render={() => (
+            <FormItem className="space-y-2">
+              <FormLabel>CID - Doença</FormLabel>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="pl-10"
+                    placeholder="Digite o código ou nome da doença"
+                    value={cidQuery}
+                    onChange={(event) => setCidQuery(event.target.value)}
+                  />
+                </div>
+                {cidQuery.length < MIN_QUERY_LENGTH ? (
+                  <FormDescription>Digite ao menos {MIN_QUERY_LENGTH} caracteres para buscar.</FormDescription>
+                ) : (
+                  <div className="rounded-md border bg-background shadow-sm">
+                    {isSearchingCid ? (
+                      <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Buscando resultados...
+                      </div>
+                    ) : cidOptions.length === 0 ? (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+                    ) : (
+                      <ul className="max-h-48 overflow-y-auto">
+                        {cidOptions.map((option) => (
+                          <li key={option.code}>
+                            <button
+                              type="button"
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                              onClick={() => handleCidSelect(option)}
+                            >
+                              <span className="font-semibold">{option.code}</span>{" "}
+                              <span className="text-muted-foreground">{option.description}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
+                {selectedCidLabel && (
+                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
+                    <span>{selectedCidLabel}</span>
+                    <Button variant="ghost" size="icon" onClick={handleClearCid}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              {cidQuery.length < MIN_QUERY_LENGTH ? (
-                <FormDescription>Digite ao menos {MIN_QUERY_LENGTH} caracteres para buscar.</FormDescription>
-              ) : (
-                <div className="rounded-md border bg-background shadow-sm">
-                  {isSearchingCid ? (
-                    <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Buscando resultados...
-                    </div>
-                  ) : cidOptions.length === 0 ? (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
-                  ) : (
-                    <ul className="max-h-48 overflow-y-auto">
-                      {cidOptions.map((option) => (
-                        <li key={option.code}>
-                          <button
-                            type="button"
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                            onClick={() => handleCidSelect(option)}
-                          >
-                            <span className="font-semibold">{option.code}</span>{" "}
-                            <span className="text-muted-foreground">{option.description}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-              {selectedCidLabel && (
-                <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
-                  <span>{selectedCidLabel}</span>
-                  <Button variant="ghost" size="icon" onClick={handleClearCid}>
-                    <X className="h-4 w-4" />
-                  </Button>
+        <FormField
+          control={form.control}
+          name="cifCode"
+          render={() => (
+            <FormItem className="space-y-2">
+              <FormLabel>CIF - Funcionalidade</FormLabel>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    className="pl-10"
+                    placeholder="Digite o código ou nome da classificação funcional"
+                    value={cifQuery}
+                    onChange={(event) => setCifQuery(event.target.value)}
+                  />
                 </div>
-              )}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                {cifQuery.length < MIN_QUERY_LENGTH ? (
+                  <FormDescription>Digite ao menos {MIN_QUERY_LENGTH} caracteres para buscar.</FormDescription>
+                ) : (
+                  <div className="rounded-md border bg-background shadow-sm">
+                    {isSearchingCif ? (
+                      <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Buscando resultados...
+                      </div>
+                    ) : cifOptions.length === 0 ? (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+                    ) : (
+                      <ul className="max-h-48 overflow-y-auto">
+                        {cifOptions.map((option) => (
+                          <li key={option.code}>
+                            <button
+                              type="button"
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                              onClick={() => handleCifSelect(option)}
+                            >
+                              <span className="font-semibold">{option.code}</span>{" "}
+                              <span className="text-muted-foreground">{option.description}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
-      <FormField
-        control={form.control}
-        name="cifCode"
-        render={() => (
-          <FormItem className="space-y-2">
-            <FormLabel>CIF - Funcionalidade</FormLabel>
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  placeholder="Digite o código ou nome da classificação funcional"
-                  value={cifQuery}
-                  onChange={(event) => setCifQuery(event.target.value)}
-                />
+                {selectedCifLabel && (
+                  <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
+                    <span>{selectedCifLabel}</span>
+                    <Button variant="ghost" size="icon" onClick={handleClearCif}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              {cifQuery.length < MIN_QUERY_LENGTH ? (
-                <FormDescription>Digite ao menos {MIN_QUERY_LENGTH} caracteres para buscar.</FormDescription>
-              ) : (
-                <div className="rounded-md border bg-background shadow-sm">
-                  {isSearchingCif ? (
-                    <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Buscando resultados...
-                    </div>
-                  ) : cifOptions.length === 0 ? (
-                    <p className="px-3 py-2 text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
-                  ) : (
-                    <ul className="max-h-48 overflow-y-auto">
-                      {cifOptions.map((option) => (
-                        <li key={option.code}>
-                          <button
-                            type="button"
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                            onClick={() => handleCifSelect(option)}
-                          >
-                            <span className="font-semibold">{option.code}</span>{" "}
-                            <span className="text-muted-foreground">{option.description}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-
-              {selectedCifLabel && (
-                <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2 text-sm">
-                  <span>{selectedCifLabel}</span>
-                  <Button variant="ghost" size="icon" onClick={handleClearCif}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
       <FormField
         control={form.control}
