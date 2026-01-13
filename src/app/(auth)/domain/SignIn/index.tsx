@@ -8,12 +8,11 @@ import { toast } from "sonner";
 import { SignInFields } from "./Fields";
 import { signInSchema, SignInSchema } from "./Schema";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { SignInAction } from "@/actions/SignIn";
 
 export const SignIn = () => {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
@@ -24,24 +23,28 @@ export const SignIn = () => {
   });
 
   const onSubmit = async (data: SignInSchema) => {
+    form.clearErrors("root");
     startTransition(async () => {
-      await SignInAction(data).then((res) => {
-        if (res?.error) {
-          setError(res?.error);
-          toast.error(res?.error);
-        } else {
-          toast.success("Login realizado com sucesso!");
-          router.push("/dashboard");
-        }
-      });
+      const result = await SignInAction(data);
+
+      if (result?.error) {
+        form.setError("root", { message: result.error });
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Login realizado com sucesso!");
+      router.push("/dashboard");
     });
   };
+
+  const rootError = form.formState.errors.root?.message;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <SignInFields />
-        {error && <FormMessage>{error}</FormMessage>}
+        {rootError && <FormMessage>{rootError}</FormMessage>}
         <Button
           type="submit"
           disabled={isPending}

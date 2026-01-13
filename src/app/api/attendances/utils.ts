@@ -76,3 +76,67 @@ export const formatAttendance = (
   updatedAt: attendance.updatedAt.toISOString(),
   attachments: attendance.attachments ?? null,
 });
+
+type FinanceInput = {
+  launchToFinance?: boolean;
+  financeAmount?: string | number | null;
+  financePaymentMethod?: string | null;
+  financeAccount?: string | null;
+  financePaid?: boolean;
+  financePaidAt?: string | Date | null;
+};
+
+const parseFinanceAmount = (
+  value?: FinanceInput["financeAmount"],
+): Prisma.Decimal | null => {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const normalized =
+    typeof value === "number" ? value.toString() : value.trim();
+  if (!normalized) return null;
+
+  try {
+    return new Prisma.Decimal(normalized);
+  } catch {
+    return null;
+  }
+};
+
+const parseFinanceDate = (
+  value?: FinanceInput["financePaidAt"],
+): Date | null => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+export const buildCreateFinanceData = (input: FinanceInput) => ({
+  launchToFinance: input.launchToFinance ?? false,
+  financeAmount: parseFinanceAmount(input.financeAmount),
+  financePaymentMethod: input.financePaymentMethod ?? null,
+  financeAccount: input.financeAccount ?? null,
+  financePaid: input.financePaid ?? false,
+  financePaidAt: parseFinanceDate(input.financePaidAt),
+});
+
+export const buildUpdateFinanceData = (input: FinanceInput) => ({
+  launchToFinance:
+    input.launchToFinance !== undefined ? input.launchToFinance : undefined,
+  financeAmount:
+    input.financeAmount !== undefined
+      ? parseFinanceAmount(input.financeAmount)
+      : undefined,
+  financePaymentMethod:
+    input.financePaymentMethod !== undefined
+      ? input.financePaymentMethod ?? null
+      : undefined,
+  financeAccount:
+    input.financeAccount !== undefined ? input.financeAccount ?? null : undefined,
+  financePaid: input.financePaid !== undefined ? input.financePaid : undefined,
+  financePaidAt:
+    input.financePaidAt !== undefined
+      ? parseFinanceDate(input.financePaidAt)
+      : undefined,
+});

@@ -10,11 +10,12 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse } from "@/types/api";
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType, Prisma } from "@prisma/client";
+import { AttendanceType } from "@prisma/client";
 import {
   attendanceInclude,
   formatAttendance,
   toPrismaAttendanceType,
+  buildCreateFinanceData,
   type AttendanceWithRelations,
 } from "./utils";
 
@@ -30,19 +31,6 @@ const resolveAttendanceType = (
         : undefined
 
   return toPrismaAttendanceType(typeInput) ?? fallback
-}
-
-const parseFinanceAmount = (value?: unknown) => {
-  if (typeof value !== "string" && typeof value !== "number") return null
-  const normalized = String(value).trim()
-  if (!normalized) return null
-  return new Prisma.Decimal(normalized)
-}
-
-const parseFinanceDate = (value?: unknown) => {
-  if (typeof value !== "string" || !value.trim()) return null
-  const parsed = new Date(value)
-  return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
 export async function GET(
@@ -159,12 +147,7 @@ export async function POST(
         cifDescription: body.cifDescription ?? null,
         evolutionNotes: body.evolutionNotes ?? null,
         attachments: body.attachments ?? [],
-        launchToFinance: body.launchToFinance ?? false,
-        financeAmount: parseFinanceAmount(body.financeAmount),
-        financePaymentMethod: body.financePaymentMethod ?? null,
-        financeAccount: body.financeAccount ?? null,
-        financePaid: body.financePaid ?? false,
-        financePaidAt: parseFinanceDate(body.financePaidAt),
+        ...buildCreateFinanceData(body),
       },
       include: attendanceInclude,
     });

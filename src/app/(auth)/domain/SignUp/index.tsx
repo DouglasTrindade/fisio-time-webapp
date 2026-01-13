@@ -7,13 +7,12 @@ import { SignUpFields } from "./Fields";
 import { Form, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { SignUpAction } from "@/actions/SignUp";
 
 export const SignUp = () => {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -26,24 +25,29 @@ export const SignUp = () => {
   });
 
   const onSubmit = async (data: SignUpSchema) => {
+    form.clearErrors("root");
     startTransition(() => {
       SignUpAction(data).then((res) => {
         if (res?.error) {
-          setError(res?.error);
-        } else {
-          toast.success("Cadastro realizado com sucesso!");
-          form.reset();
-          router.push("/sign-in");
+          form.setError("root", { message: res.error });
+          toast.error(res.error);
+          return;
         }
+
+        toast.success("Cadastro realizado com sucesso!");
+        form.reset();
+        router.push("/sign-in");
       });
     });
   };
+
+  const rootError = form.formState.errors.root?.message;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <SignUpFields />
-        {error && <FormMessage>{error}</FormMessage>}
+        {rootError && <FormMessage>{rootError}</FormMessage>}
         <Button
           type="submit"
           className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
