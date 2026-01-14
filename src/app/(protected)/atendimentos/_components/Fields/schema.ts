@@ -11,6 +11,8 @@ const optionalNullableString = z
   .union([z.string(), z.literal(""), z.null(), z.undefined()])
   .transform((value) => (value && value.length ? value : undefined))
 
+const paymentMethodEnum = z.enum(["pix", "bank_slip", "credit_card"])
+
 const optionalDate = z
   .union([
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida"),
@@ -45,7 +47,7 @@ export const attendanceFormSchema = z.object({
   attachments: z.array(attachmentSchema),
   launchToFinance: z.boolean().default(false),
   financeAmount: optionalText,
-  financePaymentMethod: optionalText,
+  financePaymentMethod: paymentMethodEnum.optional(),
   financeAccount: optionalText,
   financePaid: z.boolean().default(false),
   financePaidAt: optionalDate,

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button"
 import { EvaluationFields } from "./Fields/Evaluation"
 import { EvolutionFields } from "./Fields/Evolution"
 import { FinanceFields } from "./Fields/Finance"
+import { DEFAULT_PAYMENT_METHOD, normalizePaymentMethodSlug } from "./utils"
 import { cn } from "@/lib/utils"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 
@@ -51,8 +52,7 @@ const normalizeDialogType = (
   if (!value) {
     return PrismaAttendanceType.EVALUATION
   }
-  const normalized =
-    typeof value === "string" ? value.toLowerCase() : value.toString().toLowerCase()
+  const normalized = String(value).toLowerCase()
   return normalized === "evolution"
     ? PrismaAttendanceType.EVOLUTION
     : PrismaAttendanceType.EVALUATION
@@ -103,7 +103,7 @@ const getFinanceDefaults = (attendance?: Attendance | null) => {
     return {
       launchToFinance: false,
       financeAmount: "",
-      financePaymentMethod: "",
+      financePaymentMethod: DEFAULT_PAYMENT_METHOD,
       financeAccount: "",
       financePaid: false,
       financePaidAt: "",
@@ -113,7 +113,9 @@ const getFinanceDefaults = (attendance?: Attendance | null) => {
   return {
     launchToFinance: true,
     financeAmount: attendance.financeAmount ?? "",
-    financePaymentMethod: attendance.financePaymentMethod ?? "",
+    financePaymentMethod: normalizePaymentMethodSlug(
+      attendance.financePaymentMethod,
+    ),
     financeAccount: attendance.financeAccount ?? "",
     financePaid: attendance.financePaid ?? false,
     financePaidAt: formatFinancePaidAtDate(attendance.financePaidAt ?? null),
@@ -245,7 +247,8 @@ export const AttendanceDialog = ({
       ? {
           launchToFinance: true,
           financeAmount: normalizeNullableText(values.financeAmount),
-          financePaymentMethod: normalizeNullableText(values.financePaymentMethod),
+          financePaymentMethod:
+            values.financePaymentMethod ?? DEFAULT_PAYMENT_METHOD,
           financeAccount: normalizeNullableText(values.financeAccount),
           financePaid: values.financePaid,
           financePaidAt: normalizeNullableText(values.financePaidAt),

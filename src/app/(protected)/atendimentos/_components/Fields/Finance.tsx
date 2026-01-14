@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import type { UseFormReturn } from "react-hook-form"
 import type { AttendanceFormSchema } from "./schema"
 import { Button } from "@/components/ui/button"
@@ -13,7 +14,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-
+import { DEFAULT_PAYMENT_METHOD, paymentMethods } from "../utils"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 interface FinanceFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
 }
@@ -21,16 +29,27 @@ interface FinanceFieldsProps {
 export const FinanceFields = ({ form }: FinanceFieldsProps) => {
   const isFinanceEnabled = form.watch("launchToFinance")
   const isPaid = form.watch("financePaid")
+  const defaultPaymentMethod = DEFAULT_PAYMENT_METHOD
+
+  useEffect(() => {
+    if (!isFinanceEnabled || !defaultPaymentMethod) return
+    const currentMethod = form.getValues("financePaymentMethod")
+    if (!currentMethod) {
+      form.setValue("financePaymentMethod", defaultPaymentMethod, { shouldDirty: true })
+    }
+  }, [defaultPaymentMethod, form, isFinanceEnabled])
 
   const toggleFinance = () => {
     const nextValue = !isFinanceEnabled
     form.setValue("launchToFinance", nextValue, { shouldDirty: true })
     if (!nextValue) {
       form.setValue("financeAmount", "", { shouldDirty: true })
-      form.setValue("financePaymentMethod", "", { shouldDirty: true })
+      form.setValue("financePaymentMethod", undefined, { shouldDirty: true })
       form.setValue("financeAccount", "", { shouldDirty: true })
       form.setValue("financePaid", false, { shouldDirty: true })
       form.setValue("financePaidAt", "", { shouldDirty: true })
+    } else if (!form.getValues("financePaymentMethod") && defaultPaymentMethod) {
+      form.setValue("financePaymentMethod", defaultPaymentMethod, { shouldDirty: true })
     }
   }
 
@@ -83,7 +102,21 @@ export const FinanceFields = ({ form }: FinanceFieldsProps) => {
                 <FormItem>
                   <FormLabel>Forma de pagamento</FormLabel>
                   <FormControl>
-                    <Input placeholder="Cartão, Pix, dinheiro..." {...field} />
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={(value) => field.onChange(value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione a forma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {paymentMethods.map((method) => (
+                          <SelectItem key={method.slug} value={method.slug}>
+                            {method.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

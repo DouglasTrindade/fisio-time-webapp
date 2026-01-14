@@ -1,5 +1,5 @@
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType, Prisma } from "@prisma/client";
+import { AttendanceType, PaymentMethod, Prisma } from "@prisma/client";
 
 import type { AttendanceAttachment } from "@/types/attendance";
 
@@ -22,7 +22,7 @@ export type AttendanceWithRelations = {
   attachments: AttendanceAttachment[] | null;
   launchToFinance: boolean;
   financeAmount: Prisma.Decimal | null;
-  financePaymentMethod: string | null;
+  financePaymentMethod: PaymentMethod | null;
   financeAccount: string | null;
   financePaid: boolean;
   financePaidAt: Date | null;
@@ -45,7 +45,7 @@ export const toPrismaAttendanceType = (
   if (!value) return undefined;
 
   const normalized =
-    typeof value === "string" ? value.trim().toUpperCase() : value;
+    typeof value === "string" ? value.trim().toLowerCase() : value;
 
   if (normalized === AttendanceType.EVOLUTION) {
     return AttendanceType.EVOLUTION;
@@ -58,6 +58,39 @@ export const toPrismaAttendanceType = (
   return undefined;
 };
 
+const resolvePaymentMethod = (
+  value?: string | PaymentMethod | null
+): PaymentMethod | null => {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedKey = value
+    .toString()
+    .trim()
+    .replace(/[\s-]/g, "_")
+    .toUpperCase();
+
+  return (PaymentMethod as Record<string, PaymentMethod>)[normalizedKey] ?? null;
+};
+
+const formatPaymentMethod = (
+  method: PaymentMethod | null
+): Attendance["financePaymentMethod"] | null => {
+  if (!method) return null;
+
+  switch (method) {
+    case PaymentMethod.PIX:
+      return "pix";
+    case PaymentMethod.CREDIT_CARD:
+      return "credit_card";
+    case PaymentMethod.BANK_SLIP:
+      return "bank_slip";
+    default:
+      return null;
+  }
+};
+
 export const formatAttendance = (
   attendance: AttendanceWithRelations
 ): Attendance => ({
@@ -68,7 +101,7 @@ export const formatAttendance = (
   type: attendance.type === AttendanceType.EVOLUTION ? "evolution" : "evaluation",
   launchToFinance: attendance.launchToFinance,
   financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
-  financePaymentMethod: attendance.financePaymentMethod,
+  financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),
   financeAccount: attendance.financeAccount,
   financePaid: attendance.financePaid,
   financePaidAt: attendance.financePaidAt
@@ -83,7 +116,7 @@ export const formatAttendance = (
 type FinanceInput = {
   launchToFinance?: boolean;
   financeAmount?: string | number | null;
-  financePaymentMethod?: string | null;
+  financePaymentMethod?: PaymentMethod | string | null;
   financeAccount?: string | null;
   financePaid?: boolean;
   financePaidAt?: string | Date | null;
@@ -118,7 +151,7 @@ const parseFinanceDate = (
 export const buildCreateFinanceData = (input: FinanceInput) => ({
   launchToFinance: input.launchToFinance ?? false,
   financeAmount: parseFinanceAmount(input.financeAmount),
-  financePaymentMethod: input.financePaymentMethod ?? null,
+  financePaymentMethod: resolvePaymentMethod(input.financePaymentMethod),
   financeAccount: input.financeAccount ?? null,
   financePaid: input.financePaid ?? false,
   financePaidAt: parseFinanceDate(input.financePaidAt),
@@ -133,7 +166,7 @@ export const buildUpdateFinanceData = (input: FinanceInput) => ({
       : undefined,
   financePaymentMethod:
     input.financePaymentMethod !== undefined
-      ? input.financePaymentMethod ?? null
+      ? resolvePaymentMethod(input.financePaymentMethod)
       : undefined,
   financeAccount:
     input.financeAccount !== undefined ? input.financeAccount ?? null : undefined,

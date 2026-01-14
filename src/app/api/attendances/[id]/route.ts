@@ -82,6 +82,10 @@ export async function PUT(
     }
 
     const prismaType = resolveAttendanceType(body.type);
+    const financeData = buildUpdateFinanceData(body);
+    if (process.env.NODE_ENV !== "production") {
+      console.debug("[attendances] update finance payload", financeData);
+    }
 
     const updated = await prisma.attendance.update({
       where: { id },
@@ -118,7 +122,7 @@ export async function PUT(
           body.evolutionNotes !== undefined ? body.evolutionNotes : undefined,
         attachments:
           body.attachments !== undefined ? body.attachments : undefined,
-        ...buildUpdateFinanceData(body),
+        ...financeData,
       },
       include: attendanceInclude,
     });

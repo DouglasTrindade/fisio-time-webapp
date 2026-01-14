@@ -35,6 +35,10 @@ const attachmentSchema = z.object({
     .transform((value) => (value ? value : null)),
 });
 
+const paymentMethodField = optionalText.transform((value) =>
+  value ? value.toLowerCase() : value
+);
+
 export const createAttendanceSchema = z.object({
   patientId: z.string().min(1, "Paciente é obrigatório"),
   professionalId: z.string().min(1, "Profissional é obrigatório"),
@@ -58,7 +62,7 @@ export const createAttendanceSchema = z.object({
   attachments: z.array(attachmentSchema).optional().default([]),
   launchToFinance: z.boolean().optional().default(false),
   financeAmount: optionalText,
-  financePaymentMethod: optionalText,
+  financePaymentMethod: paymentMethodField,
   financeAccount: optionalText,
   financePaid: z.boolean().optional().default(false),
   financePaidAt: optionalText,

@@ -1,5 +1,10 @@
-import type { Attendance as PrismaAttendance, AttendanceType as PrismaAttendanceType, Prisma } from "@prisma/client";
+import type {
+  Attendance as PrismaAttendance,
+  AttendanceType as PrismaAttendanceType,
+  Prisma,
+} from "@prisma/client";
 export type AttendanceType = PrismaAttendanceType;
+export type AttendancePaymentMethod = "pix" | "credit_card" | "bank_slip";
 
 export interface AttendanceAttachment {
   id: string;
@@ -33,7 +38,7 @@ export interface Attendance extends AttendanceBase {
   attachments?: AttendanceAttachment[] | null;
   launchToFinance: boolean;
   financeAmount?: string | null;
-  financePaymentMethod?: string | null;
+  financePaymentMethod?: AttendancePaymentMethod | null;
   financeAccount?: string | null;
   financePaid: boolean;
   financePaidAt?: string | null;
@@ -68,7 +73,7 @@ export interface AttendanceCreateInput {
   attachments?: AttendanceAttachment[] | Prisma.JsonValue | null;
   launchToFinance?: boolean;
   financeAmount?: string | null;
-  financePaymentMethod?: string | null;
+  financePaymentMethod?: AttendancePaymentMethod | null;
   financeAccount?: string | null;
   financePaid?: boolean;
   financePaidAt?: string | null;

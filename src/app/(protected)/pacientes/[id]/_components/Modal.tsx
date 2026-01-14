@@ -13,6 +13,10 @@ import {
   attendanceFormSchema,
   type AttendanceFormSchema,
 } from "@/app/(protected)/atendimentos/_components/Fields/schema"
+import {
+  DEFAULT_PAYMENT_METHOD,
+  normalizePaymentMethodSlug,
+} from "@/app/(protected)/atendimentos/_components/utils"
 import { EvaluationFields } from "@/app/(protected)/atendimentos/_components/Fields/Evaluation"
 import { EvolutionFields } from "@/app/(protected)/atendimentos/_components/Fields/Evolution"
 import type { PatientSummary } from "./types"
@@ -77,7 +81,7 @@ export const HistoryAttendanceModal = ({
       attachments: [],
       launchToFinance: false,
       financeAmount: "",
-      financePaymentMethod: "",
+      financePaymentMethod: DEFAULT_PAYMENT_METHOD,
       financeAccount: "",
       financePaid: false,
       financePaidAt: "",
@@ -104,7 +108,7 @@ export const HistoryAttendanceModal = ({
       attachments: [],
       launchToFinance: false,
       financeAmount: "",
-      financePaymentMethod: "",
+      financePaymentMethod: DEFAULT_PAYMENT_METHOD,
       financeAccount: "",
       financePaid: false,
       financePaidAt: "",
@@ -144,7 +148,10 @@ export const HistoryAttendanceModal = ({
       attachments: (existingAttendance.attachments ?? []) as AttendanceFormSchema["attachments"],
       launchToFinance: existingAttendance.launchToFinance ?? false,
       financeAmount: existingAttendance.financeAmount ?? "",
-      financePaymentMethod: existingAttendance.financePaymentMethod ?? "",
+      financePaymentMethod: normalizePaymentMethodSlug(
+        existingAttendance.financePaymentMethod,
+        DEFAULT_PAYMENT_METHOD,
+      ),
       financeAccount: existingAttendance.financeAccount ?? "",
       financePaid: existingAttendance.financePaid ?? false,
       financePaidAt: existingAttendance.financePaidAt

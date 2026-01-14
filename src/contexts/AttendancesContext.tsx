@@ -43,11 +43,7 @@ const AttendancesUiContext = createContext<AttendancesUiContextValue | null>(nul
 const normalizeAttendanceType = (
   value?: AttendanceType | string | null,
 ): AttendanceType => {
-  if (!value) {
-    return PrismaAttendanceType.EVALUATION
-  }
-  const normalized =
-    typeof value === "string" ? value.toLowerCase() : value.toString().toLowerCase()
+  const normalized = value ? `${value}`.toLowerCase() : ""
   return normalized === "evolution"
     ? PrismaAttendanceType.EVOLUTION
     : PrismaAttendanceType.EVALUATION

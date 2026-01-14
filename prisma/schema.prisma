@@ -91,7 +91,7 @@ model Attendance {
   cifDescription        String?        @map("cif_description")
   launchToFinance       Boolean        @default(false) @map("launch_to_finance")
   financeAmount         Decimal?       @map("finance_amount")
-  financePaymentMethod  String?        @map("finance_payment_method")
+  financePaymentMethod  PaymentMethod? @map("finance_payment_method")
   financeAccount        String?        @map("finance_account")
   financePaid           Boolean        @default(false) @map("finance_paid")
   financePaidAt         DateTime?      @map("finance_paid_at")
@@ -167,7 +167,13 @@ enum Status {
   RESCHEDULED @map("rescheduled")
 }
 
+enum PaymentMethod {
+  PIX
+  BANK_SLIP
+  CREDIT_CARD
+}
+
 enum AttendanceType {
-  EVALUATION
-  EVOLUTION
+  EVALUATION @map("evaluation")
+  EVOLUTION  @map("evolution")
 }
