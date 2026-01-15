@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils"
 import type { NotificationCategory, AppNotification } from "@/types/notification"
 import {
   Bell,
+  CalendarClock,
+  CreditCard,
   MessageSquare,
-  Ticket,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react"
 
@@ -39,17 +39,17 @@ const NotificationCardRoot = React.forwardRef<HTMLDivElement, NotificationCardRo
 NotificationCardRoot.displayName = "NotificationCardRoot"
 
 const circleVariants: Record<NotificationCategory, string> = {
-  ticket: "bg-blue-500/15 text-blue-300",
-  message: "bg-green-500/15 text-green-300",
-  team: "bg-purple-500/15 text-purple-300",
   system: "bg-orange-500/15 text-orange-300",
+  finance: "bg-emerald-500/15 text-emerald-300",
+  attendance: "bg-sky-500/15 text-sky-300",
+  message: "bg-purple-500/15 text-purple-300",
 }
 
 const iconMap: Record<NotificationCategory, LucideIcon> = {
-  ticket: Ticket,
-  message: MessageSquare,
-  team: UsersRound,
   system: Bell,
+  finance: CreditCard,
+  attendance: CalendarClock,
+  message: MessageSquare,
 }
 
 const NotificationCardMedia = ({
