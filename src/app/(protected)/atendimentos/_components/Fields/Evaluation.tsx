@@ -100,9 +100,9 @@ export const EvaluationFields = ({
         />
       </div>
 
-      <div className="space-y-2">
-        <p className="font-semibold">Anamnese</p>
-        <div className="space-y-4">
+      <div className="space-y-4">
+        <p className="font-semibold text-xl">Anamnese</p>
+        <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="mainComplaint"
@@ -158,21 +158,21 @@ export const EvaluationFields = ({
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="observations"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Observações</FormLabel>
-                <FormControl>
-                  <Textarea rows={3} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
+
+        <FormField
+          control={form.control}
+          name="observations"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações</FormLabel>
+              <FormControl>
+                <Textarea rows={3} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </>
   )

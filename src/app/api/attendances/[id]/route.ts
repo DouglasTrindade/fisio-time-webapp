@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { AttendanceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   createApiResponse,
@@ -16,8 +17,21 @@ import {
   attendanceInclude,
   formatAttendance,
   toPrismaAttendanceType,
+  buildUpdateFinanceData,
   type AttendanceWithRelations,
 } from "../utils";
+
+const resolveAttendanceType = (
+  raw: unknown,
+): AttendanceType | undefined => {
+  const typeInput =
+    typeof raw === "string"
+      ? raw
+      : typeof raw === "object" && raw !== null && "value" in raw
+        ? (raw as { value?: string }).value
+        : undefined
+  return typeInput ? toPrismaAttendanceType(typeInput) : undefined
+}
 
 export async function GET(
   _request: NextRequest,
@@ -67,19 +81,21 @@ export async function PUT(
       );
     }
 
-    const typeInput =
-      typeof body.type === "string"
-        ? body.type
-        : typeof body.type === "object" && body.type !== null && "value" in body.type
-          ? (body.type as { value?: string }).value
-          : undefined;
-    const prismaType = typeInput ? toPrismaAttendanceType(typeInput) : undefined;
+    const prismaType = resolveAttendanceType(body.type);
+    const financeData = buildUpdateFinanceData(body);
+    if (process.env.NODE_ENV !== "production") {
+      console.debug("[attendances] update finance payload", financeData);
+    }
 
     const updated = await prisma.attendance.update({
       where: { id },
       data: {
-        patientId: body.patientId ?? undefined,
-        professionalId: body.professionalId ?? undefined,
+        ...(body.patientId
+          ? { patient: { connect: { id: body.patientId } } }
+          : {}),
+        ...(body.professionalId
+          ? { professional: { connect: { id: body.professionalId } } }
+          : {}),
         type: prismaType,
         date: body.date ? new Date(body.date) : undefined,
         mainComplaint:
@@ -106,6 +122,7 @@ export async function PUT(
           body.evolutionNotes !== undefined ? body.evolutionNotes : undefined,
         attachments:
           body.attachments !== undefined ? body.attachments : undefined,
+        ...financeData,
       },
       include: attendanceInclude,
     });
@@ -139,7 +156,13 @@ export async function DELETE(
       );
     }
 
-    await prisma.attendance.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.treatmentPlan.deleteMany({
+        where: { attendanceId: id },
+      });
+
+      await tx.attendance.delete({ where: { id } });
+    });
 
     return NextResponse.json(
       createApiResponse<null>(null, "Atendimento excluído com sucesso")

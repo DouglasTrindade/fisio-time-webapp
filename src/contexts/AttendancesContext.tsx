@@ -40,6 +40,15 @@ const { CrudProvider, useCrud } = createCrudContext<
 
 const AttendancesUiContext = createContext<AttendancesUiContextValue | null>(null)
 
+const normalizeAttendanceType = (
+  value?: AttendanceType | string | null,
+): AttendanceType => {
+  const normalized = value ? `${value}`.toLowerCase() : ""
+  return normalized === "evolution"
+    ? PrismaAttendanceType.EVOLUTION
+    : PrismaAttendanceType.EVALUATION
+}
+
 const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
   const { setFilters } = useCrud()
   const [dialogState, setDialogState] = useState<{
@@ -75,13 +84,17 @@ const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
   )
 
   const openNew = useCallback(
-    (type: AttendanceType) => setDialogState({ type, attendance: null }),
+    (type: AttendanceType) =>
+      setDialogState({ type: normalizeAttendanceType(type), attendance: null }),
     [],
   )
 
   const openEdit = useCallback(
     (attendance: Attendance) =>
-      setDialogState({ type: attendance.type, attendance }),
+      setDialogState({
+        type: normalizeAttendanceType(attendance.type),
+        attendance,
+      }),
     [],
   )
 

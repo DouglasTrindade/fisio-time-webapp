@@ -15,8 +15,23 @@ import {
   attendanceInclude,
   formatAttendance,
   toPrismaAttendanceType,
+  buildCreateFinanceData,
   type AttendanceWithRelations,
 } from "./utils";
+
+const resolveAttendanceType = (
+  raw: unknown,
+  fallback: AttendanceType = AttendanceType.EVALUATION,
+): AttendanceType => {
+  const typeInput =
+    typeof raw === "string"
+      ? raw
+      : typeof raw === "object" && raw !== null && "value" in raw
+        ? (raw as { value?: string }).value
+        : undefined
+
+  return toPrismaAttendanceType(typeInput) ?? fallback
+}
 
 export async function GET(
   request: NextRequest
@@ -113,14 +128,7 @@ export async function POST(
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
     const body = await validateJsonBody(request, createAttendanceSchema);
-    const typeInput =
-      typeof body.type === "string"
-        ? body.type
-        : typeof body.type === "object" && body.type !== null && "value" in body.type
-          ? (body.type as { value?: string }).value
-          : undefined;
-    const prismaType =
-      toPrismaAttendanceType(typeInput) ?? AttendanceType.EVALUATION;
+    const prismaType = resolveAttendanceType(body.type);
 
     const attendance = await prisma.attendance.create({
       data: {
@@ -139,6 +147,7 @@ export async function POST(
         cifDescription: body.cifDescription ?? null,
         evolutionNotes: body.evolutionNotes ?? null,
         attachments: body.attachments ?? [],
+        ...buildCreateFinanceData(body),
       },
       include: attendanceInclude,
     });

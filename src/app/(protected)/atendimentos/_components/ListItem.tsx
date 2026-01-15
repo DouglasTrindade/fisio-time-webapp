@@ -41,6 +41,8 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
   const { handleDelete, isDeleting } = useAttendancesContext()
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const router = useRouter()
+  const hasTreatmentPlan = Boolean(attendance.treatmentPlan)
+  const typeLabel = getAttendanceTypeLabel(attendance.type)
 
   const handleDeleteClick = async () => {
     await handleDelete(attendance.id)
@@ -59,7 +61,7 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
       >
         <TableCell>
           <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-medium capitalize text-primary">
-            {getAttendanceTypeLabel(attendance.type)}
+            {typeLabel}
           </span>
         </TableCell>
         <TableCell>
@@ -107,7 +109,9 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir atendimento</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Deseja continuar?
+              {hasTreatmentPlan
+                ? `Esta ${typeLabel.toLowerCase()} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
+                : "Esta ação não pode ser desfeita. Deseja continuar?"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

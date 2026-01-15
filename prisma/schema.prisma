@@ -19,6 +19,8 @@ model User {
   Appointment   Appointment[]
   attendances   Attendance[]
   sessions      Session[]
+  sentNotifications     Notification[] @relation("NotificationSender")
+  receivedNotifications Notification[] @relation("NotificationRecipient")
 
   @@map("users")
 }
@@ -89,6 +91,12 @@ model Attendance {
   attachments           Json?
   cifCode               String?        @map("cif_code")
   cifDescription        String?        @map("cif_description")
+  launchToFinance       Boolean        @default(false) @map("launch_to_finance")
+  financeAmount         Decimal?       @map("finance_amount")
+  financePaymentMethod  PaymentMethod? @map("finance_payment_method")
+  financeAccount        String?        @map("finance_account")
+  financePaid           Boolean        @default(false) @map("finance_paid")
+  financePaidAt         DateTime?      @map("finance_paid_at")
   patient               Patient        @relation(fields: [patientId], references: [id])
   professional          User           @relation(fields: [professionalId], references: [id])
   treatmentPlan         TreatmentPlan?
@@ -154,6 +162,30 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+model Notification {
+  id           String                 @id @default(cuid())
+  title        String
+  message      String
+  category     NotificationCategory   @default(MESSAGE)
+  status       NotificationStatus     @default(UNREAD)
+  priority     NotificationPriority   @default(NORMAL)
+  channel      String?
+  highlight    Boolean                @default(false)
+  includeEmail Boolean                @default(false) @map("include_email")
+  sendMode     NotificationSendMode   @default(NOW) @map("send_mode")
+  scheduledFor DateTime?              @map("scheduled_for")
+  sentAt       DateTime?              @map("sent_at")
+  readAt       DateTime?              @map("read_at")
+  recipientId  String                 @map("recipient_id")
+  recipient    User                   @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  senderId     String?                @map("sender_id")
+  sender       User?                  @relation("NotificationSender", fields: [senderId], references: [id])
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
 enum Status {
   CONFIRMED   @map("confirmed")
   CANCELED    @map("canceled")
@@ -161,7 +193,36 @@ enum Status {
   RESCHEDULED @map("rescheduled")
 }
 
+enum PaymentMethod {
+  PIX         @map("pix")
+  BANK_SLIP   @map("bank_slip")
+  CREDIT_CARD @map("credit_card")
+}
+
 enum AttendanceType {
   EVALUATION @map("evaluation")
   EVOLUTION  @map("evolution")
+}
+
+enum NotificationCategory {
+  SYSTEM     @map("system")
+  FINANCE    @map("finance")
+  ATTENDANCE @map("attendance")
+  MESSAGE    @map("message")
+}
+
+enum NotificationStatus {
+  UNREAD @map("unread")
+  READ   @map("read")
+}
+
+enum NotificationPriority {
+  LOW    @map("low")
+  NORMAL @map("normal")
+  HIGH   @map("high")
+}
+
+enum NotificationSendMode {
+  NOW       @map("now")
+  SCHEDULED @map("scheduled")
 }

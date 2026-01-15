@@ -41,6 +41,11 @@ const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
           name: true,
         },
       },
+      treatmentPlan: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
 
@@ -73,6 +78,7 @@ const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
       cidDescription: attendance.cidDescription,
       cifCode: attendance.cifCode,
       cifDescription: attendance.cifDescription,
+      hasTreatmentPlan: Boolean(attendance.treatmentPlan),
     };
   });
 

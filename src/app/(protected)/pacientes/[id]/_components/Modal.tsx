@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
@@ -13,6 +13,10 @@ import {
   attendanceFormSchema,
   type AttendanceFormSchema,
 } from "@/app/(protected)/atendimentos/_components/Fields/schema"
+import {
+  DEFAULT_PAYMENT_METHOD,
+  normalizePaymentMethodSlug,
+} from "@/app/(protected)/atendimentos/_components/utils"
 import { EvaluationFields } from "@/app/(protected)/atendimentos/_components/Fields/Evaluation"
 import { EvolutionFields } from "@/app/(protected)/atendimentos/_components/Fields/Evolution"
 import type { PatientSummary } from "./types"
@@ -20,6 +24,7 @@ import type { Patient } from "@/types/patient"
 import type { Attendance } from "@/types/attendance"
 import type { ApiResponse } from "@/types/api"
 import { apiRequest } from "@/services/api"
+import { useRecord } from "@/hooks/useRecord"
 
 const getDefaultDateParts = () => {
   const now = new Date()
@@ -55,9 +60,6 @@ export const HistoryAttendanceModal = ({
 }: HistoryAttendanceDialogProps) => {
   const { data: session } = useSession()
   const professionalId = session?.user?.id ?? ""
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingAttendance, setIsLoadingAttendance] = useState(false)
-  const [currentAttendance, setCurrentAttendance] = useState<Attendance | null>(null)
 
   const defaults = useMemo(() => getDefaultDateParts(), [])
   const form = useForm<AttendanceFormSchema>({
@@ -77,6 +79,12 @@ export const HistoryAttendanceModal = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: DEFAULT_PAYMENT_METHOD,
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
     },
   })
 
@@ -98,54 +106,72 @@ export const HistoryAttendanceModal = ({
       cifDescription: "",
       evolutionNotes: "",
       attachments: [],
+      launchToFinance: false,
+      financeAmount: "",
+      financePaymentMethod: DEFAULT_PAYMENT_METHOD,
+      financeAccount: "",
+      financePaid: false,
+      financePaidAt: "",
     })
   }, [attendanceId, form, open, patient.id, type])
 
+  const {
+    data: existingAttendance,
+    isLoading: isLoadingAttendance,
+    isError: isAttendanceError,
+  } = useRecord<Attendance>("/attendances", attendanceId, {
+    enabled: open && !!attendanceId,
+    staleTime: 0,
+    retry: 1,
+  })
+
   useEffect(() => {
-    const loadAttendance = async () => {
-      if (!attendanceId || !open) {
-        setCurrentAttendance(null)
-        return
-      }
-      setIsLoadingAttendance(true)
-      try {
-        const response = await apiRequest<ApiResponse<Attendance>>(
-          `/attendances/${attendanceId}`,
-        )
-        if (response.data) {
-          setCurrentAttendance(response.data)
-          const date = new Date(response.data.date)
-          const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-          form.reset({
-            patientId: response.data.patientId,
-            date: local.toISOString().slice(0, 10),
-            time: local.toISOString().slice(11, 16),
-            mainComplaint: response.data.mainComplaint ?? "",
-            currentIllnessHistory: response.data.currentIllnessHistory ?? "",
-            pastMedicalHistory: response.data.pastMedicalHistory ?? "",
-            familyHistory: response.data.familyHistory ?? "",
-            observations: response.data.observations ?? "",
-            cidCode: response.data.cidCode ?? "",
-            cidDescription: response.data.cidDescription ?? "",
-            cifCode: response.data.cifCode ?? "",
-            cifDescription: response.data.cifDescription ?? "",
-            evolutionNotes: response.data.evolutionNotes ?? "",
-            attachments: (response.data.attachments ?? []) as AttendanceFormSchema["attachments"],
-          })
-        }
-      } catch (error) {
-        console.error(error)
-        toast.error("Não foi possível carregar o atendimento")
-        onClose()
-      } finally {
-        setIsLoadingAttendance(false)
-      }
-    }
-    loadAttendance()
-  }, [attendanceId, form, onClose, open])
+    if (!open || !existingAttendance) return
+
+    const date = new Date(existingAttendance.date)
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+
+    form.reset({
+      patientId: existingAttendance.patientId,
+      date: local.toISOString().slice(0, 10),
+      time: local.toISOString().slice(11, 16),
+      mainComplaint: existingAttendance.mainComplaint ?? "",
+      currentIllnessHistory: existingAttendance.currentIllnessHistory ?? "",
+      pastMedicalHistory: existingAttendance.pastMedicalHistory ?? "",
+      familyHistory: existingAttendance.familyHistory ?? "",
+      observations: existingAttendance.observations ?? "",
+      cidCode: existingAttendance.cidCode ?? "",
+      cidDescription: existingAttendance.cidDescription ?? "",
+      cifCode: existingAttendance.cifCode ?? "",
+      cifDescription: existingAttendance.cifDescription ?? "",
+      evolutionNotes: existingAttendance.evolutionNotes ?? "",
+      attachments: (existingAttendance.attachments ?? []) as AttendanceFormSchema["attachments"],
+      launchToFinance: existingAttendance.launchToFinance ?? false,
+      financeAmount: existingAttendance.financeAmount ?? "",
+      financePaymentMethod: normalizePaymentMethodSlug(
+        existingAttendance.financePaymentMethod,
+        DEFAULT_PAYMENT_METHOD,
+      ),
+      financeAccount: existingAttendance.financeAccount ?? "",
+      financePaid: existingAttendance.financePaid ?? false,
+      financePaidAt: existingAttendance.financePaidAt
+        ? existingAttendance.financePaidAt.slice(0, 10)
+        : "",
+    })
+  }, [existingAttendance, form, open])
+
+  useEffect(() => {
+    if (!isAttendanceError || !attendanceId) return
+    toast.error("Não foi possível carregar o atendimento")
+    onClose()
+  }, [attendanceId, isAttendanceError, onClose])
 
   const currentType =
-    currentAttendance?.type ??
+    existingAttendance?.type === "evolution"
+      ? PrismaAttendanceType.EVOLUTION
+      : existingAttendance?.type === "evaluation"
+        ? PrismaAttendanceType.EVALUATION
+        :
     (type === PrismaAttendanceType.EVOLUTION
       ? PrismaAttendanceType.EVOLUTION
       : PrismaAttendanceType.EVALUATION)
@@ -158,7 +184,6 @@ export const HistoryAttendanceModal = ({
       return
     }
 
-    setIsSubmitting(true)
     try {
       const payload = {
         patientId: patient.id,
@@ -202,8 +227,6 @@ export const HistoryAttendanceModal = ({
     } catch (error) {
       console.error(error)
       toast.error("Erro ao salvar atendimento")
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -232,7 +255,7 @@ export const HistoryAttendanceModal = ({
     updatedAt: new Date(patient.createdAt),
   }
 
-  if (attendanceId && (isLoadingAttendance || !currentAttendance)) {
+  if (attendanceId && (isLoadingAttendance || (!existingAttendance && !isAttendanceError))) {
     return (
       <div className="p-6 text-sm text-muted-foreground">
         Carregando atendimento...
@@ -263,8 +286,8 @@ export const HistoryAttendanceModal = ({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Salvar"}
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </form>

@@ -1,5 +1,10 @@
-import type { Attendance as PrismaAttendance, AttendanceType as PrismaAttendanceType, Prisma } from "@prisma/client";
+import type {
+  Attendance as PrismaAttendance,
+  AttendanceType as PrismaAttendanceType,
+  Prisma,
+} from "@prisma/client";
 export type AttendanceType = PrismaAttendanceType;
+export type AttendancePaymentMethod = "pix" | "credit_card" | "bank_slip";
 
 export interface AttendanceAttachment {
   id: string;
@@ -12,7 +17,17 @@ export interface AttendanceAttachment {
 
 type AttendanceBase = Omit<
   PrismaAttendance,
-  "date" | "createdAt" | "updatedAt" | "type" | "attachments"
+  | "date"
+  | "createdAt"
+  | "updatedAt"
+  | "type"
+  | "attachments"
+  | "launchToFinance"
+  | "financeAmount"
+  | "financePaymentMethod"
+  | "financeAccount"
+  | "financePaid"
+  | "financePaidAt"
 >;
 
 export interface Attendance extends AttendanceBase {
@@ -21,6 +36,12 @@ export interface Attendance extends AttendanceBase {
   createdAt: string;
   updatedAt: string;
   attachments?: AttendanceAttachment[] | null;
+  launchToFinance: boolean;
+  financeAmount?: string | null;
+  financePaymentMethod?: AttendancePaymentMethod | null;
+  financeAccount?: string | null;
+  financePaid: boolean;
+  financePaidAt?: string | null;
   patient?: {
     id: string;
     name: string | null;
@@ -28,6 +49,9 @@ export interface Attendance extends AttendanceBase {
   professional?: {
     id: string;
     name: string | null;
+  } | null;
+  treatmentPlan?: {
+    id: string;
   } | null;
 }
 
@@ -47,6 +71,12 @@ export interface AttendanceCreateInput {
   cifDescription?: string | null;
   evolutionNotes?: string | null;
   attachments?: AttendanceAttachment[] | Prisma.JsonValue | null;
+  launchToFinance?: boolean;
+  financeAmount?: string | null;
+  financePaymentMethod?: AttendancePaymentMethod | null;
+  financeAccount?: string | null;
+  financePaid?: boolean;
+  financePaidAt?: string | null;
 }
 
 export type AttendanceUpdateInput = Partial<AttendanceCreateInput>;

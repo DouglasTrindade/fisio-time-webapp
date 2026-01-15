@@ -1,5 +1,5 @@
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, PaymentMethod, Prisma } from "@prisma/client";
 
 import type { AttendanceAttachment } from "@/types/attendance";
 
@@ -20,15 +20,23 @@ export type AttendanceWithRelations = {
   cifDescription: string | null;
   evolutionNotes: string | null;
   attachments: AttendanceAttachment[] | null;
+  launchToFinance: boolean;
+  financeAmount: Prisma.Decimal | null;
+  financePaymentMethod: PaymentMethod | null;
+  financeAccount: string | null;
+  financePaid: boolean;
+  financePaidAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   patient: { id: string; name: string | null } | null;
   professional: { id: string; name: string | null } | null;
+  treatmentPlan: { id: string } | null;
 };
 
 export const attendanceInclude = {
   patient: { select: { id: true, name: true } },
   professional: { select: { id: true, name: true } },
+  treatmentPlan: { select: { id: true } },
 } as const;
 
 export const toPrismaAttendanceType = (
@@ -37,7 +45,7 @@ export const toPrismaAttendanceType = (
   if (!value) return undefined;
 
   const normalized =
-    typeof value === "string" ? value.trim().toUpperCase() : value;
+    typeof value === "string" ? value.trim().toLowerCase() : value;
 
   if (normalized === AttendanceType.EVOLUTION) {
     return AttendanceType.EVOLUTION;
@@ -50,15 +58,121 @@ export const toPrismaAttendanceType = (
   return undefined;
 };
 
+const resolvePaymentMethod = (
+  value?: string | PaymentMethod | null
+): PaymentMethod | null => {
+  if (!value) {
+    return null;
+  }
+
+  const normalizedKey = value
+    .toString()
+    .trim()
+    .replace(/[\s-]/g, "_")
+    .toUpperCase();
+
+  return (PaymentMethod as Record<string, PaymentMethod>)[normalizedKey] ?? null;
+};
+
+const formatPaymentMethod = (
+  method: PaymentMethod | null
+): Attendance["financePaymentMethod"] | null => {
+  if (!method) return null;
+
+  switch (method) {
+    case PaymentMethod.PIX:
+      return "pix";
+    case PaymentMethod.CREDIT_CARD:
+      return "credit_card";
+    case PaymentMethod.BANK_SLIP:
+      return "bank_slip";
+    default:
+      return null;
+  }
+};
+
 export const formatAttendance = (
   attendance: AttendanceWithRelations
 ): Attendance => ({
   ...attendance,
+  treatmentPlan: attendance.treatmentPlan,
   cifCode: attendance.cifCode,
   cifDescription: attendance.cifDescription,
-  type: attendance.type,
+  type: attendance.type === AttendanceType.EVOLUTION ? "evolution" : "evaluation",
+  launchToFinance: attendance.launchToFinance,
+  financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
+  financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),
+  financeAccount: attendance.financeAccount,
+  financePaid: attendance.financePaid,
+  financePaidAt: attendance.financePaidAt
+    ? attendance.financePaidAt.toISOString()
+    : null,
   date: attendance.date.toISOString(),
   createdAt: attendance.createdAt.toISOString(),
   updatedAt: attendance.updatedAt.toISOString(),
   attachments: attendance.attachments ?? null,
+});
+
+type FinanceInput = {
+  launchToFinance?: boolean;
+  financeAmount?: string | number | null;
+  financePaymentMethod?: PaymentMethod | string | null;
+  financeAccount?: string | null;
+  financePaid?: boolean;
+  financePaidAt?: string | Date | null;
+};
+
+const parseFinanceAmount = (
+  value?: FinanceInput["financeAmount"],
+): Prisma.Decimal | null => {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const normalized =
+    typeof value === "number" ? value.toString() : value.trim();
+  if (!normalized) return null;
+
+  try {
+    return new Prisma.Decimal(normalized);
+  } catch {
+    return null;
+  }
+};
+
+const parseFinanceDate = (
+  value?: FinanceInput["financePaidAt"],
+): Date | null => {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+export const buildCreateFinanceData = (input: FinanceInput) => ({
+  launchToFinance: input.launchToFinance ?? false,
+  financeAmount: parseFinanceAmount(input.financeAmount),
+  financePaymentMethod: resolvePaymentMethod(input.financePaymentMethod),
+  financeAccount: input.financeAccount ?? null,
+  financePaid: input.financePaid ?? false,
+  financePaidAt: parseFinanceDate(input.financePaidAt),
+});
+
+export const buildUpdateFinanceData = (input: FinanceInput) => ({
+  launchToFinance:
+    input.launchToFinance !== undefined ? input.launchToFinance : undefined,
+  financeAmount:
+    input.financeAmount !== undefined
+      ? parseFinanceAmount(input.financeAmount)
+      : undefined,
+  financePaymentMethod:
+    input.financePaymentMethod !== undefined
+      ? resolvePaymentMethod(input.financePaymentMethod)
+      : undefined,
+  financeAccount:
+    input.financeAccount !== undefined ? input.financeAccount ?? null : undefined,
+  financePaid: input.financePaid !== undefined ? input.financePaid : undefined,
+  financePaidAt:
+    input.financePaidAt !== undefined
+      ? parseFinanceDate(input.financePaidAt)
+      : undefined,
 });
