@@ -10,16 +10,11 @@ import {
 import { NotificationStatus } from "@prisma/client"
 import { mapNotificationToApp } from "@/app/(protected)/notificacoes/mapper"
 
-interface RouteContext {
-  params: {
-    id: string
-  }
+type RouteContext = {
+  params: Promise<{ id: string }>
 }
 
-export async function PATCH(
-  _request: NextRequest,
-  context: RouteContext,
-) {
+export async function PATCH(_request: NextRequest, context: RouteContext) {
   try {
     const session = await auth()
     if (!session?.user?.id) {

@@ -90,8 +90,13 @@ export async function GET(
     }
 
     if (scope !== "sent") {
+      const existingAnd = Array.isArray(where.AND)
+        ? where.AND
+        : where.AND
+          ? [where.AND]
+          : []
       where.AND = [
-        ...(where.AND ?? []),
+        ...existingAnd,
         {
           OR: [{ scheduledFor: null }, { scheduledFor: { lte: now } }],
         },
