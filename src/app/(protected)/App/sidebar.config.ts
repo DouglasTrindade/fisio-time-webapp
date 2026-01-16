@@ -68,6 +68,12 @@ export const menuItems: SidebarMenuItemConfig[] = [
     isSection: true,
   },
   {
+    slug: "finance-summary",
+    title: "Resumo",
+    url: "/resumo",
+    icon: "chartPie",
+  },
+  {
     slug: "invoices",
     title: "Notas Fiscais (NFS-e)",
     url: "/notas-fiscais",

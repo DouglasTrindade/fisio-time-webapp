@@ -1,0 +1,104 @@
+"use client"
+
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { cn } from "@/lib/utils"
+import { FinanceTransaction } from "./FinanceResumePage"
+import { NewRevenueDialog } from "./NewRevenueDialog"
+
+const currency = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+})
+
+interface TransactionsCardProps {
+  transactions: FinanceTransaction[]
+  generalBalance: number
+  className?: string
+}
+
+export const TransactionsCard = ({
+  transactions,
+  generalBalance,
+  className,
+}: TransactionsCardProps) => {
+  return (
+    <Card className={cn("flex flex-col border-border/70 bg-card/85 shadow-lg", className)}>
+      <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <CardTitle>Transações</CardTitle>
+          <CardDescription>
+            Saldo geral consolidado:{" "}
+            <span className="font-semibold text-foreground">{currency.format(generalBalance)}</span>
+          </CardDescription>
+        </div>
+        <NewRevenueDialog />
+      </CardHeader>
+      <CardContent className="flex-1 overflow-x-auto">
+        {transactions.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Descrição</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Conta</TableHead>
+                <TableHead>Forma</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transactions.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{transaction.description}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(transaction.date), "dd MMM, HH:mm", { locale: ptBR })}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex h-6 items-center rounded-full bg-muted px-2 text-xs font-medium text-muted-foreground">
+                      {transaction.category}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{transaction.account}</TableCell>
+                  <TableCell className="text-xs uppercase text-muted-foreground">
+                    {transaction.paymentMethod}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={cn(
+                        "inline-flex min-w-[4.5rem] items-center justify-center rounded-full px-2 text-xs font-semibold uppercase tracking-wide",
+                        transaction.paid
+                          ? "bg-emerald-500/15 text-emerald-400"
+                          : "bg-amber-500/15 text-amber-400",
+                      )}
+                    >
+                      {transaction.paid ? "Pago" : "Pendente"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {currency.format(transaction.amount)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground">
+            Nenhuma transação lançada até o momento.
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex items-center justify-between border-t border-border/60 text-sm text-muted-foreground">
+        <span>Total de transações</span>
+        <span className="font-medium text-foreground">{transactions.length}</span>
+      </CardFooter>
+    </Card>
+  )
+}
