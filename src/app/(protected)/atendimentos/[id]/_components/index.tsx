@@ -2,6 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import type { Attendance as PrismaAttendance, Patient, User } from "@prisma/client"
 import { AttendanceType } from "@prisma/client"
 import type { AttendanceAttachment } from "@/types/attendance"
+import { fromPrismaEnumValue } from "@/lib/prisma/enum-helpers"
 
 type AttendanceWithRelations = PrismaAttendance & {
   patient: Patient | null
@@ -57,7 +58,8 @@ const getAttachments = (value: unknown): AttendanceAttachment[] => {
 export const AttendancesShow = ({ attendance }: { attendance: AttendanceWithRelations }) => {
   const startDate = attendance.date instanceof Date ? attendance.date : new Date(attendance.date)
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
-  const isEvolution = attendance.type === AttendanceType.EVOLUTION
+  const normalizedType = fromPrismaEnumValue(attendance.type)
+  const isEvolution = normalizedType === fromPrismaEnumValue(AttendanceType.EVOLUTION)
   const attachments = getAttachments(attendance.attachments)
   const cidLabel =
     attendance.cidCode && attendance.cidDescription

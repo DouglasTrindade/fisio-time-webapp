@@ -12,3 +12,10 @@ export const toNullablePrismaEnumValue = <T extends string>(value: Nullable<T>):
   if (value === null || value === undefined) return null
   return toPrismaEnumValue(value)
 }
+
+export const fromPrismaEnumValue = <T extends string>(
+  value: Nullable<T>,
+): Lowercase<T> | null => {
+  if (value === null || value === undefined) return null
+  return value.toString().toLowerCase() as Lowercase<T>
+}
