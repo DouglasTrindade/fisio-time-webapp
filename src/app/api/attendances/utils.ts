@@ -8,6 +8,7 @@ import {
   TransactionStatus,
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { toNullablePrismaEnumValue, toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 
 import type { AttendanceAttachment } from "@/types/attendance";
 
@@ -233,7 +234,7 @@ const findAttendanceTransaction = (attendanceId: string) =>
   prisma.transaction.findFirst({
     where: {
       referenceId: attendanceId,
-      source: TransactionSource.ATTENDANCE,
+      source: toPrismaEnumValue(TransactionSource.ATTENDANCE) as TransactionSource,
     },
   })
 
@@ -254,14 +255,14 @@ export const syncAttendanceTransaction = async (
     description: buildAttendanceTransactionDescription(attendance),
     amount: attendance.financeAmount,
     account: attendance.financeAccount ?? null,
-    category: TransactionCategory.ATTENDANCE,
-    paymentMethod: attendance.financePaymentMethod ?? null,
-    status: attendance.financePaid
-      ? TransactionStatus.PAID
-      : TransactionStatus.PENDING,
-    source: TransactionSource.ATTENDANCE,
+    category: toPrismaEnumValue(TransactionCategory.ATTENDANCE) as TransactionCategory,
+    paymentMethod: toNullablePrismaEnumValue(attendance.financePaymentMethod) as PaymentMethod | null,
+    status: toPrismaEnumValue(
+      attendance.financePaid ? TransactionStatus.PAID : TransactionStatus.PENDING,
+    ) as TransactionStatus,
+    source: toPrismaEnumValue(TransactionSource.ATTENDANCE) as TransactionSource,
     referenceId: attendance.id,
-    attendanceType: attendance.type,
+    attendanceType: toPrismaEnumValue(attendance.type) as AttendanceType,
     dueDate: dates.dueDate,
     competenceDate: dates.competenceDate,
     paidAt: dates.paidAt,
@@ -282,7 +283,7 @@ export const deleteAttendanceTransaction = async (attendanceId: string) => {
   await prisma.transaction.deleteMany({
     where: {
       referenceId: attendanceId,
-      source: TransactionSource.ATTENDANCE,
+      source: toPrismaEnumValue(TransactionSource.ATTENDANCE) as TransactionSource,
     },
   })
 }

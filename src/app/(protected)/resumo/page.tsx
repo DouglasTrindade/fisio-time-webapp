@@ -6,6 +6,9 @@ import type { FinanceTransaction } from "./_components/FinanceResumePage";
 
 type PaymentMethodDB = "pix" | "bank_slip" | "credit_card" | null;
 
+const normalizeEnumValue = (value?: string | null) =>
+  value ? value.toString().toLowerCase() : null;
+
 const buildMonthKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 
@@ -46,18 +49,21 @@ export default async function ResumePage() {
       transaction.competenceDate ??
       transaction.createdAt;
 
+    const normalizedCategory = normalizeEnumValue(transaction.category);
+    const normalizedPaymentMethod = normalizeEnumValue(
+      transaction.paymentMethod,
+    ) as PaymentMethodDB;
+    const normalizedStatus = normalizeEnumValue(transaction.status);
+
     return {
       id: transaction.id,
       description: transaction.description,
       amount,
       account: transaction.account ?? "Conta principal",
-      category:
-        transaction.category === "deposit" ? "Depósito" : "Atendimento",
-      paymentMethod: mapPaymentMethod(
-        (transaction.paymentMethod as PaymentMethodDB) ?? null,
-      ),
+      category: normalizedCategory === "deposit" ? "Depósito" : "Atendimento",
+      paymentMethod: mapPaymentMethod(normalizedPaymentMethod),
       date: referenceDate.toISOString(),
-      paid: transaction.status === TransactionStatus.PAID,
+      paid: normalizedStatus === normalizeEnumValue(TransactionStatus.PAID),
       additionalInfo: transaction.notes ?? undefined,
     };
   });
@@ -68,10 +74,10 @@ export default async function ResumePage() {
   );
 
   const evaluationTotal = transactions.filter(
-    (transaction) => transaction.attendanceType === "evaluation"
+    (transaction) => normalizeEnumValue(transaction.attendanceType) === "evaluation"
   ).length;
   const evolutionTotal = transactions.filter(
-    (transaction) => transaction.attendanceType === "evolution"
+    (transaction) => normalizeEnumValue(transaction.attendanceType) === "evolution"
   ).length;
 
   const now = new Date();

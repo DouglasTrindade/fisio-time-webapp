@@ -1,8 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Prisma, PaymentMethod, TransactionCategory, TransactionSource, TransactionStatus } from "@prisma/client"
+import { Prisma, TransactionSource, TransactionStatus } from "@prisma/client"
+import type { PaymentMethod, TransactionCategory } from "@prisma/client"
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { toNullablePrismaEnumValue, toPrismaEnumValue } from "@/lib/prisma/enum-helpers"
 import {
   createApiError,
   createApiResponse,
@@ -11,17 +13,6 @@ import {
 } from "@/lib/api/utils"
 import type { ApiResponse } from "@/types/api"
 import { createTransactionSchema, type CreateTransactionInput } from "./schema"
-
-const categoryMap: Record<CreateTransactionInput["category"], TransactionCategory> = {
-  attendance: TransactionCategory.ATTENDANCE,
-  deposit: TransactionCategory.DEPOSIT,
-}
-
-const paymentMethodMap: Record<NonNullable<CreateTransactionInput["paymentMethod"]>, PaymentMethod> = {
-  pix: PaymentMethod.PIX,
-  bank_slip: PaymentMethod.BANK_SLIP,
-  credit_card: PaymentMethod.CREDIT_CARD,
-}
 
 const parseDate = (value: string, label: string) => {
   const date = new Date(value)
@@ -53,12 +44,12 @@ export async function POST(
         description,
         amount,
         account: payload.account?.trim() || null,
-        category: categoryMap[payload.category],
-        paymentMethod: payload.paymentMethod
-          ? paymentMethodMap[payload.paymentMethod]
-          : null,
-        status: payload.isPaid ? TransactionStatus.PAID : TransactionStatus.PENDING,
-        source: TransactionSource.MANUAL,
+        category: toPrismaEnumValue(payload.category) as TransactionCategory,
+        paymentMethod: toNullablePrismaEnumValue(payload.paymentMethod) as PaymentMethod | null,
+        status: toPrismaEnumValue(
+          payload.isPaid ? TransactionStatus.PAID : TransactionStatus.PENDING,
+        ) as TransactionStatus,
+        source: toPrismaEnumValue(TransactionSource.MANUAL) as TransactionSource,
         referenceId: null,
         attendanceType: null,
         dueDate,
