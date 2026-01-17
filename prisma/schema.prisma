@@ -122,6 +122,27 @@ model TreatmentPlan {
   @@map("treatment_plans")
 }
 
+model Transaction {
+  id             String              @id @default(cuid())
+  description    String
+  amount         Decimal
+  account        String?             @map("account")
+  category       TransactionCategory @map("category")
+  paymentMethod  PaymentMethod?      @map("payment_method")
+  status         TransactionStatus   @default(PENDING) @map("status")
+  source         TransactionSource   @map("source")
+  referenceId    String?             @map("reference_id")
+  attendanceType AttendanceType?     @map("attendance_type")
+  dueDate        DateTime?           @map("due_date")
+  competenceDate DateTime?           @map("competence_date")
+  paidAt         DateTime?           @map("paid_at")
+  notes          String?             @map("notes")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+
+  @@map("transactions")
+}
+
 model Account {
   userId            String   @map("user_id")
   type              String
@@ -197,6 +218,21 @@ enum PaymentMethod {
   PIX         @map("pix")
   BANK_SLIP   @map("bank_slip")
   CREDIT_CARD @map("credit_card")
+}
+
+enum TransactionCategory {
+  ATTENDANCE @map("attendance")
+  DEPOSIT    @map("deposit")
+}
+
+enum TransactionStatus {
+  PENDING @map("pending")
+  PAID    @map("paid")
+}
+
+enum TransactionSource {
+  ATTENDANCE @map("attendance")
+  MANUAL     @map("manual")
 }
 
 enum AttendanceType {

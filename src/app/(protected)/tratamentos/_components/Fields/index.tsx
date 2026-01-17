@@ -44,6 +44,10 @@ export const TreatmentPlanFields = ({
     control: form.control,
     name: "patientId",
   });
+  const selectedAttendanceId = useWatch({
+    control: form.control,
+    name: "attendanceId",
+  });
   const patientChangeRef = useRef(selectedPatientId);
 
   useEffect(() => {
@@ -61,14 +65,20 @@ export const TreatmentPlanFields = ({
   }, [form, lockedAttendanceId, selectedPatientId]);
 
   useEffect(() => {
-    if (lockedPatientId && !form.getValues("patientId")) {
-      form.setValue("patientId", lockedPatientId, { shouldDirty: false });
+    if (lockedPatientId) {
+      form.setValue("patientId", lockedPatientId, {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
     }
   }, [form, lockedPatientId]);
 
   useEffect(() => {
-    if (lockedAttendanceId && !form.getValues("attendanceId")) {
-      form.setValue("attendanceId", lockedAttendanceId, { shouldDirty: false });
+    if (lockedAttendanceId) {
+      form.setValue("attendanceId", lockedAttendanceId, {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
     }
   }, [form, lockedAttendanceId]);
 
@@ -144,16 +154,24 @@ export const TreatmentPlanFields = ({
   }, [evaluations, lockedAttendanceId, lockedAttendanceLabel]);
 
   const selectedPatientLabel = useMemo(() => {
-    const currentPatientId = form.getValues("patientId");
-    const match = patientOptions.find((patient) => patient.id === currentPatientId);
-    return match?.name ?? lockedPatientName ?? null;
-  }, [form, lockedPatientName, patientOptions]);
+    if (!selectedPatientId) return null;
+    const match = patientOptions.find((patient) => patient.id === selectedPatientId);
+    if (match) return match.name ?? "Paciente sem nome";
+    if (selectedPatientId === lockedPatientId) {
+      return lockedPatientName ?? "Paciente selecionado";
+    }
+    return null;
+  }, [lockedPatientId, lockedPatientName, patientOptions, selectedPatientId]);
 
   const selectedAttendanceLabel = useMemo(() => {
-    const currentAttendanceId = form.getValues("attendanceId");
-    const match = evaluationOptions.find((option) => option.id === currentAttendanceId);
-    return match?.label ?? lockedAttendanceLabel ?? null;
-  }, [evaluationOptions, form, lockedAttendanceLabel]);
+    if (!selectedAttendanceId) return null;
+    const match = evaluationOptions.find((option) => option.id === selectedAttendanceId);
+    if (match) return match.label;
+    if (selectedAttendanceId === lockedAttendanceId) {
+      return lockedAttendanceLabel ?? "Avaliação selecionada";
+    }
+    return null;
+  }, [evaluationOptions, lockedAttendanceId, lockedAttendanceLabel, selectedAttendanceId]);
 
   return (
     <div className="space-y-4">
@@ -163,38 +181,47 @@ export const TreatmentPlanFields = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Paciente</FormLabel>
-            <Select
-              value={field.value || ""}
-              onValueChange={field.onChange}
-              disabled={
-                isLoadingPatients ||
-                patientOptions.length === 0 ||
-                disablePatientSelection
-              }
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedPatientLabel ?? "Selecione um paciente"
-                    }
-                  />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {patientOptions.length === 0 ? (
-                  <SelectItem value="__empty__" disabled>
-                    Nenhum paciente cadastrado
-                  </SelectItem>
-                ) : (
-                  patientOptions.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.name ?? "Paciente sem nome"}
+            {disablePatientSelection && lockedPatientId ? (
+              <>
+                <Input
+                  value={lockedPatientName ?? "Paciente selecionado"}
+                  disabled
+                  readOnly
+                />
+                <input type="hidden" {...field} value={lockedPatientId} />
+              </>
+            ) : (
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+                disabled={
+                  isLoadingPatients ||
+                  patientOptions.length === 0 ||
+                  disablePatientSelection
+                }
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={selectedPatientLabel ?? "Selecione um paciente"}
+                    />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {patientOptions.length === 0 ? (
+                    <SelectItem value="__empty__" disabled>
+                      Nenhum paciente cadastrado
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ) : (
+                    patientOptions.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.name ?? "Paciente sem nome"}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            )}
             <FormMessage />
           </FormItem>
         )}
@@ -206,46 +233,57 @@ export const TreatmentPlanFields = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Avaliação</FormLabel>
-            <Select
-              value={field.value || ""}
-              onValueChange={field.onChange}
-              disabled={
-                !selectedPatientId ||
-                disableAttendanceSelection ||
-                isLoadingEvaluations
-              }
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedAttendanceLabel ?? "Selecione uma avaliação"
-                    }
-                  />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {!selectedPatientId ? (
-                  <SelectItem value="__patient_required__" disabled>
-                    Selecione um paciente primeiro
-                  </SelectItem>
-                ) : isLoadingEvaluations ? (
-                  <SelectItem value="__loading__" disabled>
-                    Carregando avaliações...
-                  </SelectItem>
-                ) : evaluationOptions.length === 0 ? (
-                  <SelectItem value="__empty__" disabled>
-                    Nenhuma avaliação encontrada
-                  </SelectItem>
-                ) : (
-                  evaluationOptions.map((attendance) => (
-                    <SelectItem key={attendance.id} value={attendance.id}>
-                      {attendance.label}
+            {disableAttendanceSelection && lockedAttendanceId ? (
+              <>
+                <Input
+                  value={lockedAttendanceLabel ?? "Avaliação selecionada"}
+                  disabled
+                  readOnly
+                />
+                <input type="hidden" {...field} value={lockedAttendanceId} />
+              </>
+            ) : (
+              <Select
+                value={field.value || ""}
+                onValueChange={field.onChange}
+                disabled={
+                  !selectedPatientId ||
+                  disableAttendanceSelection ||
+                  isLoadingEvaluations
+                }
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        selectedAttendanceLabel ?? "Selecione uma avaliação"
+                      }
+                    />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {!selectedPatientId ? (
+                    <SelectItem value="__patient_required__" disabled>
+                      Selecione um paciente primeiro
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ) : isLoadingEvaluations ? (
+                    <SelectItem value="__loading__" disabled>
+                      Carregando avaliações...
+                    </SelectItem>
+                  ) : evaluationOptions.length === 0 ? (
+                    <SelectItem value="__empty__" disabled>
+                      Nenhuma avaliação encontrada
+                    </SelectItem>
+                  ) : (
+                    evaluationOptions.map((attendance) => (
+                      <SelectItem key={attendance.id} value={attendance.id}>
+                        {attendance.label}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            )}
             <FormMessage />
           </FormItem>
         )}

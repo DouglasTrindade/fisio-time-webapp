@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   MonitorCheckIcon,
   Settings,
+  TrendingUpDown,
   Users,
   type LucideIcon,
 } from "lucide-react"
@@ -65,6 +66,7 @@ export function SidebarNavigation({ items }: SidebarNavigationProps) {
     circleArrowUp: CircleArrowUp,
     chartPie: ChartPie,
     settings: Settings,
+    trendingUpDown: TrendingUpDown,
   }
 
   return (

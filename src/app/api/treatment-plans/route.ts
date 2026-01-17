@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { fromPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import { createTreatmentPlanSchema } from "./schema";
 import {
   createApiError,
@@ -132,7 +133,10 @@ const ensureAttendanceIsValid = async (
     return createApiError<TreatmentPlan>("Avaliação não encontrada");
   }
 
-  if (attendance.type !== AttendanceType.EVALUATION) {
+  const normalizedType = fromPrismaEnumValue(attendance.type);
+  const evaluationType = fromPrismaEnumValue(AttendanceType.EVALUATION);
+
+  if (normalizedType !== evaluationType) {
     return createApiError<TreatmentPlan>(
       "Somente avaliações podem receber plano de tratamento"
     );

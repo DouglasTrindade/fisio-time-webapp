@@ -16,12 +16,13 @@ import {
   formatAttendance,
   toPrismaAttendanceType,
   buildCreateFinanceData,
+  syncAttendanceTransaction,
   type AttendanceWithRelations,
 } from "./utils";
 
 const resolveAttendanceType = (
   raw: unknown,
-  fallback: AttendanceType = AttendanceType.EVALUATION,
+  fallback: AttendanceType = "EVALUATION" as unknown as AttendanceType,
 ): AttendanceType => {
   const typeInput =
     typeof raw === "string"
@@ -151,6 +152,8 @@ export async function POST(
       },
       include: attendanceInclude,
     });
+
+    await syncAttendanceTransaction(attendance as AttendanceWithRelations);
 
     return NextResponse.json(
       createApiResponse<Attendance>(

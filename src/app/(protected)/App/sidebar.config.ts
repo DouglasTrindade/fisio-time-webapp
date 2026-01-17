@@ -21,6 +21,7 @@ const sidebarIcons = [
   "briefcaseMedical",
   "circleArrowUp",
   "chartPie",
+  "trendingUpDown",
   "settings",
 ] as const
 
@@ -66,6 +67,12 @@ export const menuItems: SidebarMenuItemConfig[] = [
     slug: "section-finances",
     title: "Financeiro",
     isSection: true,
+  },
+  {
+    slug: "finance-summary",
+    title: "Resumo",
+    url: "/resumo",
+    icon: "trendingUpDown",
   },
   {
     slug: "invoices",
