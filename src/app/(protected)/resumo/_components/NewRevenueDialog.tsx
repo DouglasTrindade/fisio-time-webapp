@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import {
   Dialog,
@@ -27,13 +28,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { apiRequest } from "@/services/api"
+import { handleApiError } from "@/services/handleApiError"
 
 const newRevenueSchema = z.object({
   description: z.string().min(2, "Informe uma descrição"),
   amount: z.string().min(1, "Informe o valor"),
   account: z.string().min(1, "Informe a conta"),
-  category: z.enum(["atendimento", "deposito"]),
-  paymentMethod: z.enum(["credito", "pix", "boleto"]),
+  category: z.enum(["attendance", "deposit"]),
+  paymentMethod: z.enum(["credit_card", "pix", "bank_slip"]),
   dueDate: z.string().min(1, "Selecione uma data"),
   competenceDate: z.string().min(1, "Selecione uma data"),
   isPaid: z.boolean(),
@@ -44,13 +47,15 @@ type NewRevenueValues = z.infer<typeof newRevenueSchema>
 
 export const NewRevenueDialog = () => {
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
   const form = useForm<NewRevenueValues>({
     resolver: zodResolver(newRevenueSchema),
     defaultValues: {
       description: "",
       amount: "",
       account: "",
-      category: "atendimento",
+      category: "attendance",
       paymentMethod: "pix",
       dueDate: "",
       competenceDate: "",
@@ -59,12 +64,24 @@ export const NewRevenueDialog = () => {
     },
   })
 
-  const handleSubmit = (values: NewRevenueValues) => {
-    toast.success("Receita cadastrada!", {
-      description: `${values.description} - R$ ${values.amount}`,
-    })
-    setOpen(false)
-    form.reset()
+  const handleSubmit = async (values: NewRevenueValues) => {
+    try {
+      setIsSubmitting(true)
+      await apiRequest("/transactions", {
+        method: "POST",
+        data: values,
+      })
+      toast.success("Receita cadastrada!", {
+        description: `${values.description} - R$ ${values.amount}`,
+      })
+      setOpen(false)
+      form.reset()
+      router.refresh()
+    } catch (error) {
+      handleApiError(error, "Não foi possível salvar a receita")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -136,8 +153,8 @@ export const NewRevenueDialog = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="atendimento">Atendimento</SelectItem>
-                        <SelectItem value="deposito">Depósito</SelectItem>
+                        <SelectItem value="attendance">Atendimento</SelectItem>
+                        <SelectItem value="deposit">Depósito</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -157,9 +174,9 @@ export const NewRevenueDialog = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="credito">Cartão de crédito</SelectItem>
+                        <SelectItem value="credit_card">Cartão de crédito</SelectItem>
                         <SelectItem value="pix">Pix</SelectItem>
-                        <SelectItem value="boleto">Boleto bancário</SelectItem>
+                        <SelectItem value="bank_slip">Boleto bancário</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -229,7 +246,9 @@ export const NewRevenueDialog = () => {
             />
 
             <div className="flex justify-end">
-              <Button type="submit">Salvar receita</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Salvando..." : "Salvar receita"}
+              </Button>
             </div>
           </form>
         </Form>

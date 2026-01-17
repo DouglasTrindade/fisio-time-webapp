@@ -1,5 +1,13 @@
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType, PaymentMethod, Prisma } from "@prisma/client";
+import {
+  AttendanceType,
+  PaymentMethod,
+  Prisma,
+  TransactionCategory,
+  TransactionSource,
+  TransactionStatus,
+} from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 import type { AttendanceAttachment } from "@/types/attendance";
 
@@ -45,7 +53,17 @@ export const toPrismaAttendanceType = (
   if (!value) return undefined;
 
   const normalized =
-    typeof value === "string" ? value.trim().toLowerCase() : value;
+    typeof value === "string"
+      ? value.trim().replace(/[\s-]/g, "_").toUpperCase()
+      : value;
+
+  if (normalized === "EVOLUTION") {
+    return "EVOLUTION" as unknown as AttendanceType;
+  }
+
+  if (normalized === "EVALUATION") {
+    return "EVALUATION" as unknown as AttendanceType;
+  }
 
   if (normalized === AttendanceType.EVOLUTION) {
     return AttendanceType.EVOLUTION;
@@ -71,7 +89,16 @@ const resolvePaymentMethod = (
     .replace(/[\s-]/g, "_")
     .toUpperCase();
 
-  return (PaymentMethod as Record<string, PaymentMethod>)[normalizedKey] ?? null;
+  switch (normalizedKey) {
+    case "PIX":
+      return "PIX" as unknown as PaymentMethod;
+    case "BANK_SLIP":
+      return "BANK_SLIP" as unknown as PaymentMethod;
+    case "CREDIT_CARD":
+      return "CREDIT_CARD" as unknown as PaymentMethod;
+    default:
+      return null;
+  }
 };
 
 const formatPaymentMethod = (
@@ -79,12 +106,14 @@ const formatPaymentMethod = (
 ): Attendance["financePaymentMethod"] | null => {
   if (!method) return null;
 
-  switch (method) {
-    case PaymentMethod.PIX:
+  const normalized = method.toString().toLowerCase();
+
+  switch (normalized) {
+    case "pix":
       return "pix";
-    case PaymentMethod.CREDIT_CARD:
+    case "credit_card":
       return "credit_card";
-    case PaymentMethod.BANK_SLIP:
+    case "bank_slip":
       return "bank_slip";
     default:
       return null;
@@ -93,25 +122,30 @@ const formatPaymentMethod = (
 
 export const formatAttendance = (
   attendance: AttendanceWithRelations
-): Attendance => ({
-  ...attendance,
-  treatmentPlan: attendance.treatmentPlan,
-  cifCode: attendance.cifCode,
-  cifDescription: attendance.cifDescription,
-  type: attendance.type === AttendanceType.EVOLUTION ? "evolution" : "evaluation",
-  launchToFinance: attendance.launchToFinance,
-  financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
-  financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),
-  financeAccount: attendance.financeAccount,
-  financePaid: attendance.financePaid,
-  financePaidAt: attendance.financePaidAt
-    ? attendance.financePaidAt.toISOString()
-    : null,
-  date: attendance.date.toISOString(),
-  createdAt: attendance.createdAt.toISOString(),
-  updatedAt: attendance.updatedAt.toISOString(),
-  attachments: attendance.attachments ?? null,
-});
+): Attendance => {
+  const normalizedType = `${attendance.type}`.toLowerCase()
+  const isEvolution = normalizedType === "evolution"
+
+  return {
+    ...attendance,
+    treatmentPlan: attendance.treatmentPlan,
+    cifCode: attendance.cifCode,
+    cifDescription: attendance.cifDescription,
+    type: isEvolution ? "evolution" : "evaluation",
+    launchToFinance: attendance.launchToFinance,
+    financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
+    financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),
+    financeAccount: attendance.financeAccount,
+    financePaid: attendance.financePaid,
+    financePaidAt: attendance.financePaidAt
+      ? attendance.financePaidAt.toISOString()
+      : null,
+    date: attendance.date.toISOString(),
+    createdAt: attendance.createdAt.toISOString(),
+    updatedAt: attendance.updatedAt.toISOString(),
+    attachments: attendance.attachments ?? null,
+  }
+};
 
 type FinanceInput = {
   launchToFinance?: boolean;
@@ -176,3 +210,79 @@ export const buildUpdateFinanceData = (input: FinanceInput) => ({
       ? parseFinanceDate(input.financePaidAt)
       : undefined,
 });
+
+const buildAttendanceTransactionDescription = (
+  attendance: AttendanceWithRelations,
+) => {
+  const typeLabel =
+    `${attendance.type}`.toLowerCase() === "evolution" ? "Evolução" : "Avaliação"
+  const patientName = attendance.patient?.name ?? "Paciente"
+  return `${typeLabel} • ${patientName}`
+}
+
+const buildTransactionDates = (attendance: AttendanceWithRelations) => {
+  const reference = attendance.financePaidAt ?? attendance.date
+  return {
+    dueDate: attendance.date,
+    competenceDate: attendance.date,
+    paidAt: attendance.financePaid ? reference : null,
+  }
+}
+
+const findAttendanceTransaction = (attendanceId: string) =>
+  prisma.transaction.findFirst({
+    where: {
+      referenceId: attendanceId,
+      source: TransactionSource.ATTENDANCE,
+    },
+  })
+
+export const syncAttendanceTransaction = async (
+  attendance: AttendanceWithRelations,
+) => {
+  const existing = await findAttendanceTransaction(attendance.id)
+
+  if (!attendance.launchToFinance || !attendance.financeAmount) {
+    if (existing) {
+      await prisma.transaction.delete({ where: { id: existing.id } })
+    }
+    return
+  }
+
+  const dates = buildTransactionDates(attendance)
+  const data = {
+    description: buildAttendanceTransactionDescription(attendance),
+    amount: attendance.financeAmount,
+    account: attendance.financeAccount ?? null,
+    category: TransactionCategory.ATTENDANCE,
+    paymentMethod: attendance.financePaymentMethod ?? null,
+    status: attendance.financePaid
+      ? TransactionStatus.PAID
+      : TransactionStatus.PENDING,
+    source: TransactionSource.ATTENDANCE,
+    referenceId: attendance.id,
+    attendanceType: attendance.type,
+    dueDate: dates.dueDate,
+    competenceDate: dates.competenceDate,
+    paidAt: dates.paidAt,
+    notes: attendance.observations ?? null,
+  }
+
+  if (existing) {
+    await prisma.transaction.update({
+      where: { id: existing.id },
+      data,
+    })
+  } else {
+    await prisma.transaction.create({ data })
+  }
+}
+
+export const deleteAttendanceTransaction = async (attendanceId: string) => {
+  await prisma.transaction.deleteMany({
+    where: {
+      referenceId: attendanceId,
+      source: TransactionSource.ATTENDANCE,
+    },
+  })
+}

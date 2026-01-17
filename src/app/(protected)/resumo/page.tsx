@@ -1,24 +1,10 @@
-import { Prisma } from "@prisma/client";
+import { TransactionStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { FinanceResumePage } from "./_components/FinanceResumePage";
 import type { FinanceTransaction } from "./_components/FinanceResumePage";
 
-type AttendanceTypeDB = "evaluation" | "evolution";
 type PaymentMethodDB = "pix" | "bank_slip" | "credit_card" | null;
-
-type FinanceAttendanceRow = {
-  id: string;
-  type: AttendanceTypeDB;
-  date: Date;
-  patient_name: string | null;
-  finance_amount: Prisma.Decimal | number;
-  finance_payment_method: PaymentMethodDB;
-  finance_account: string | null;
-  finance_paid: boolean;
-  finance_paid_at: Date | null;
-  observations: string | null;
-};
 
 const buildMonthKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -34,7 +20,7 @@ const paymentMethodLabels: Record<
 
 const mapPaymentMethod = (method: PaymentMethodDB) => {
   if (!method) {
-    return paymentMethodLabels.pix;
+    return "Não informado";
   }
 
   return (
@@ -47,55 +33,45 @@ const mapPaymentMethod = (method: PaymentMethodDB) => {
 };
 
 export default async function ResumePage() {
-  const attendances = await prisma.$queryRaw<FinanceAttendanceRow[]>`
-    SELECT
-      a.id,
-      a.type::text AS type,
-      a.date,
-      p.name AS patient_name,
-      a.finance_amount,
-      a.finance_payment_method::text AS finance_payment_method,
-      a.finance_account,
-      a.finance_paid,
-      a.finance_paid_at,
-      a.observations
-    FROM "attendances" a
-    LEFT JOIN "patients" p ON p.id = a.patient_id
-    WHERE a.launch_to_finance = true
-      AND a.finance_amount IS NOT NULL
-    ORDER BY a.date DESC
-    LIMIT 200
-  `;
+  const transactions = await prisma.transaction.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 200,
+  });
 
-  const transactions: FinanceTransaction[] = attendances.map((attendance) => {
-    const amount = Number(attendance.finance_amount ?? 0);
-    const referenceDate = attendance.finance_paid_at ?? attendance.date;
+  const financeTransactions: FinanceTransaction[] = transactions.map((transaction) => {
+    const amount = Number(transaction.amount ?? 0)
+    const referenceDate =
+      transaction.paidAt ??
+      transaction.dueDate ??
+      transaction.competenceDate ??
+      transaction.createdAt;
 
     return {
-      id: attendance.id,
-      description: `${
-        attendance.type === "evaluation" ? "Avaliação" : "Evolução"
-      } • ${attendance.patient_name ?? "Paciente"}`,
+      id: transaction.id,
+      description: transaction.description,
       amount,
-      account: attendance.finance_account ?? "Conta principal",
-      category: attendance.type === "evaluation" ? "Atendimento" : "Depósito",
-      paymentMethod: mapPaymentMethod(attendance.finance_payment_method),
+      account: transaction.account ?? "Conta principal",
+      category:
+        transaction.category === "deposit" ? "Depósito" : "Atendimento",
+      paymentMethod: mapPaymentMethod(
+        (transaction.paymentMethod as PaymentMethodDB) ?? null,
+      ),
       date: referenceDate.toISOString(),
-      paid: attendance.finance_paid,
-      additionalInfo: attendance.observations ?? undefined,
+      paid: transaction.status === TransactionStatus.PAID,
+      additionalInfo: transaction.notes ?? undefined,
     };
   });
 
-  const generalBalance = transactions.reduce(
+  const generalBalance = financeTransactions.reduce(
     (total, transaction) => total + transaction.amount,
     0
   );
 
-  const evaluationTotal = attendances.filter(
-    (attendance) => attendance.type === "evaluation"
+  const evaluationTotal = transactions.filter(
+    (transaction) => transaction.attendanceType === "evaluation"
   ).length;
-  const evolutionTotal = attendances.filter(
-    (attendance) => attendance.type === "evolution"
+  const evolutionTotal = transactions.filter(
+    (transaction) => transaction.attendanceType === "evolution"
   ).length;
 
   const now = new Date();
@@ -104,7 +80,7 @@ export default async function ResumePage() {
     { income: number; expense: number }
   >();
 
-  transactions.forEach((transaction) => {
+  financeTransactions.forEach((transaction) => {
     const transactionDate = new Date(transaction.date);
     const key = buildMonthKey(transactionDate);
     const entry = monthlyTotals.get(key) ?? { income: 0, expense: 0 };
@@ -138,7 +114,7 @@ export default async function ResumePage() {
 
   return (
     <FinanceResumePage
-      transactions={transactions}
+      transactions={financeTransactions}
       generalBalance={generalBalance}
       attendanceChart={[
         { label: "Avaliações", total: evaluationTotal },

@@ -18,27 +18,34 @@ CREATE TYPE "NotificationPriority" AS ENUM ('low', 'normal', 'high');
 CREATE TYPE "NotificationSendMode" AS ENUM ('now', 'scheduled');
 
 -- AlterEnum
-BEGIN;
-CREATE TYPE "AttendanceType_new" AS ENUM ('evaluation', 'evolution');
-ALTER TABLE "public"."attendances" ALTER COLUMN "type" DROP DEFAULT;
-ALTER TABLE "attendances" ALTER COLUMN "type" TYPE "AttendanceType_new" USING ("type"::text::"AttendanceType_new");
-ALTER TYPE "AttendanceType" RENAME TO "AttendanceType_old";
-ALTER TYPE "AttendanceType_new" RENAME TO "AttendanceType";
-DROP TYPE "public"."AttendanceType_old";
-ALTER TABLE "attendances" ALTER COLUMN "type" SET DEFAULT 'evaluation';
-COMMIT;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'AttendanceType') THEN
+    ALTER TYPE "AttendanceType" RENAME TO "AttendanceType_old";
+  END IF;
+END
+$$;
 
--- AlterEnum
-BEGIN;
-CREATE TYPE "PaymentMethod_new" AS ENUM ('pix', 'bank_slip', 'credit_card');
-ALTER TABLE "attendances" ALTER COLUMN "finance_payment_method" TYPE "PaymentMethod_new" USING ("finance_payment_method"::text::"PaymentMethod_new");
-ALTER TYPE "PaymentMethod" RENAME TO "PaymentMethod_old";
-ALTER TYPE "PaymentMethod_new" RENAME TO "PaymentMethod";
-DROP TYPE "public"."PaymentMethod_old";
-COMMIT;
+DO $$
+BEGIN
+  CREATE TYPE "AttendanceType" AS ENUM ('evaluation', 'evolution');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END
+$$;
+
+ALTER TABLE "Attendance" ALTER COLUMN "type" DROP DEFAULT;
+ALTER TABLE "Attendance" ALTER COLUMN "type" TYPE "AttendanceType" USING ("type"::text::"AttendanceType");
+ALTER TABLE "Attendance" ALTER COLUMN "type" SET DEFAULT 'evaluation';
+
+DO $$ BEGIN
+  DROP TYPE IF EXISTS "AttendanceType_old";
+EXCEPTION
+  WHEN undefined_object THEN NULL;
+END $$;
 
 -- AlterTable
-ALTER TABLE "attendances" ALTER COLUMN "type" SET DEFAULT 'evaluation';
+ALTER TABLE "Attendance" ALTER COLUMN "type" SET DEFAULT 'evaluation';
 
 -- CreateTable
 CREATE TABLE "notifications" (
@@ -62,9 +69,3 @@ CREATE TABLE "notifications" (
 
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
-
--- AddForeignKey
-ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_fkey" FOREIGN KEY ("recipient_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "notifications" ADD CONSTRAINT "notifications_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -18,6 +18,8 @@ import {
   formatAttendance,
   toPrismaAttendanceType,
   buildUpdateFinanceData,
+  syncAttendanceTransaction,
+  deleteAttendanceTransaction,
   type AttendanceWithRelations,
 } from "../utils";
 
@@ -127,6 +129,8 @@ export async function PUT(
       include: attendanceInclude,
     });
 
+    await syncAttendanceTransaction(updated as AttendanceWithRelations);
+
     return NextResponse.json(
       createApiResponse<Attendance>(
         formatAttendance(updated as AttendanceWithRelations),
@@ -163,6 +167,8 @@ export async function DELETE(
 
       await tx.attendance.delete({ where: { id } });
     });
+
+    await deleteAttendanceTransaction(id);
 
     return NextResponse.json(
       createApiResponse<null>(null, "Atendimento excluído com sucesso")

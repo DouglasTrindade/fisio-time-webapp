@@ -1,4 +1,10 @@
-CREATE TYPE "PaymentMethod" AS ENUM ('pix', 'bank_slip', 'credit_card');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PaymentMethod') THEN
+    CREATE TYPE "PaymentMethod" AS ENUM ('pix', 'bank_slip', 'credit_card');
+  END IF;
+END
+$$;
 
 -- Ensure column name is consistent even on older databases
 DO $$
