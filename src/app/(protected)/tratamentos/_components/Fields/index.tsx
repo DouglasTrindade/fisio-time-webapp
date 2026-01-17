@@ -188,7 +188,7 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" value={lockedPatientId} {...field} />
+                <input type="hidden" {...field} value={lockedPatientId} />
               </>
             ) : (
               <Select
@@ -240,7 +240,7 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" value={lockedAttendanceId} {...field} />
+                <input type="hidden" {...field} value={lockedAttendanceId} />
               </>
             ) : (
               <Select
