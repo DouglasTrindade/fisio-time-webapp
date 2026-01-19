@@ -86,7 +86,7 @@ export const TransactionsCard = ({
                   <TableCell>
                     <span
                       className={cn(
-                        "inline-flex min-w-[4.5rem] items-center justify-center rounded-full px-2 text-xs font-semibold uppercase tracking-wide",
+                        "inline-flex min-w-18 items-center justify-center rounded-full px-2 text-xs font-semibold uppercase tracking-wide",
                         transaction.paid
                           ? "bg-emerald-500/15 text-emerald-400"
                           : "bg-amber-500/15 text-amber-400",
