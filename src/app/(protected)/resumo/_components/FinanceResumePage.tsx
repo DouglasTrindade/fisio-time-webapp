@@ -11,10 +11,12 @@ export type FinanceTransaction = {
   description: string
   amount: number
   account: string
-  category: "Atendimento" | "Depósito"
+  category: string
+  expenseCategory?: string | null
   paymentMethod: string
   date: string
   paid: boolean
+  kind: "income" | "expense"
   additionalInfo?: string
 }
 
@@ -50,6 +52,10 @@ export const FinanceResumePage = ({
   const { paidTotal, pendingTotal } = useMemo(() => {
     return transactions.reduce(
       (acc, transaction) => {
+        if (transaction.kind === "expense") {
+          return acc
+        }
+
         if (transaction.paid) {
           acc.paidTotal += transaction.amount
         } else {

@@ -5,6 +5,7 @@ import { FinanceResumePage } from "./_components/FinanceResumePage";
 import type { FinanceTransaction } from "./_components/FinanceResumePage";
 
 type PaymentMethodDB = "pix" | "bank_slip" | "credit_card" | null;
+type TransactionKindDB = "income" | "expense" | null;
 
 const normalizeEnumValue = (value?: string | null) =>
   value ? value.toString().toLowerCase() : null;
@@ -41,6 +42,9 @@ export default async function ResumePage() {
     take: 200,
   });
 
+  let incomeTotal = 0
+  let expenseTotal = 0
+
   const financeTransactions: FinanceTransaction[] = transactions.map((transaction) => {
     const amount = Number(transaction.amount ?? 0)
     const referenceDate =
@@ -54,24 +58,36 @@ export default async function ResumePage() {
       transaction.paymentMethod,
     ) as PaymentMethodDB;
     const normalizedStatus = normalizeEnumValue(transaction.status);
+    const kind = normalizeEnumValue(transaction.kind) === "expense" ? "expense" : "income"
+    const categoryLabel =
+      kind === "income"
+        ? normalizedCategory === "deposit"
+          ? "Depósito"
+          : "Atendimento"
+        : transaction.expenseCategory ?? "Despesa"
+
+    if (kind === "expense") {
+      expenseTotal += amount
+    } else {
+      incomeTotal += amount
+    }
 
     return {
       id: transaction.id,
       description: transaction.description,
       amount,
       account: transaction.account ?? "Conta principal",
-      category: normalizedCategory === "deposit" ? "Depósito" : "Atendimento",
+      category: categoryLabel,
+      expenseCategory: transaction.expenseCategory,
       paymentMethod: mapPaymentMethod(normalizedPaymentMethod),
       date: referenceDate.toISOString(),
       paid: normalizedStatus === normalizeEnumValue(TransactionStatus.PAID),
+      kind,
       additionalInfo: transaction.notes ?? undefined,
     };
   });
 
-  const generalBalance = financeTransactions.reduce(
-    (total, transaction) => total + transaction.amount,
-    0
-  );
+  const generalBalance = incomeTotal - expenseTotal;
 
   const evaluationTotal = transactions.filter(
     (transaction) => normalizeEnumValue(transaction.attendanceType) === "evaluation"
@@ -91,10 +107,10 @@ export default async function ResumePage() {
     const key = buildMonthKey(transactionDate);
     const entry = monthlyTotals.get(key) ?? { income: 0, expense: 0 };
 
-    if (transaction.paid) {
-      entry.income += transaction.amount;
-    } else {
+    if (transaction.kind === "expense") {
       entry.expense += transaction.amount;
+    } else {
+      entry.income += transaction.amount;
     }
 
     monthlyTotals.set(key, entry);

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Prisma, TransactionSource, TransactionStatus } from "@prisma/client"
+import { Prisma, TransactionKind, TransactionSource, TransactionStatus } from "@prisma/client"
 import type { PaymentMethod, TransactionCategory } from "@prisma/client"
 
 import { auth } from "@/auth"
@@ -38,13 +38,22 @@ export async function POST(
     const amount = new Prisma.Decimal(payload.amount)
     const dueDate = parseDate(payload.dueDate, "Data de vencimento")
     const competenceDate = parseDate(payload.competenceDate, "Data de competência")
+    const kind =
+      payload.kind === "expense"
+        ? TransactionKind.EXPENSE
+        : TransactionKind.INCOME
+    const expenseCategory = payload.expenseCategory?.trim()
+    const incomeCategory = payload.category
+      ? (toPrismaEnumValue(payload.category) as TransactionCategory)
+      : null
 
     await prisma.transaction.create({
       data: {
         description,
         amount,
         account: payload.account?.trim() || null,
-        category: toPrismaEnumValue(payload.category) as TransactionCategory,
+        category: kind === TransactionKind.INCOME ? incomeCategory : null,
+        expenseCategory: kind === TransactionKind.EXPENSE ? expenseCategory || null : null,
         paymentMethod: toNullablePrismaEnumValue(payload.paymentMethod) as PaymentMethod | null,
         status: toPrismaEnumValue(
           payload.isPaid ? TransactionStatus.PAID : TransactionStatus.PENDING,
@@ -56,11 +65,12 @@ export async function POST(
         competenceDate,
         paidAt: payload.isPaid ? dueDate : null,
         notes: payload.notes?.trim() || null,
+        kind: toPrismaEnumValue(kind) as TransactionKind,
       },
     })
 
     return NextResponse.json(
-      createApiResponse<null>(null, "Receita registrada com sucesso"),
+      createApiResponse<null>(null, "Transação registrada com sucesso"),
       { status: 201 },
     )
   } catch (error) {

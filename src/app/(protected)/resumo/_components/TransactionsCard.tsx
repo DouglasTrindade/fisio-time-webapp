@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils"
 import { FinanceTransaction } from "./FinanceResumePage"
 import { NewRevenueDialog } from "./NewRevenueDialog"
+import { NewExpenseDialog } from "./NewExpenseDialog"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -35,7 +36,10 @@ export const TransactionsCard = ({
             <span className="font-semibold text-foreground">{currency.format(generalBalance)}</span>
           </CardDescription>
         </div>
-        <NewRevenueDialog />
+        <div className="flex flex-wrap gap-2">
+          <NewExpenseDialog />
+          <NewRevenueDialog />
+        </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-x-auto">
         {transactions.length ? (
@@ -62,8 +66,17 @@ export const TransactionsCard = ({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span className="inline-flex h-6 items-center rounded-full bg-muted px-2 text-xs font-medium text-muted-foreground">
-                      {transaction.category}
+                    <span
+                      className={cn(
+                        "inline-flex h-6 items-center rounded-full px-2 text-xs font-medium",
+                        transaction.kind === "expense"
+                          ? "bg-rose-500/15 text-rose-400"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {transaction.kind === "expense"
+                        ? transaction.expenseCategory ?? "Despesa"
+                        : transaction.category}
                     </span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{transaction.account}</TableCell>
@@ -82,8 +95,15 @@ export const TransactionsCard = ({
                       {transaction.paid ? "Pago" : "Pendente"}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {currency.format(transaction.amount)}
+                  <TableCell
+                    className={cn(
+                      "text-right font-semibold",
+                      transaction.kind === "expense" && "text-rose-400",
+                    )}
+                  >
+                    {transaction.kind === "expense"
+                      ? `- ${currency.format(transaction.amount)}`
+                      : currency.format(transaction.amount)}
                   </TableCell>
                 </TableRow>
               ))}

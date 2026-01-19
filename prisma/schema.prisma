@@ -123,22 +123,24 @@ model TreatmentPlan {
 }
 
 model Transaction {
-  id             String              @id @default(cuid())
-  description    String
-  amount         Decimal
-  account        String?             @map("account")
-  category       TransactionCategory @map("category")
-  paymentMethod  PaymentMethod?      @map("payment_method")
-  status         TransactionStatus   @default(PENDING) @map("status")
-  source         TransactionSource   @map("source")
-  referenceId    String?             @map("reference_id")
-  attendanceType AttendanceType?     @map("attendance_type")
-  dueDate        DateTime?           @map("due_date")
-  competenceDate DateTime?           @map("competence_date")
-  paidAt         DateTime?           @map("paid_at")
-  notes          String?             @map("notes")
-  createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @updatedAt @map("updated_at")
+  id              String              @id @default(cuid())
+  description     String
+  amount          Decimal
+  account         String?             @map("account")
+  category        TransactionCategory? @map("category")
+  expenseCategory String?             @map("expense_category")
+  paymentMethod   PaymentMethod?      @map("payment_method")
+  status          TransactionStatus   @default(PENDING) @map("status")
+  source          TransactionSource   @map("source")
+  referenceId     String?             @map("reference_id")
+  attendanceType  AttendanceType?     @map("attendance_type")
+  dueDate         DateTime?           @map("due_date")
+  competenceDate  DateTime?           @map("competence_date")
+  paidAt          DateTime?           @map("paid_at")
+  notes           String?             @map("notes")
+  kind            TransactionKind     @default(INCOME) @map("kind")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
 
   @@map("transactions")
 }
@@ -223,6 +225,11 @@ enum PaymentMethod {
 enum TransactionCategory {
   ATTENDANCE @map("attendance")
   DEPOSIT    @map("deposit")
+}
+
+enum TransactionKind {
+  INCOME  @map("income")
+  EXPENSE @map("expense")
 }
 
 enum TransactionStatus {
