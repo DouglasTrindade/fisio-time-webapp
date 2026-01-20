@@ -1,7 +1,7 @@
-import { FinanceReports } from './_components';
-const FinanceReportsPage = () => {
-  return <FinanceReports />;
+import { redirect } from "next/navigation"
 
+const FinanceReportsPage = () => {
+  redirect("/relatorios/financeiro/receitas-despesas")
 }
 
-export default FinanceReportsPage;
+export default FinanceReportsPage

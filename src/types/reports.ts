@@ -110,3 +110,46 @@ export interface CitiesAttendanceReport {
   cities: CityAttendanceEntry[]
   growth: CityGrowthEntry[]
 }
+
+export interface FinanceCategoryEntry {
+  label: string
+  value: number
+}
+
+export interface FinanceHistoryEntry {
+  month: string
+  label: string
+  income: number
+  expense: number
+}
+
+export interface FinanceOverviewSummary {
+  totalIncome: number
+  totalExpenses: number
+  balance: number
+  paidIncome: number
+  pendingIncome: number
+  paidExpenses: number
+  pendingExpenses: number
+}
+
+export interface FinanceDRESection {
+  grossRevenue: number
+  deductions: number
+  netRevenue: number
+  operationalExpenses: number
+  operationalResult: number
+  netIncome: number
+}
+
+export interface FinanceOverviewReport {
+  timeframe: {
+    start: string
+    end: string
+  }
+  summary: FinanceOverviewSummary
+  history: FinanceHistoryEntry[]
+  incomeByCategory: FinanceCategoryEntry[]
+  expenseByCategory: FinanceCategoryEntry[]
+  dre: FinanceDRESection
+}
