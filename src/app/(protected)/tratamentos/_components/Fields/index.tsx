@@ -29,6 +29,8 @@ interface TreatmentPlanFieldsProps {
   disableAttendanceSelection?: boolean;
 }
 
+const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
+
 export const TreatmentPlanFields = ({
   form,
   patients,
@@ -182,7 +184,9 @@ export const TreatmentPlanFields = ({
         name="patientId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Paciente</FormLabel>
+            <FormLabel>
+              Paciente <RequiredMark />
+            </FormLabel>
             {disablePatientSelection && lockedPatientId ? (
               <>
                 <Input
@@ -241,7 +245,9 @@ export const TreatmentPlanFields = ({
         name="attendanceId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Avaliação</FormLabel>
+            <FormLabel>
+              Avaliação <RequiredMark />
+            </FormLabel>
             {disableAttendanceSelection && lockedAttendanceId ? (
               <>
                 <Input
@@ -310,7 +316,9 @@ export const TreatmentPlanFields = ({
         name="procedure"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Procedimento</FormLabel>
+            <FormLabel>
+              Procedimento <RequiredMark />
+            </FormLabel>
             <FormControl>
               <Input placeholder="Descrição do procedimento" {...field} />
             </FormControl>
@@ -324,7 +332,9 @@ export const TreatmentPlanFields = ({
         name="sessionQuantity"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Quantidade de atendimentos</FormLabel>
+            <FormLabel>
+              Quantidade de atendimentos <RequiredMark />
+            </FormLabel>
             <FormControl>
               <Input
                 type="number"

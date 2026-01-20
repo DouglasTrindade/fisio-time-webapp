@@ -149,6 +149,10 @@ export const SendNotificationDialog = ({
     setSelectOpen(false)
   }
 
+  const isScheduled = form.watch("sendMode") === "scheduled"
+
+  const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => (!isOpen ? handleClose() : onOpenChange(isOpen))}>
       <DialogContent className="sm:max-w-xl">
@@ -166,7 +170,9 @@ export const SendNotificationDialog = ({
               name="recipientId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Profissional</FormLabel>
+                  <FormLabel>
+                    Profissional <RequiredMark />
+                  </FormLabel>
                   <Popover open={selectOpen} onOpenChange={setSelectOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -236,7 +242,9 @@ export const SendNotificationDialog = ({
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mensagem</FormLabel>
+                  <FormLabel>
+                    Mensagem <RequiredMark />
+                  </FormLabel>
                   <FormControl>
                     <Textarea rows={4} placeholder="Digite sua mensagem" {...field} />
                   </FormControl>
@@ -276,13 +284,15 @@ export const SendNotificationDialog = ({
               )}
             />
 
-            {form.watch("sendMode") === "scheduled" ? (
+            {isScheduled ? (
               <FormField
                 control={form.control}
                 name="scheduledFor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data e hora</FormLabel>
+                    <FormLabel>
+                      Data e hora <RequiredMark />
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"

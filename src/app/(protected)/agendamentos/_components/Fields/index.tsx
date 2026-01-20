@@ -23,6 +23,7 @@ interface FieldsProps {
 
 export const Fields = ({ form }: FieldsProps) => {
     const { records: patients } = useRecords<Patient>("patients");
+    const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
 
     return (
         <>
@@ -71,9 +72,11 @@ export const Fields = ({ form }: FieldsProps) => {
                 name="name"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Nome</FormLabel>
+                        <FormLabel>
+                            Nome <RequiredMark />
+                        </FormLabel>
                         <FormControl>
-                            <Input placeholder="Nome do paciente" {...field} />
+                            <Input placeholder="Nome do paciente" {...field} aria-required="true" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -85,12 +88,15 @@ export const Fields = ({ form }: FieldsProps) => {
                 name="phone"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Telefone</FormLabel>
+                        <FormLabel>
+                            Telefone <RequiredMark />
+                        </FormLabel>
                         <FormControl>
                             <InputMask
                                 placeholder="(99) 99999-9999"
                                 mask="(99) 99999-9999"
                                 {...field}
+                                aria-required="true"
                             />
                         </FormControl>
                         <FormMessage />
@@ -103,7 +109,9 @@ export const Fields = ({ form }: FieldsProps) => {
                 name="date"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Data</FormLabel>
+                        <FormLabel>
+                            Data <RequiredMark />
+                        </FormLabel>
                         <FormControl>
                             <Input
                                 type="datetime-local"
@@ -119,6 +127,7 @@ export const Fields = ({ form }: FieldsProps) => {
                                     ).toUTC().toISO();
                                     field.onChange(iso);
                                 }}
+                                aria-required="true"
                             />
                         </FormControl>
                         <FormMessage />
@@ -131,7 +140,9 @@ export const Fields = ({ form }: FieldsProps) => {
                 name="status"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Status</FormLabel>
+                        <FormLabel>
+                            Status <RequiredMark />
+                        </FormLabel>
                         <Select defaultValue={field.value} onValueChange={field.onChange}>
                             <FormControl>
                                 <SelectTrigger>
