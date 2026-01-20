@@ -46,6 +46,8 @@ const newRevenueSchema = z.object({
 
 type NewRevenueValues = z.infer<typeof newRevenueSchema>
 
+const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
+
 export const NewRevenueDialog = () => {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -103,9 +105,15 @@ export const NewRevenueDialog = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>
+                    Descrição <RequiredMark />
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Avaliação Maria Souza" {...field} />
+                    <Input
+                      placeholder="Ex: Avaliação Maria Souza"
+                      {...field}
+                      aria-required="true"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -116,44 +124,60 @@ export const NewRevenueDialog = () => {
               <FormField
                 control={form.control}
                 name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="0,00" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Valor <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      {...field}
+                      aria-required="true"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               <FormField
                 control={form.control}
                 name="account"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Conta</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Conta corrente" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Conta <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Conta corrente"
+                      {...field}
+                      aria-required="true"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                      </FormControl>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Categoria <RequiredMark />
+                  </FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                    </FormControl>
                       <SelectContent>
                         <SelectItem value="attendance">Atendimento</SelectItem>
                         <SelectItem value="deposit">Depósito</SelectItem>
@@ -166,15 +190,20 @@ export const NewRevenueDialog = () => {
               <FormField
                 control={form.control}
                 name="paymentMethod"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Forma de pagamento</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                      </FormControl>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Forma de pagamento <RequiredMark />
+                  </FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                    </FormControl>
                       <SelectContent>
                         <SelectItem value="credit_card">Cartão de crédito</SelectItem>
                         <SelectItem value="pix">Pix</SelectItem>
@@ -191,29 +220,33 @@ export const NewRevenueDialog = () => {
               <FormField
                 control={form.control}
                 name="dueDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data de vencimento</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Data de vencimento <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} aria-required="true" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               <FormField
                 control={form.control}
                 name="competenceDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data de competência</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Data de competência <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} aria-required="true" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
 
             <FormField

@@ -60,15 +60,19 @@ export const TreatmentPlans = ({
     pagination,
   } = useRecords<TreatmentPlan>(treatmentPlansCrudConfig.endpoint, filterParams)
 
+  const patientOptionsQuery = useMemo(
+    () => ({
+      limit: 100,
+      page: 1,
+      sortBy: "name",
+      sortOrder: "asc",
+    }),
+    [],
+  )
   const {
     records: patientOptions,
     isLoading: isLoadingPatients,
-  } = useRecords<Patient>("/patients", {
-    limit: 100,
-    page: 1,
-    sortBy: "name",
-    sortOrder: "asc",
-  })
+  } = useRecords<Patient>("/patients", patientOptionsQuery)
 
   const createMutation = useCreateRecord<TreatmentPlan, TreatmentPlanCreateInput>(
     treatmentPlansCrudConfig.endpoint,

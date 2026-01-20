@@ -1,12 +1,7 @@
-import { Suspense } from "react"
+"use client"
 
-import { ReportPageSkeleton } from "@/app/(protected)/components/loading-fallbacks"
 import { DREReport } from "../_components"
 
 export default function DREPage() {
-  return (
-    <Suspense fallback={<ReportPageSkeleton />}>
-      <DREReport />
-    </Suspense>
-  )
+  return <DREReport />
 }

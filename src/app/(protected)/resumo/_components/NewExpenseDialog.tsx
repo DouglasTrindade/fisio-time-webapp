@@ -50,6 +50,7 @@ type NewExpenseValues = z.infer<typeof expenseSchema>
 
 const defaultCategories = ["Infraestrutura", "Operacional", "Marketing"]
 const categoriesStorageKey = "finance-expense-categories"
+const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
 
 export const NewExpenseDialog = () => {
   const [open, setOpen] = useState(false)
@@ -147,9 +148,15 @@ export const NewExpenseDialog = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>
+                    Descrição <RequiredMark />
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Aluguel da clínica" {...field} />
+                    <Input
+                      placeholder="Ex: Aluguel da clínica"
+                      {...field}
+                      aria-required="true"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,29 +167,43 @@ export const NewExpenseDialog = () => {
               <FormField
                 control={form.control}
                 name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="0,00" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Valor <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0,00"
+                      {...field}
+                      aria-required="true"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
               <FormField
                 control={form.control}
                 name="account"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Conta</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Conta corrente" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Conta <RequiredMark />
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Conta corrente"
+                      {...field}
+                      aria-required="true"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
 
             <FormField
@@ -190,7 +211,9 @@ export const NewExpenseDialog = () => {
               name="expenseCategory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel>
+                    Categoria <RequiredMark />
+                  </FormLabel>
                   <div className="flex items-end gap-2">
                     <div className="flex-1">
                       <Select value={field.value} onValueChange={field.onChange}>
@@ -240,7 +263,9 @@ export const NewExpenseDialog = () => {
               name="paymentMethod"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Forma de pagamento</FormLabel>
+                  <FormLabel>
+                    Forma de pagamento <RequiredMark />
+                  </FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger>
@@ -264,9 +289,11 @@ export const NewExpenseDialog = () => {
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de vencimento</FormLabel>
+                    <FormLabel>
+                      Data de vencimento <RequiredMark />
+                    </FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} aria-required="true" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -277,9 +304,11 @@ export const NewExpenseDialog = () => {
                 name="competenceDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de competência</FormLabel>
+                    <FormLabel>
+                      Data de competência <RequiredMark />
+                    </FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} aria-required="true" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

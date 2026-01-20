@@ -12,6 +12,8 @@ interface PersonalFieldsProps {
   form: UseFormReturn<PatientSchema>
 }
 
+const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
+
 export const PersonalFields = ({ form }: PersonalFieldsProps) => {
   const maritalStatus = [
     { name: "Solteiro", value: "solteiro" },
@@ -33,9 +35,15 @@ export const PersonalFields = ({ form }: PersonalFieldsProps) => {
         name="name"
         render={({ field }) => (
           <FormItem className="md:col-span-3">
-            <FormLabel>Nome</FormLabel>
+            <FormLabel>
+              Nome <RequiredMark />
+            </FormLabel>
             <FormControl>
-              <Input placeholder="Nome do paciente" {...field} />
+              <Input
+                placeholder="Nome do paciente"
+                {...field}
+                aria-required="true"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,12 +55,15 @@ export const PersonalFields = ({ form }: PersonalFieldsProps) => {
         name="phone"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Telefone</FormLabel>
+            <FormLabel>
+              Telefone <RequiredMark />
+            </FormLabel>
             <FormControl>
               <InputMask
                 placeholder="(99) 99999-9999"
                 mask="(99) 99999-9999"
                 {...field}
+                aria-required="true"
               />
             </FormControl>
             <FormMessage />

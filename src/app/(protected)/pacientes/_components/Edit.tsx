@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type MouseEvent } from "react";
-import { useForm } from "react-hook-form";
+import { FieldPath, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -61,10 +61,16 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
   const [step, setStep] = useState(0);
   const [isFormReady, setIsFormReady] = useState(false);
   const steps = ["Informações pessoais", "Endereço"];
+  const stepFieldMap: ReadonlyArray<FieldPath<PatientSchema>[]> = [
+    ["name", "phone"],
+    [],
+  ];
   const isUpdating = patientContext?.isUpdating ?? isStandaloneUpdating;
 
   const form = useForm<PatientSchema>({
     resolver: zodResolver(patientSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: useMemo(() => mapPatientToFormValues(), []),
   });
 
@@ -127,17 +133,38 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
     nextStep: number
   ) => {
     event.preventDefault();
-    setStep(nextStep);
+    void goToStep(nextStep);
   };
 
   const handleNextStep = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    setStep((prev) => Math.min(prev + 1, steps.length - 1));
+    void goToStep(Math.min(step + 1, steps.length - 1));
   };
 
   const handlePrevStep = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const validateStep = async (index: number) => {
+    const fields = stepFieldMap[index];
+    if (!fields || fields.length === 0) {
+      return true;
+    }
+    return form.trigger(fields, { shouldFocus: true });
+  };
+
+  const goToStep = async (nextStep: number) => {
+    if (nextStep === step) return;
+    if (nextStep > step) {
+      for (let current = step; current < nextStep; current++) {
+        const valid = await validateStep(current);
+        if (!valid) {
+          return;
+        }
+      }
+    }
+    setStep(nextStep);
   };
 
   if (isLoading || !isFormReady) {

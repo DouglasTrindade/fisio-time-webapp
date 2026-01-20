@@ -1,12 +1,7 @@
-import { Suspense } from "react"
+"use client"
 
-import { ReportPageSkeleton } from "@/app/(protected)/components/loading-fallbacks"
 import { RevenueExpenseReport } from "../_components"
 
 export default function RevenueVsExpensePage() {
-  return (
-    <Suspense fallback={<ReportPageSkeleton />}>
-      <RevenueExpenseReport />
-    </Suspense>
-  )
+  return <RevenueExpenseReport />
 }

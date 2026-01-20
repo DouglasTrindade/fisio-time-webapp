@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 
 interface TreatmentPlansFiltersProps {
   search: string;
@@ -31,6 +33,18 @@ export const TreatmentPlansFilters = ({
   sortValue,
   onSortChange,
 }: TreatmentPlansFiltersProps) => {
+  const [internalSearch, setInternalSearch] = useState(search);
+  const debouncedSearch = useDebouncedValue(internalSearch, 400);
+
+  useEffect(() => {
+    setInternalSearch(search);
+  }, [search]);
+
+  useEffect(() => {
+    if (debouncedSearch === search) return;
+    onSearch(debouncedSearch);
+  }, [debouncedSearch, onSearch, search]);
+
   return (
     <div className="flex items-center gap-4">
       <div className="relative">
@@ -38,8 +52,8 @@ export const TreatmentPlansFilters = ({
         <Input
           className="pl-10"
           placeholder="Buscar por procedimento ou objetivo..."
-          value={search}
-          onChange={(event) => onSearch(event.target.value)}
+          value={internalSearch}
+          onChange={(event) => setInternalSearch(event.target.value)}
         />
       </div>
 

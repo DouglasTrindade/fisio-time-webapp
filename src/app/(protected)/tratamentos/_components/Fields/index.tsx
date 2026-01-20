@@ -82,24 +82,26 @@ export const TreatmentPlanFields = ({
     }
   }, [form, lockedAttendanceId]);
 
+  const evaluationsQuery = useMemo(
+    () =>
+      selectedPatientId
+        ? {
+          patientId: selectedPatientId,
+          type: "EVALUATION",
+          limit: 100,
+          sortBy: "date",
+          sortOrder: "desc",
+        }
+        : undefined,
+    [selectedPatientId],
+  );
+
   const {
     records: evaluations,
     isLoading: isLoadingEvaluations,
-  } = useRecords<Attendance>(
-    "/attendances",
-    selectedPatientId
-      ? {
-        patientId: selectedPatientId,
-        type: "EVALUATION",
-        limit: 100,
-        sortBy: "date",
-        sortOrder: "desc",
-      }
-      : undefined,
-    {
-      enabled: Boolean(selectedPatientId),
-    }
-  );
+  } = useRecords<Attendance>("/attendances", evaluationsQuery, {
+    enabled: Boolean(evaluationsQuery),
+  });
 
   const patientOptions = useMemo(() => {
     if (
@@ -188,7 +190,14 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" {...field} value={lockedPatientId} />
+                <input
+                  type="hidden"
+                  value={lockedPatientId}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  readOnly
+                />
               </>
             ) : (
               <Select
@@ -240,7 +249,14 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" {...field} value={lockedAttendanceId} />
+                <input
+                  type="hidden"
+                  value={lockedAttendanceId}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  readOnly
+                />
               </>
             ) : (
               <Select

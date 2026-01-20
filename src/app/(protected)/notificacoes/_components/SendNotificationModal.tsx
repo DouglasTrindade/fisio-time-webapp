@@ -77,10 +77,14 @@ export const SendNotificationDialog = ({
   const [searchTerm, setSearchTerm] = useState("")
   const [selectOpen, setSelectOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { records: users, isLoading } = useRecords<UserProfile>("/users", {
-    page: 1,
-    limit: 50,
-  })
+  const usersQuery = useMemo(
+    () => ({
+      page: 1,
+      limit: 50,
+    }),
+    [],
+  )
+  const { records: users, isLoading } = useRecords<UserProfile>("/users", usersQuery)
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users
