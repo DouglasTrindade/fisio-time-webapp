@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { format } from "date-fns"
-import { CalendarClock, Mail } from "lucide-react"
+import { Mail } from "lucide-react"
 
 import {
   Dialog,

@@ -43,7 +43,7 @@ const expenseSchema = z.object({
   competenceDate: z.string().min(1, "Selecione uma data"),
   isPaid: z.boolean(),
   notes: z.string().optional(),
-  kind: z.literal("expense").default("expense"),
+  kind: z.literal("expense"),
 })
 
 type NewExpenseValues = z.infer<typeof expenseSchema>

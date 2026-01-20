@@ -41,7 +41,7 @@ const newRevenueSchema = z.object({
   competenceDate: z.string().min(1, "Selecione uma data"),
   isPaid: z.boolean(),
   notes: z.string().optional(),
-  kind: z.literal("income").default("income"),
+  kind: z.literal("income"),
 })
 
 type NewRevenueValues = z.infer<typeof newRevenueSchema>

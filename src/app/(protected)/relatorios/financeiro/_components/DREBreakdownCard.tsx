@@ -13,14 +13,21 @@ const currency = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 })
 
-const rows = [
-  { key: "grossRevenue", label: "Receita bruta", prefix: "" },
+type RowDescriptor = {
+  key: keyof FinanceDRESection
+  label: string
+  prefix?: string
+  highlight?: boolean
+}
+
+const rows: RowDescriptor[] = [
+  { key: "grossRevenue", label: "Receita bruta" },
   { key: "deductions", label: "(-) Deduções e pendências", prefix: "-" },
   { key: "netRevenue", label: "= Receita líquida", highlight: true },
   { key: "operationalExpenses", label: "(-) Despesas operacionais", prefix: "-" },
   { key: "operationalResult", label: "= Resultado operacional", highlight: true },
   { key: "netIncome", label: "Resultado líquido", highlight: true },
-] as const
+]
 
 export const DREBreakdownCard = ({ dre, isLoading }: DREBreakdownCardProps) => {
   return (
