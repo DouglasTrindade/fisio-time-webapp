@@ -8,7 +8,7 @@ interface ReportHeaderProps {
   description: string
   timeframeLabel: string
   range: number
-  timeframes: { label: string; value: number }[]
+  timeframes: ReadonlyArray<{ label: string; value: number }>
   onRangeChange: (value: string) => void
 }
 

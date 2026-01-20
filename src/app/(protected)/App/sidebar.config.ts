@@ -23,6 +23,7 @@ const sidebarIcons = [
   "chartPie",
   "trendingUpDown",
   "settings",
+  "chartNoAxesCombined"
 ] as const
 
 export type SidebarIconName = (typeof sidebarIcons)[number]
@@ -107,6 +108,23 @@ export const menuItems: SidebarMenuItemConfig[] = [
         url: "/relatorios/atendimentos/cidades",
       },
     ],
+  },
+    {
+    slug: "finance-reports",
+    title: "Financeiro",
+    icon: "chartNoAxesCombined",
+    children: [
+      {
+        slug: "finance-reports-revenue-expense",
+        title: "Receitas X Despesas",
+        url: "/relatorios/financeiro/receitas-despesas",
+      },
+      {
+        slug: "finance-reports-dre",
+        title: "Demonstrativo (DRE)",
+        url: "/relatorios/financeiro/dre",
+      },
+    ]
   },
   {
     slug: "section-settings",

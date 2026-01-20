@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import {
   BriefcaseMedical,
   Calendar,
+  ChartNoAxesCombined,
   ChartPie,
   ChevronRight,
   CircleArrowUp,
@@ -67,6 +68,7 @@ export function SidebarNavigation({ items }: SidebarNavigationProps) {
     chartPie: ChartPie,
     settings: Settings,
     trendingUpDown: TrendingUpDown,
+    chartNoAxesCombined: ChartNoAxesCombined
   }
 
   return (
