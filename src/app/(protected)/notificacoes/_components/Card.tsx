@@ -105,7 +105,13 @@ const NotificationCardDescription = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
+  <p
+    className={cn(
+      "text-sm text-muted-foreground whitespace-pre-line wrap-break-word leading-relaxed",
+      className,
+    )}
+    {...props}
+  />
 )
 
 const NotificationCardMeta = ({

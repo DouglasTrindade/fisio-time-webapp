@@ -25,6 +25,8 @@ interface TreatmentPlansFiltersProps {
   onSortChange: (value: string) => void;
 }
 
+const ALL_PATIENTS = "all";
+
 type FiltersFormValues = {
   search: string;
   patient: string;
@@ -44,7 +46,7 @@ export const TreatmentPlansFilters = ({
   const form = useForm<FiltersFormValues>({
     defaultValues: {
       search,
-      patient: patientValue || "",
+      patient: patientValue || ALL_PATIENTS,
       sort: sortValue,
     },
   });
@@ -52,7 +54,7 @@ export const TreatmentPlansFilters = ({
   useEffect(() => {
     form.reset({
       search,
-      patient: patientValue || "",
+      patient: patientValue || ALL_PATIENTS,
       sort: sortValue,
     });
   }, [form, patientValue, search, sortValue]);
@@ -68,8 +70,8 @@ export const TreatmentPlansFilters = ({
   }, [debouncedSearch, onSearch, search]);
 
   useEffect(() => {
-    const normalized = watchedPatient ?? "";
-    const target = normalized.length === 0 ? "" : normalized;
+    const normalized = watchedPatient ?? ALL_PATIENTS;
+    const target = normalized === ALL_PATIENTS ? "" : normalized;
     if (target === patientValue) return;
     onPatientChange(target);
   }, [onPatientChange, patientValue, watchedPatient]);
@@ -94,7 +96,7 @@ export const TreatmentPlansFilters = ({
         </div>
 
         <Select
-          value={watchedPatient || ""}
+          value={watchedPatient || ALL_PATIENTS}
           onValueChange={(value) => form.setValue("patient", value, { shouldDirty: true })}
           disabled={isPatientDisabled}
         >
@@ -102,7 +104,7 @@ export const TreatmentPlansFilters = ({
             <SelectValue placeholder="Filtrar por paciente" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os pacientes</SelectItem>
+            <SelectItem value={ALL_PATIENTS}>Todos os pacientes</SelectItem>
             {patientOptions.map((patient) => (
               <SelectItem key={patient.value} value={patient.value}>
                 {patient.label}
