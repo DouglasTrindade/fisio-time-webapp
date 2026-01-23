@@ -269,8 +269,8 @@ enum TransactionSource {
 }
 
 enum AttendanceType {
-  EVALUATION @map("evaluation")
-  EVOLUTION  @map("evolution")
+  EVALUATION @map("EVALUATION")
+  EVOLUTION  @map("EVOLUTION")
 }
 
 enum NotificationCategory {

@@ -49,32 +49,24 @@ export const attendanceInclude = {
 } as const;
 
 export const toPrismaAttendanceType = (
-  value?: string | AttendanceType | null
+  value?: string | AttendanceType | null,
 ): AttendanceType | undefined => {
-  if (!value) return undefined;
+  if (!value) return undefined
+  const normalized = value
+    .toString()
+    .trim()
+    .replace(/[\s-]/g, "_")
+    .toLowerCase()
 
-  const normalized =
-    typeof value === "string"
-      ? value.trim().replace(/[\s-]/g, "_").toUpperCase()
-      : value;
-
-  if (normalized === "EVOLUTION") {
-    return "EVOLUTION" as unknown as AttendanceType;
+  if (normalized === "evolution") {
+    return AttendanceType.EVOLUTION
   }
 
-  if (normalized === "EVALUATION") {
-    return "EVALUATION" as unknown as AttendanceType;
+  if (normalized === "evaluation") {
+    return AttendanceType.EVALUATION
   }
 
-  if (normalized === AttendanceType.EVOLUTION) {
-    return AttendanceType.EVOLUTION;
-  }
-
-  if (normalized === AttendanceType.EVALUATION) {
-    return AttendanceType.EVALUATION;
-  }
-
-  return undefined;
+  return undefined
 };
 
 const resolvePaymentMethod = (

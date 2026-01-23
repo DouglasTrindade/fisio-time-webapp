@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAttendanceSchema } from "./schema";
+import { toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import {
   createApiResponse,
   createApiError,
@@ -10,7 +11,7 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse } from "@/types/api";
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 import {
   attendanceInclude,
   formatAttendance,
@@ -20,10 +21,23 @@ import {
   type AttendanceWithRelations,
 } from "./utils";
 
+const normalizeAttendanceTypeForDb = (
+  raw?: string | AttendanceType | null,
+): Prisma.AttendanceType | undefined => {
+  const parsed = toPrismaAttendanceType(raw)
+  return parsed
+    ? (toPrismaEnumValue(parsed) as unknown as Prisma.AttendanceType)
+    : undefined
+}
+
+const DEFAULT_ATTENDANCE_TYPE =
+  normalizeAttendanceTypeForDb(AttendanceType.EVALUATION) ??
+  (AttendanceType.EVALUATION as unknown as Prisma.AttendanceType)
+
 const resolveAttendanceType = (
   raw: unknown,
-  fallback: AttendanceType = "EVALUATION" as unknown as AttendanceType,
-): AttendanceType => {
+  fallback: Prisma.AttendanceType = DEFAULT_ATTENDANCE_TYPE,
+): Prisma.AttendanceType => {
   const typeInput =
     typeof raw === "string"
       ? raw
@@ -31,7 +45,7 @@ const resolveAttendanceType = (
         ? (raw as { value?: string }).value
         : undefined
 
-  return toPrismaAttendanceType(typeInput) ?? fallback
+  return normalizeAttendanceTypeForDb(typeInput) ?? fallback
 }
 
 export async function GET(
@@ -43,7 +57,7 @@ export async function GET(
     const url = new URL(request.url);
     const typeParam = url.searchParams.get("type");
     const patientId = url.searchParams.get("patientId") || "";
-    const prismaFilterType = toPrismaAttendanceType(typeParam);
+    const dbFilterType = normalizeAttendanceTypeForDb(typeParam);
 
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
@@ -77,7 +91,7 @@ export async function GET(
             ],
           }
         : {}),
-      ...(prismaFilterType ? { type: prismaFilterType } : {}),
+      ...(dbFilterType ? { type: dbFilterType } : {}),
       ...(patientId ? { patientId } : {}),
     };
 

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import {
   createApiResponse,
   createApiError,
@@ -23,16 +24,25 @@ import {
   type AttendanceWithRelations,
 } from "../utils";
 
+const normalizeAttendanceTypeForDb = (
+  raw?: string | AttendanceType | null,
+): Prisma.AttendanceType | undefined => {
+  const parsed = toPrismaAttendanceType(raw)
+  return parsed
+    ? (toPrismaEnumValue(parsed) as unknown as Prisma.AttendanceType)
+    : undefined
+}
+
 const resolveAttendanceType = (
   raw: unknown,
-): AttendanceType | undefined => {
+): Prisma.AttendanceType | undefined => {
   const typeInput =
     typeof raw === "string"
       ? raw
       : typeof raw === "object" && raw !== null && "value" in raw
         ? (raw as { value?: string }).value
         : undefined
-  return typeInput ? toPrismaAttendanceType(typeInput) : undefined
+  return normalizeAttendanceTypeForDb(typeInput)
 }
 
 export async function GET(
