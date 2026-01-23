@@ -23,6 +23,8 @@ import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Patient } from "@/types/patient";
 import { usePatientContext } from "@/contexts/PatientsContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
+import { toast } from "sonner";
 
 interface PatientListItemProps {
   patient: Patient;
@@ -33,8 +35,35 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { handleDelete, isDeleting } = usePatientContext();
   const router = useRouter();
+  const { canManagePatients, canDeletePatients } = useRolePermissions();
+
+  const ensureCanManage = () => {
+    if (!canManagePatients) {
+      toast.error("Você não tem permissão para editar pacientes.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleEditClick = () => {
+    if (!ensureCanManage()) return;
+    onEdit(patient?.id);
+  };
+
+  const handleRequestDelete = () => {
+    if (!canDeletePatients) {
+      toast.error("Você não tem permissão para excluir pacientes.");
+      return;
+    }
+    setShowDeleteDialog(true);
+  };
 
   const handleDeleteClick = async () => {
+    if (!canDeletePatients) {
+      toast.error("Você não tem permissão para excluir pacientes.");
+      setShowDeleteDialog(false);
+      return;
+    }
     await handleDelete(patient.id);
     setShowDeleteDialog(false);
   };
@@ -73,13 +102,14 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(patient?.id)}>
+              <DropdownMenuItem onClick={handleEditClick}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={handleRequestDelete}
                 className="text-destructive"
+                disabled={!canDeletePatients}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
