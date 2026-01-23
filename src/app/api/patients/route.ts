@@ -9,6 +9,8 @@ import {
   validateJsonBody,
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse, Patient } from "@/types/patient";
+import { auth } from "@/auth";
+import { canManagePatients } from "@/lib/auth/permissions";
 
 export async function GET(
   request: NextRequest
@@ -77,6 +79,13 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Patient>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManagePatients(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const body = await validateJsonBody(request, createPatientSchema);
 
     const existingPatient = await prisma.patient.findFirst({

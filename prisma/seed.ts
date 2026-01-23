@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, Status } from "@prisma/client";
+import { PrismaClient, Role, Status } from "@prisma/client";
+import { toPrismaEnumValue } from "../src/lib/prisma/enum-helpers";
 import bcrypt from "bcryptjs";
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
@@ -16,87 +17,95 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash("123123123", 10);
 
-  const user = await prisma.user.upsert({
-    where: { email: "joao@fisiotime.com" },
-    update: {},
-    create: {
-      id: "usr_joao_silva",
+  const seedUserEmail = "joao@fisiotime.com"
+  await prisma.appointment.deleteMany({
+    where: {
+      patient: {
+        phone: {
+          in: ["11999999999", "11888888888", "11777777777"],
+        },
+      },
+    },
+  })
+  await prisma.patient.deleteMany({
+    where: {
+      phone: {
+        in: ["11999999999", "11888888888", "11777777777"],
+      },
+    },
+  })
+  await prisma.user.deleteMany({
+    where: { email: seedUserEmail },
+  })
+
+  const user = await prisma.user.create({
+    data: {
       name: "Dr. João Silva",
-      email: "joao@fisiotime.com",
+      email: seedUserEmail,
       password: hashedPassword,
       createdAt: new Date(),
+      role: Role.ADMIN,
     },
   });
 
   console.log("👤 Usuário criado:", user.name);
 
-  const patients = await Promise.all([
-    prisma.patient.upsert({
-      where: { id: "pat_maria_santos" },
-      update: {},
-      create: {
-        id: "pat_maria_santos",
-        name: "Maria Santos",
-        phone: "11999999999",
-        email: "maria@email.com",
-        birthDate: new Date("1985-03-15"),
-        notes: "Paciente com dor nas costas",
-      },
-    }),
-    prisma.patient.upsert({
-      where: { id: "pat_pedro_oliveira" },
-      update: {},
-      create: {
-        id: "pat_pedro_oliveira",
-        name: "Pedro Oliveira",
-        phone: "11888888888",
-        email: "pedro@email.com",
-        birthDate: new Date("1990-07-22"),
-        notes: "Fisioterapia pós-cirúrgica",
-      },
-    }),
-    prisma.patient.upsert({
-      where: { id: "pat_ana_costa" },
-      update: {},
-      create: {
-        id: "pat_ana_costa",
-        name: "Ana Costa",
-        phone: "11777777777",
-        email: null,
-        birthDate: new Date("1978-12-10"),
-        notes: "Reabilitação do joelho",
-      },
-    }),
-  ]);
+  const patientSeedData = [
+    {
+      name: "Maria Santos",
+      phone: "11999999999",
+      email: "maria@email.com",
+      birthDate: new Date("1985-03-15"),
+      notes: "Paciente com dor nas costas",
+    },
+    {
+      name: "Pedro Oliveira",
+      phone: "11888888888",
+      email: "pedro@email.com",
+      birthDate: new Date("1990-07-22"),
+      notes: "Fisioterapia pós-cirúrgica",
+    },
+    {
+      name: "Ana Costa",
+      phone: "11777777777",
+      email: null,
+      birthDate: new Date("1978-12-10"),
+      notes: "Reabilitação do joelho",
+    },
+  ] as const
+
+  const patients = await Promise.all(
+    patientSeedData.map((patient) =>
+      prisma.patient.create({
+        data: patient,
+      }),
+    ),
+  );
 
   console.log(`👥 ${patients.length} pacientes criados`);
 
+  const patientByPhone = new Map(patients.map((patient) => [patient.phone, patient.id]))
+
   const appointments = await Promise.all([
-    prisma.appointment.upsert({
-      where: { id: "appt_maria_15jan" },
-      update: {},
-      create: {
-        id: "appt_maria_15jan",
+    prisma.appointment.create({
+      data: {
         name: "Maria Santos",
         phone: "11999999999",
         date: new Date("2024-01-15T10:00:00"),
-        status: Status.CONFIRMED, 
+        status: toPrismaEnumValue(Status.CONFIRMED),
         professionalId: user.id,
-        patientId: "pat_maria_santos",
+        patientId: patientByPhone.get("11999999999")!,
         notes: "Sessão inicial de fisioterapia",
       },
     }),
-    prisma.appointment.upsert({
-      where: { id: "appt_pedro_16jan" },
-      update: {},
-      create: {
-        id: "appt_pedro_16jan",
+    prisma.appointment.create({
+      data: {
         name: "Pedro Oliveira",
         phone: "11888888888",
         date: new Date("2024-01-16T09:30:00"),
-        status: Status.WAITING,
+        status: toPrismaEnumValue(Status.WAITING),
         professionalId: user.id,
-        patientId: "pat_pedro_oliveira",
+        patientId: patientByPhone.get("11888888888")!,
         notes: "Aguardando avaliação pós-cirúrgica",
       },
     }),

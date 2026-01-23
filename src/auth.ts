@@ -3,6 +3,7 @@ import authConfig from "./auth.config";
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import type { Role, User } from "@prisma/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -11,7 +12,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        const typedUser = user as User;
+        token.id = typedUser.id;
+        token.role = typedUser.role as Role;
       }
       return token;
     },
@@ -19,6 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const expiration = typeof token.exp === "number" ? token.exp * 1000 : null;
 
       session.user.id = token.id as string;
+      session.user.role = (token.role as Role) ?? "PROFESSIONAL";
       if (expiration) {
         session.expires = new Date(expiration).toISOString() as unknown as Date & string;
         if (Date.now() >= expiration) {

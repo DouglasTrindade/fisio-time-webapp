@@ -6,6 +6,7 @@ export const signUpSchema = z
     email: z.string().email("E-mail inválido"),
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirmPassword: z.string(),
+    inviteToken: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",

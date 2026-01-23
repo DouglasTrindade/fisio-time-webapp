@@ -132,6 +132,24 @@ export const menuItems: SidebarMenuItemConfig[] = [
     isSection: true,
   },
   {
+    slug: "team-management",
+    title: "Equipe",
+    icon: "users",
+    children: [
+      {
+        slug: "users",
+        title: "Usuários",
+        url: "/usuarios",
+      },
+      {
+        slug: "collaborators",
+        title: "Colaboradores",
+        url: "/colaboradores",
+        disabled: true
+      },
+    ]
+  },
+  {
     slug: "configurations",
     title: "Configurações",
     url: "/configuracoes",

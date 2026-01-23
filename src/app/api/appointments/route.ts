@@ -10,6 +10,8 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse } from "@/types/api";
 import { Status, type Appointment as PrismaAppointment } from "@prisma/client";
+import { auth } from "@/auth";
+import { canCreateAppointments } from "@/lib/auth/permissions";
 
 type Appointment = Omit<
   PrismaAppointment,
@@ -106,6 +108,13 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Appointment>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canCreateAppointments(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const body = await validateJsonBody(
       request,
       createAppointmentSchema

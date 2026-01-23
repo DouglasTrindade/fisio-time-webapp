@@ -3,27 +3,13 @@
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  UserRound,
-  ShieldCheck,
-  CreditCard,
-  BellRing,
-  PencilLine,
-} from "lucide-react"
+import { UserRound, CreditCard, BellRing, PencilLine } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ImageInput } from "@/components/ui/image-input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -36,7 +22,7 @@ import { userSettingsSchema, type UserSettingsValues } from "./schema"
 
 type SettingsSection = "profile" | "billing" | "notifications"
 
-const sections: Array<{
+const baseSections: Array<{
   id: SettingsSection
   label: string
   description: string
@@ -49,6 +35,8 @@ const sections: Array<{
 
 export const Settings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
+
+  const sections = baseSections
 
   const renderSection = useMemo(() => {
     switch (activeSection) {
