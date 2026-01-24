@@ -95,6 +95,9 @@ model Appointment {
   patient        Patient? @relation(fields: [patientId], references: [id])
   User           User     @relation(fields: [professionalId], references: [id])
 
+  @@index([date])
+  @@index([professionalId, date])
+  @@index([patientId, date])
   @@map("appointments")
 }
 
@@ -127,6 +130,9 @@ model Attendance {
   professional          User           @relation(fields: [professionalId], references: [id])
   treatmentPlan         TreatmentPlan?
 
+  @@index([date])
+  @@index([patientId, date])
+  @@index([professionalId, date])
   @@map("attendances")
 }
 

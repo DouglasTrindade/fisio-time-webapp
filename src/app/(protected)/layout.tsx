@@ -7,16 +7,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumbs } from "./components/Breadcrumb";
 import { BackButton } from "./components/BackButton";
-import { NotificationsDropdown } from "./notificacoes/_components/Dropdown";
-import { getRecentNotifications } from "./notificacoes/server";
+import { NotificationsBell } from "./notificacoes/_components/Bell";
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const notifications = await getRecentNotifications();
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -31,7 +28,7 @@ export default async function DashboardLayout({
             <Breadcrumbs />
             <BackButton />
             <div className="ml-auto flex items-center gap-2">
-              <NotificationsDropdown notifications={notifications} />
+              <NotificationsBell />
             </div>
           </div>
         </header>
