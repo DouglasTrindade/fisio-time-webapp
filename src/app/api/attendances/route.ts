@@ -20,6 +20,8 @@ import {
   syncAttendanceTransaction,
   type AttendanceWithRelations,
 } from "./utils";
+import { auth } from "@/auth";
+import { canManageClinical } from "@/lib/auth/permissions";
 
 const normalizeAttendanceTypeForDb = (
   raw?: string | AttendanceType | null,
@@ -52,6 +54,13 @@ export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<RecordsResponse<Attendance>>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { page, limit, search, sortBy, sortOrder } =
       getPaginationParams(request);
     const url = new URL(request.url);
@@ -142,6 +151,13 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const body = await validateJsonBody(request, createAttendanceSchema);
     const prismaType = resolveAttendanceType(body.type);
 

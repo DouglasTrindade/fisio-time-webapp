@@ -23,6 +23,8 @@ import {
   deleteAttendanceTransaction,
   type AttendanceWithRelations,
 } from "../utils";
+import { auth } from "@/auth";
+import { canManageClinical } from "@/lib/auth/permissions";
 
 const normalizeAttendanceTypeForDb = (
   raw?: string | AttendanceType | null,
@@ -50,6 +52,13 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
 
     const attendance = await prisma.attendance.findUnique({
@@ -79,6 +88,13 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
     const body = await validateJsonBody(request, updateAttendanceSchema);
 
@@ -157,6 +173,13 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
 
     const existing = await prisma.attendance.findUnique({
