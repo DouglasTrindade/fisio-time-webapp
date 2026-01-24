@@ -49,32 +49,24 @@ export const attendanceInclude = {
 } as const;
 
 export const toPrismaAttendanceType = (
-  value?: string | AttendanceType | null
+  value?: string | AttendanceType | null,
 ): AttendanceType | undefined => {
-  if (!value) return undefined;
+  if (!value) return undefined
+  const normalized = value
+    .toString()
+    .trim()
+    .replace(/[\s-]/g, "_")
+    .toLowerCase()
 
-  const normalized =
-    typeof value === "string"
-      ? value.trim().replace(/[\s-]/g, "_").toUpperCase()
-      : value;
-
-  if (normalized === "EVOLUTION") {
-    return "EVOLUTION" as unknown as AttendanceType;
+  if (normalized === "evolution") {
+    return AttendanceType.EVOLUTION
   }
 
-  if (normalized === "EVALUATION") {
-    return "EVALUATION" as unknown as AttendanceType;
+  if (normalized === "evaluation") {
+    return AttendanceType.EVALUATION
   }
 
-  if (normalized === AttendanceType.EVOLUTION) {
-    return AttendanceType.EVOLUTION;
-  }
-
-  if (normalized === AttendanceType.EVALUATION) {
-    return AttendanceType.EVALUATION;
-  }
-
-  return undefined;
+  return undefined
 };
 
 const resolvePaymentMethod = (
@@ -126,13 +118,16 @@ export const formatAttendance = (
 ): Attendance => {
   const normalizedType = `${attendance.type}`.toLowerCase()
   const isEvolution = normalizedType === "evolution"
+  const mappedType = isEvolution
+    ? AttendanceType.EVOLUTION
+    : AttendanceType.EVALUATION
 
   return {
     ...attendance,
     treatmentPlan: attendance.treatmentPlan,
     cifCode: attendance.cifCode,
     cifDescription: attendance.cifDescription,
-    type: isEvolution ? "evolution" : "evaluation",
+    type: mappedType,
     launchToFinance: attendance.launchToFinance,
     financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
     financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),

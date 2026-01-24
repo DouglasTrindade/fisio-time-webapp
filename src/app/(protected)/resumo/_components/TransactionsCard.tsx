@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useMemo, useState } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { FinanceTransaction } from "./FinanceResumePage"
 import { NewRevenueDialog } from "./NewRevenueDialog"
 import { NewExpenseDialog } from "./NewExpenseDialog"
+import { Pagination } from "@/components/Pagination"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -26,6 +28,35 @@ export const TransactionsCard = ({
   generalBalance,
   className,
 }: TransactionsCardProps) => {
+  const PAGE_SIZE = 8
+  const [page, setPage] = useState(1)
+
+  const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE))
+
+  useEffect(() => {
+    setPage((prev) => {
+      const next = Math.min(Math.max(1, prev), totalPages)
+      return next
+    })
+  }, [totalPages])
+
+  const visibleTransactions = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return transactions.slice(start, start + PAGE_SIZE)
+  }, [page, transactions])
+
+  const paginationMeta = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      total: transactions.length,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    }),
+    [PAGE_SIZE, page, totalPages, transactions.length],
+  )
+
   return (
     <Card className={cn("flex flex-col border-border/70 bg-card/85 shadow-lg", className)}>
       <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -55,7 +86,7 @@ export const TransactionsCard = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.map((transaction) => (
+              {visibleTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell>
                     <div className="flex flex-col">
@@ -115,9 +146,16 @@ export const TransactionsCard = ({
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex items-center justify-between border-t border-border/60 text-sm text-muted-foreground">
-        <span>Total de transações</span>
-        <span className="font-medium text-foreground">{transactions.length}</span>
+      <CardFooter className="border-t border-border/60">
+        {transactions.length ? (
+          <Pagination
+            pagination={paginationMeta}
+            onPageChange={setPage}
+            resourceLabel="transações"
+          />
+        ) : (
+          <span className="text-sm text-muted-foreground">Nenhuma transação para paginar.</span>
+        )}
       </CardFooter>
     </Card>
   )

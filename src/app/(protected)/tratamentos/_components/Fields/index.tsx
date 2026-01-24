@@ -29,6 +29,8 @@ interface TreatmentPlanFieldsProps {
   disableAttendanceSelection?: boolean;
 }
 
+const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
+
 export const TreatmentPlanFields = ({
   form,
   patients,
@@ -82,24 +84,26 @@ export const TreatmentPlanFields = ({
     }
   }, [form, lockedAttendanceId]);
 
+  const evaluationsQuery = useMemo(
+    () =>
+      selectedPatientId
+        ? {
+          patientId: selectedPatientId,
+          type: "EVALUATION",
+          limit: 100,
+          sortBy: "date",
+          sortOrder: "desc",
+        }
+        : undefined,
+    [selectedPatientId],
+  );
+
   const {
     records: evaluations,
     isLoading: isLoadingEvaluations,
-  } = useRecords<Attendance>(
-    "/attendances",
-    selectedPatientId
-      ? {
-        patientId: selectedPatientId,
-        type: "EVALUATION",
-        limit: 100,
-        sortBy: "date",
-        sortOrder: "desc",
-      }
-      : undefined,
-    {
-      enabled: Boolean(selectedPatientId),
-    }
-  );
+  } = useRecords<Attendance>("/attendances", evaluationsQuery, {
+    enabled: Boolean(evaluationsQuery),
+  });
 
   const patientOptions = useMemo(() => {
     if (
@@ -180,7 +184,9 @@ export const TreatmentPlanFields = ({
         name="patientId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Paciente</FormLabel>
+            <FormLabel>
+              Paciente <RequiredMark />
+            </FormLabel>
             {disablePatientSelection && lockedPatientId ? (
               <>
                 <Input
@@ -188,7 +194,14 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" {...field} value={lockedPatientId} />
+                <input
+                  type="hidden"
+                  value={lockedPatientId}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  readOnly
+                />
               </>
             ) : (
               <Select
@@ -232,7 +245,9 @@ export const TreatmentPlanFields = ({
         name="attendanceId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Avaliação</FormLabel>
+            <FormLabel>
+              Avaliação <RequiredMark />
+            </FormLabel>
             {disableAttendanceSelection && lockedAttendanceId ? (
               <>
                 <Input
@@ -240,7 +255,14 @@ export const TreatmentPlanFields = ({
                   disabled
                   readOnly
                 />
-                <input type="hidden" {...field} value={lockedAttendanceId} />
+                <input
+                  type="hidden"
+                  value={lockedAttendanceId}
+                  name={field.name}
+                  ref={field.ref}
+                  onBlur={field.onBlur}
+                  readOnly
+                />
               </>
             ) : (
               <Select
@@ -294,7 +316,9 @@ export const TreatmentPlanFields = ({
         name="procedure"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Procedimento</FormLabel>
+            <FormLabel>
+              Procedimento <RequiredMark />
+            </FormLabel>
             <FormControl>
               <Input placeholder="Descrição do procedimento" {...field} />
             </FormControl>
@@ -308,7 +332,9 @@ export const TreatmentPlanFields = ({
         name="sessionQuantity"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Quantidade de atendimentos</FormLabel>
+            <FormLabel>
+              Quantidade de atendimentos <RequiredMark />
+            </FormLabel>
             <FormControl>
               <Input
                 type="number"

@@ -8,6 +8,8 @@ import {
   validateJsonBody,
 } from "@/lib/api/utils";
 import type { ApiResponse, Patient } from "@/types/patient";
+import { auth } from "@/auth";
+import { canDeletePatients, canManagePatients } from "@/lib/auth/permissions";
 
 export async function GET(
   _request: NextRequest,
@@ -36,6 +38,13 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Patient>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManagePatients(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const params = await context.params;
     const { id } = patientParamsSchema.parse(params);
     const body = await validateJsonBody(request, updatePatientSchema);
@@ -102,6 +111,13 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canDeletePatients(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const params = await context.params;
     const { id } = patientParamsSchema.parse(params);
 

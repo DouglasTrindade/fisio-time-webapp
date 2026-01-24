@@ -7,13 +7,18 @@ import { SignUpFields } from "./Fields";
 import { Form, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { SignUpAction } from "@/actions/SignUp";
 
-export const SignUp = () => {
+interface SignUpProps {
+  inviteToken?: string
+}
+
+export const SignUp = ({ inviteToken }: SignUpProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [tokenFromUrl, setTokenFromUrl] = useState(inviteToken ?? "");
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -21,13 +26,29 @@ export const SignUp = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      inviteToken: inviteToken ?? "",
     },
   });
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const search = new URLSearchParams(window.location.search);
+    const urlToken = search.get("invite");
+    const resolvedToken = urlToken ?? inviteToken ?? "";
+    setTokenFromUrl(resolvedToken);
+    form.setValue("inviteToken", resolvedToken);
+  }, [inviteToken, form]);
+
   const onSubmit = async (data: SignUpSchema) => {
     form.clearErrors("root");
+    const payload: SignUpSchema = {
+      ...data,
+      inviteToken: tokenFromUrl || data.inviteToken || "",
+    };
     startTransition(() => {
-      SignUpAction(data).then((res) => {
+      SignUpAction(payload).then((res) => {
         if (res?.error) {
           form.setError("root", { message: res.error });
           toast.error(res.error);
@@ -46,6 +67,7 @@ export const SignUp = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+        <input type="hidden" {...form.register("inviteToken")} />
         <SignUpFields />
         {rootError && <FormMessage>{rootError}</FormMessage>}
         <Button

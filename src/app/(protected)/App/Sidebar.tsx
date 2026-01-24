@@ -15,6 +15,8 @@ import { prisma } from "@/lib/prisma";
 import { NavUser } from "./NavUser";
 import { SidebarNavigation } from "./SidebarNavigation";
 import { menuItems } from "./sidebar.config";
+import type { SidebarMenuItemConfig } from "./sidebar.config";
+import type { AppRole } from "@/types/user";
 
 export async function AppSidebar({
   ...props
@@ -27,6 +29,9 @@ export async function AppSidebar({
     })
     : null;
 
+  const role = session?.user?.role as AppRole | undefined
+  const filteredMenuItems = filterMenuItemsByRole(menuItems, role)
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="flex items-center">
@@ -36,7 +41,7 @@ export async function AppSidebar({
         <Separator border="solid" borderSize="0" className="my-2" />
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarNavigation items={menuItems} />
+            <SidebarNavigation items={filteredMenuItems} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -46,4 +51,61 @@ export async function AppSidebar({
       <SidebarRail />
     </Sidebar>
   );
+}
+
+const hasAccess = (allowedRoles: AppRole[] | undefined, role: AppRole | undefined) => {
+  if (!allowedRoles || allowedRoles.length === 0) {
+    return true
+  }
+  return role ? allowedRoles.includes(role) : false
+}
+
+const filterMenuItemsByRole = (
+  items: typeof menuItems,
+  role: AppRole | undefined,
+) => {
+  const accessibleItems = items
+    .map((item) => {
+      if (item.isSection) {
+        return item
+      }
+
+      if (!hasAccess(item.roles, role)) {
+        return null
+      }
+
+      if (item.children?.length) {
+        const filteredChildren = item.children.filter((child) =>
+          hasAccess(child.roles, role),
+        )
+
+        if (filteredChildren.length === 0) {
+          return null
+        }
+
+        return { ...item, children: filteredChildren }
+      }
+
+      return item
+    })
+    .filter(Boolean) as typeof menuItems
+
+  const cleanedItems: typeof menuItems = []
+  let pendingSection: SidebarMenuItemConfig | null = null
+
+  accessibleItems.forEach((item) => {
+    if (item.isSection) {
+      pendingSection = item
+      return
+    }
+
+    if (pendingSection) {
+      cleanedItems.push(pendingSection)
+      pendingSection = null
+    }
+
+    cleanedItems.push(item)
+  })
+
+  return cleanedItems
 }

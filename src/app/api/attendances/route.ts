@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAttendanceSchema } from "./schema";
+import { toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import {
   createApiResponse,
   createApiError,
@@ -10,7 +11,7 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse, RecordsResponse } from "@/types/api";
 import type { Attendance } from "@/types/attendance";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 import {
   attendanceInclude,
   formatAttendance,
@@ -19,10 +20,23 @@ import {
   syncAttendanceTransaction,
   type AttendanceWithRelations,
 } from "./utils";
+import { auth } from "@/auth";
+import { canManageClinical } from "@/lib/auth/permissions";
+
+const normalizeAttendanceTypeForDb = (
+  raw?: string | AttendanceType | null,
+): AttendanceType | undefined => {
+  const parsed = toPrismaAttendanceType(raw)
+  return parsed ? (toPrismaEnumValue(parsed) as unknown as AttendanceType) : undefined
+}
+
+const DEFAULT_ATTENDANCE_TYPE =
+  normalizeAttendanceTypeForDb(AttendanceType.EVALUATION) ??
+  AttendanceType.EVALUATION
 
 const resolveAttendanceType = (
   raw: unknown,
-  fallback: AttendanceType = "EVALUATION" as unknown as AttendanceType,
+  fallback: AttendanceType = DEFAULT_ATTENDANCE_TYPE,
 ): AttendanceType => {
   const typeInput =
     typeof raw === "string"
@@ -31,19 +45,26 @@ const resolveAttendanceType = (
         ? (raw as { value?: string }).value
         : undefined
 
-  return toPrismaAttendanceType(typeInput) ?? fallback
+  return normalizeAttendanceTypeForDb(typeInput) ?? fallback
 }
 
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<RecordsResponse<Attendance>>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { page, limit, search, sortBy, sortOrder } =
       getPaginationParams(request);
     const url = new URL(request.url);
     const typeParam = url.searchParams.get("type");
     const patientId = url.searchParams.get("patientId") || "";
-    const prismaFilterType = toPrismaAttendanceType(typeParam);
+    const dbFilterType = normalizeAttendanceTypeForDb(typeParam);
 
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
@@ -77,7 +98,7 @@ export async function GET(
             ],
           }
         : {}),
-      ...(prismaFilterType ? { type: prismaFilterType } : {}),
+      ...(dbFilterType ? { type: dbFilterType } : {}),
       ...(patientId ? { patientId } : {}),
     };
 
@@ -128,6 +149,13 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const body = await validateJsonBody(request, createAttendanceSchema);
     const prismaType = resolveAttendanceType(body.type);
 

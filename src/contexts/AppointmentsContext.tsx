@@ -37,15 +37,20 @@ const AppointmentsUiContext = createContext<AppointmentsUiContextValue | null>(n
 
 const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
   const { records, isFetching } = useCrud()
+  const calendarQuery = useMemo(
+    () => ({
+      page: 1,
+      limit: 100,
+      sortBy: "date",
+      sortOrder: "asc",
+    }),
+    [],
+  )
+
   const {
     records: calendarAppointments,
     isLoading: isCalendarLoading,
-  } = useRecords<Appointment>(appointmentsCrudConfig.endpoint, {
-    page: 1,
-    limit: 100,
-    sortBy: "date",
-    sortOrder: "asc",
-  })
+  } = useRecords<Appointment>(appointmentsCrudConfig.endpoint, calendarQuery)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)

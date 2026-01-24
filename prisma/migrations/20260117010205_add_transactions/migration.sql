@@ -8,30 +8,128 @@
 -- AlterEnum
 BEGIN;
 CREATE TYPE "AttendanceType_new" AS ENUM ('evaluation', 'evolution');
-ALTER TABLE "public"."attendances" ALTER COLUMN "type" DROP DEFAULT;
-ALTER TABLE "attendances" ALTER COLUMN "type" TYPE "AttendanceType_new" USING ("type"::text::"AttendanceType_new");
-ALTER TABLE "transactions" ALTER COLUMN "attendance_type" TYPE "AttendanceType_new" USING ("attendance_type"::text::"AttendanceType_new");
+
+DO $$
+DECLARE
+  attendance_table text := CASE
+    WHEN to_regclass('public.attendances') IS NOT NULL THEN 'attendances'
+    WHEN to_regclass('public."Attendance"') IS NOT NULL THEN 'Attendance'
+    ELSE NULL
+  END;
+BEGIN
+  IF attendance_table IS NULL THEN
+    RAISE EXCEPTION 'Tabela de atendimentos não encontrada';
+  END IF;
+
+  EXECUTE format('ALTER TABLE public.%I ALTER COLUMN "type" DROP DEFAULT', attendance_table);
+  EXECUTE format(
+    'ALTER TABLE public.%I ALTER COLUMN "type" TYPE "AttendanceType_new" USING ("type"::text::"AttendanceType_new")',
+    attendance_table
+  );
+  EXECUTE format(
+    'ALTER TABLE public.%I ALTER COLUMN "type" SET DEFAULT ''evaluation''',
+    attendance_table
+  );
+END $$;
+
+ALTER TABLE "transactions"
+  ALTER COLUMN "attendance_type" TYPE "AttendanceType_new" USING ("attendance_type"::text::"AttendanceType_new");
+
 ALTER TYPE "AttendanceType" RENAME TO "AttendanceType_old";
 ALTER TYPE "AttendanceType_new" RENAME TO "AttendanceType";
 DROP TYPE "public"."AttendanceType_old";
-ALTER TABLE "attendances" ALTER COLUMN "type" SET DEFAULT 'evaluation';
 COMMIT;
 
 -- AlterEnum
 BEGIN;
 CREATE TYPE "PaymentMethod_new" AS ENUM ('pix', 'bank_slip', 'credit_card');
-ALTER TABLE "attendances" ALTER COLUMN "finance_payment_method" TYPE "PaymentMethod_new" USING ("finance_payment_method"::text::"PaymentMethod_new");
-ALTER TABLE "transactions" ALTER COLUMN "payment_method" TYPE "PaymentMethod_new" USING ("payment_method"::text::"PaymentMethod_new");
+
+DO $$
+DECLARE
+  attendance_table text := CASE
+    WHEN to_regclass('public.attendances') IS NOT NULL THEN 'attendances'
+    WHEN to_regclass('public."Attendance"') IS NOT NULL THEN 'Attendance'
+    ELSE NULL
+  END;
+  column_exists boolean;
+BEGIN
+  IF attendance_table IS NULL THEN
+    RAISE EXCEPTION 'Tabela de atendimentos não encontrada';
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = attendance_table
+      AND column_name = 'finance_payment_method'
+  ) INTO column_exists;
+
+  IF column_exists THEN
+    EXECUTE format(
+      'ALTER TABLE public.%I ALTER COLUMN "finance_payment_method" TYPE "PaymentMethod_new" USING ("finance_payment_method"::text::"PaymentMethod_new")',
+      attendance_table
+    );
+  END IF;
+END $$;
+
+ALTER TABLE "transactions"
+  ALTER COLUMN "payment_method" TYPE "PaymentMethod_new" USING ("payment_method"::text::"PaymentMethod_new");
 ALTER TYPE "PaymentMethod" RENAME TO "PaymentMethod_old";
 ALTER TYPE "PaymentMethod_new" RENAME TO "PaymentMethod";
 DROP TYPE "public"."PaymentMethod_old";
 COMMIT;
 
 -- AlterTable
-ALTER TABLE "attendances" ALTER COLUMN "type" SET DEFAULT 'evaluation';
+DO $$
+DECLARE
+  attendance_table text := CASE
+    WHEN to_regclass('public.attendances') IS NOT NULL THEN 'attendances'
+    WHEN to_regclass('public."Attendance"') IS NOT NULL THEN 'Attendance'
+    ELSE NULL
+  END;
+BEGIN
+  IF attendance_table IS NULL THEN
+    RAISE EXCEPTION 'Tabela de atendimentos não encontrada';
+  END IF;
+
+  EXECUTE format('ALTER TABLE public.%I ALTER COLUMN "type" SET DEFAULT ''evaluation''', attendance_table);
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "notifications" ADD CONSTRAINT "notifications_recipient_id_fkey" FOREIGN KEY ("recipient_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+DECLARE
+  user_table text := CASE
+    WHEN to_regclass('public.users') IS NOT NULL THEN 'users'
+    WHEN to_regclass('public."User"') IS NOT NULL THEN 'User'
+    ELSE NULL
+  END;
+BEGIN
+  IF user_table IS NULL THEN
+    RAISE EXCEPTION 'Tabela de usuários não encontrada';
+  END IF;
+
+  EXECUTE format(
+    'ALTER TABLE public.notifications ADD CONSTRAINT notifications_recipient_id_fkey FOREIGN KEY ("recipient_id") REFERENCES public.%I("id") ON DELETE RESTRICT ON UPDATE CASCADE',
+    user_table
+  );
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "notifications" ADD CONSTRAINT "notifications_sender_id_fkey" FOREIGN KEY ("sender_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+DO $$
+DECLARE
+  user_table text := CASE
+    WHEN to_regclass('public.users') IS NOT NULL THEN 'users'
+    WHEN to_regclass('public."User"') IS NOT NULL THEN 'User'
+    ELSE NULL
+  END;
+BEGIN
+  IF user_table IS NULL THEN
+    RAISE EXCEPTION 'Tabela de usuários não encontrada';
+  END IF;
+
+  EXECUTE format(
+    'ALTER TABLE public.notifications ADD CONSTRAINT notifications_sender_id_fkey FOREIGN KEY ("sender_id") REFERENCES public.%I("id") ON DELETE SET NULL ON UPDATE CASCADE',
+    user_table
+  );
+END $$;

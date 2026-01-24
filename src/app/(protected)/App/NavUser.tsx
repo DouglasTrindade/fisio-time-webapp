@@ -95,9 +95,11 @@ export function NavUser({ user }: NavUserProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <Sparkles />
-                  Faça um upgrade
+                <DropdownMenuItem asChild>
+                  <Link href="/upgrade" className="flex items-center gap-2">
+                    <Sparkles />
+                    Faça um upgrade
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

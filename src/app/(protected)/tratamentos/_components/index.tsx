@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { TreatmentPlanListItem } from "./ListItem"
 import { TreatmentPlanNew } from "./New"
 import { TreatmentPlanEdit } from "./Edit"
@@ -32,6 +32,7 @@ import type {
 import type { Patient } from "@/types/patient"
 import { TreatmentPlansFilters } from "./Filters"
 import { treatmentPlansCrudConfig } from "./config"
+import { Pagination } from "@/components/Pagination"
 
 interface TreatmentPlansProps {
   initialPatientId?: string
@@ -60,15 +61,19 @@ export const TreatmentPlans = ({
     pagination,
   } = useRecords<TreatmentPlan>(treatmentPlansCrudConfig.endpoint, filterParams)
 
+  const patientOptionsQuery = useMemo(
+    () => ({
+      limit: 100,
+      page: 1,
+      sortBy: "name",
+      sortOrder: "asc",
+    }),
+    [],
+  )
   const {
     records: patientOptions,
     isLoading: isLoadingPatients,
-  } = useRecords<Patient>("/patients", {
-    limit: 100,
-    page: 1,
-    sortBy: "name",
-    sortOrder: "asc",
-  })
+  } = useRecords<Patient>("/patients", patientOptionsQuery)
 
   const createMutation = useCreateRecord<TreatmentPlan, TreatmentPlanCreateInput>(
     treatmentPlansCrudConfig.endpoint,
@@ -154,11 +159,11 @@ export const TreatmentPlans = ({
   } | null>(() =>
     initialAttendanceId
       ? {
-          patientId: initialPatientId,
-          attendanceId: initialAttendanceId,
-          patientName: initialPatientName ?? null,
-          attendanceLabel: initialAttendanceLabel ?? null,
-        }
+        patientId: initialPatientId,
+        attendanceId: initialAttendanceId,
+        patientName: initialPatientName ?? null,
+        attendanceLabel: initialAttendanceLabel ?? null,
+      }
       : null,
   )
   const openedAttendanceRef = useRef<string | null>(null)
@@ -317,36 +322,11 @@ export const TreatmentPlans = ({
       </div>
 
       {pagination && (
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>
-            Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} de{" "}
-            {pagination.total}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={!pagination.hasPrev}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Anterior
-            </Button>
-            <span>
-              Página {pagination.page} de {pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={!pagination.hasNext}
-            >
-              Próxima
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          resourceLabel="planos"
+        />
       )}
 
       <Dialog

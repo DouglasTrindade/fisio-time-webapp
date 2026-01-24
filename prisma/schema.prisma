@@ -6,6 +6,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  ADMIN
+  PROFESSIONAL
+  ASSISTANT
+}
+
 model User {
   id            String        @id @default(cuid())
   name          String?
@@ -15,14 +21,34 @@ model User {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   image         String?
+  role          Role          @default(PROFESSIONAL)
   accounts      Account[]
   Appointment   Appointment[]
   attendances   Attendance[]
   sessions      Session[]
   sentNotifications     Notification[] @relation("NotificationSender")
   receivedNotifications Notification[] @relation("NotificationRecipient")
+  invitesCreated UserInvite[] @relation("InviteCreator")
+  inviteAccepted UserInvite[] @relation("InviteAccepted")
 
   @@map("users")
+}
+
+model UserInvite {
+  id             String    @id @default(cuid())
+  email          String
+  token          String    @unique
+  role           Role      @default(PROFESSIONAL)
+  createdById    String    @map("created_by_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  expiresAt      DateTime  @map("expires_at")
+  acceptedAt     DateTime? @map("accepted_at")
+  invitedUserId  String?   @map("invited_user_id")
+  createdBy      User      @relation("InviteCreator", fields: [createdById], references: [id])
+  invitedUser    User?     @relation("InviteAccepted", fields: [invitedUserId], references: [id])
+
+  @@index([email])
+  @@map("user_invites")
 }
 
 model Patient {
@@ -69,6 +95,9 @@ model Appointment {
   patient        Patient? @relation(fields: [patientId], references: [id])
   User           User     @relation(fields: [professionalId], references: [id])
 
+  @@index([date])
+  @@index([professionalId, date])
+  @@index([patientId, date])
   @@map("appointments")
 }
 
@@ -101,6 +130,9 @@ model Attendance {
   professional          User           @relation(fields: [professionalId], references: [id])
   treatmentPlan         TreatmentPlan?
 
+  @@index([date])
+  @@index([patientId, date])
+  @@index([professionalId, date])
   @@map("attendances")
 }
 
@@ -243,8 +275,8 @@ enum TransactionSource {
 }
 
 enum AttendanceType {
-  EVALUATION @map("evaluation")
-  EVOLUTION  @map("evolution")
+  EVALUATION @map("EVALUATION")
+  EVOLUTION  @map("EVOLUTION")
 }
 
 enum NotificationCategory {

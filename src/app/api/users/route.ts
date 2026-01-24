@@ -15,6 +15,8 @@ const selectUserFields = {
   name: true,
   email: true,
   image: true,
+  role: true,
+  createdAt: true,
 } as const
 
 export async function GET(

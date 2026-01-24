@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { AttendanceType } from "@prisma/client";
+import { AttendanceType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import {
   createApiResponse,
   createApiError,
@@ -22,6 +23,15 @@ import {
   deleteAttendanceTransaction,
   type AttendanceWithRelations,
 } from "../utils";
+import { auth } from "@/auth";
+import { canManageClinical } from "@/lib/auth/permissions";
+
+const normalizeAttendanceTypeForDb = (
+  raw?: string | AttendanceType | null,
+): AttendanceType | undefined => {
+  const parsed = toPrismaAttendanceType(raw)
+  return parsed ? (toPrismaEnumValue(parsed) as unknown as AttendanceType) : undefined
+}
 
 const resolveAttendanceType = (
   raw: unknown,
@@ -32,7 +42,7 @@ const resolveAttendanceType = (
       : typeof raw === "object" && raw !== null && "value" in raw
         ? (raw as { value?: string }).value
         : undefined
-  return typeInput ? toPrismaAttendanceType(typeInput) : undefined
+  return normalizeAttendanceTypeForDb(typeInput)
 }
 
 export async function GET(
@@ -40,6 +50,13 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
 
     const attendance = await prisma.attendance.findUnique({
@@ -69,6 +86,13 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<Attendance>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
     const body = await validateJsonBody(request, updateAttendanceSchema);
 
@@ -147,6 +171,13 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
+    const session = await auth();
+    if (!session?.user || !canManageClinical(session.user.role)) {
+      return NextResponse.json(createApiError("Não autorizado"), {
+        status: 403,
+      });
+    }
+
     const { id } = attendanceParamsSchema.parse(await context.params);
 
     const existing = await prisma.attendance.findUnique({
