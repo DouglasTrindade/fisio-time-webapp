@@ -1,10 +1,41 @@
 import { auth } from "@/auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { isRateLimited } from "@/lib/rate-limit";
+import type { AppRole } from "@/types/user";
 
 const publicRoutes = ["/sign-in", "/sign-up"];
-const protectedRoutes = ["/dashboard", "/agendamentos", "/tratamentos"];
+const protectedRoutes = [
+  "/dashboard",
+  "/agendamentos",
+  "/tratamentos",
+  "/pacientes",
+  "/atendimentos",
+  "/usuarios",
+  "/configuracoes",
+  "/resumo",
+  "/relatorios",
+  "/notificacoes",
+  "/notas-fiscais",
+  "/colaboradores",
+];
 const protectedApiRoutes = ["/api/patients", "/api/appointments"];
+
+const routePermissions: Array<{ pattern: RegExp; roles: AppRole[] }> = [
+  { pattern: /^\/atendimentos(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/tratamentos(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/resumo(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/relatorios(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/usuarios(\/|$)/, roles: ["ADMIN"] },
+  { pattern: /^\/colaboradores(\/|$)/, roles: ["ADMIN"] },
+  { pattern: /^\/configuracoes(\/|$)/, roles: ["ADMIN"] },
+  { pattern: /^\/notas-fiscais(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+];
+
+const hasRoleAccess = (role: AppRole | undefined, allowed: AppRole[]) => {
+  if (!allowed.length) return true
+  if (!role) return false
+  return allowed.includes(role)
+}
 
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX = 60;
@@ -54,6 +85,20 @@ export default auth((req) => {
 
   if (isPublicRoute && isLoggedIn && pathname !== "/dashboard") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  const restrictedRule = routePermissions.find((rule) => rule.pattern.test(pathname))
+  if (restrictedRule) {
+    const role = req.auth?.user?.role as AppRole | undefined
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/sign-in", req.url))
+    }
+    if (!hasRoleAccess(role, restrictedRule.roles)) {
+      const deniedUrl = req.nextUrl.clone()
+      deniedUrl.pathname = "/acesso-negado"
+      deniedUrl.search = ""
+      return NextResponse.redirect(deniedUrl)
+    }
   }
 
   return NextResponse.next();
