@@ -167,14 +167,13 @@ export const HistoryAttendanceModal = ({
   }, [attendanceId, isAttendanceError, onClose])
 
   const currentType =
-    existingAttendance?.type === "evolution"
+    existingAttendance?.type === PrismaAttendanceType.EVOLUTION
       ? PrismaAttendanceType.EVOLUTION
-      : existingAttendance?.type === "evaluation"
+      : existingAttendance?.type === PrismaAttendanceType.EVALUATION
         ? PrismaAttendanceType.EVALUATION
-        :
-    (type === PrismaAttendanceType.EVOLUTION
-      ? PrismaAttendanceType.EVOLUTION
-      : PrismaAttendanceType.EVALUATION)
+        : type === PrismaAttendanceType.EVOLUTION
+          ? PrismaAttendanceType.EVOLUTION
+          : PrismaAttendanceType.EVALUATION
 
   const isEvaluation = currentType === PrismaAttendanceType.EVALUATION
 

@@ -25,21 +25,19 @@ import { canManageClinical } from "@/lib/auth/permissions";
 
 const normalizeAttendanceTypeForDb = (
   raw?: string | AttendanceType | null,
-): Prisma.AttendanceType | undefined => {
+): AttendanceType | undefined => {
   const parsed = toPrismaAttendanceType(raw)
-  return parsed
-    ? (toPrismaEnumValue(parsed) as unknown as Prisma.AttendanceType)
-    : undefined
+  return parsed ? (toPrismaEnumValue(parsed) as unknown as AttendanceType) : undefined
 }
 
 const DEFAULT_ATTENDANCE_TYPE =
   normalizeAttendanceTypeForDb(AttendanceType.EVALUATION) ??
-  (AttendanceType.EVALUATION as unknown as Prisma.AttendanceType)
+  AttendanceType.EVALUATION
 
 const resolveAttendanceType = (
   raw: unknown,
-  fallback: Prisma.AttendanceType = DEFAULT_ATTENDANCE_TYPE,
-): Prisma.AttendanceType => {
+  fallback: AttendanceType = DEFAULT_ATTENDANCE_TYPE,
+): AttendanceType => {
   const typeInput =
     typeof raw === "string"
       ? raw

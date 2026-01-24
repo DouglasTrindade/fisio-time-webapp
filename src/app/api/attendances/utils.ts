@@ -118,13 +118,16 @@ export const formatAttendance = (
 ): Attendance => {
   const normalizedType = `${attendance.type}`.toLowerCase()
   const isEvolution = normalizedType === "evolution"
+  const mappedType = isEvolution
+    ? AttendanceType.EVOLUTION
+    : AttendanceType.EVALUATION
 
   return {
     ...attendance,
     treatmentPlan: attendance.treatmentPlan,
     cifCode: attendance.cifCode,
     cifDescription: attendance.cifDescription,
-    type: isEvolution ? "evolution" : "evaluation",
+    type: mappedType,
     launchToFinance: attendance.launchToFinance,
     financeAmount: attendance.financeAmount ? attendance.financeAmount.toString() : null,
     financePaymentMethod: formatPaymentMethod(attendance.financePaymentMethod),
