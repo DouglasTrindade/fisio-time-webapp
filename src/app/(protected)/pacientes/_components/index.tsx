@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, ChevronLeft, ChevronRight, Download, FileSpreadsheet } from "lucide-react";
+import { Plus, Download, FileSpreadsheet } from "lucide-react";
 import { PatientsNew } from "./New";
 import { PatientsEdit } from "./Edit";
 import { PatientListItem } from "./ListItem";
@@ -29,6 +29,7 @@ import type { ExportColumn } from "@/hooks/exportUtils";
 import type { Patient } from "@/types/patient";
 import { useExportCsv } from "@/hooks/useExportCsv";
 import { useExportXlsx } from "@/hooks/useExportXlsx";
+import { Pagination } from "@/components/Pagination";
 
 const formatDate = (value?: Date | string | null) => {
   if (!value) return "-";
@@ -140,91 +141,63 @@ export const Patients = () => {
           </div>
         </div>
 
-      <PatientsFilters
-        search={searchValue}
-        onSearch={handleSearch}
-        sortValue={sortValue}
-        onSortChange={handleSortChange}
-      />
+        <PatientsFilters
+          search={searchValue}
+          onSearch={handleSearch}
+          sortValue={sortValue}
+          onSortChange={handleSortChange}
+        />
 
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Data de Cadastro</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                </TableRow>
-              ))
-            ) : patients?.length === 0 ? (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  {filters.search
-                    ? "Nenhum paciente encontrado"
-                    : "Nenhum paciente cadastrado"}
-                </TableCell>
+                <TableHead>Nome</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Data de Cadastro</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            ) : (
-              patients?.map((patient) => (
-                <PatientListItem
-                  key={patient.id}
-                  patient={patient}
-                  onEdit={openEdit}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {pagination && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
-            de {pagination.total} pacientes
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={!pagination.hasPrev}
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
-            </Button>
-
-            <span className="text-sm">
-              Página {pagination.page} de {pagination.totalPages}
-            </span>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={!pagination.hasNext}
-            >
-              Próxima
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  </TableRow>
+                ))
+              ) : patients?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    {filters.search
+                      ? "Nenhum paciente encontrado"
+                      : "Nenhum paciente cadastrado"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                patients?.map((patient) => (
+                  <PatientListItem
+                    key={patient.id}
+                    patient={patient}
+                    onEdit={openEdit}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
-      )}
+
+        {pagination && (
+          <Pagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            resourceLabel="pacientes"
+          />
+        )}
 
         {editingPatientId && (
           <Dialog

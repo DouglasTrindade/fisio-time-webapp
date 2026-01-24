@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ChevronLeft, ChevronRight, Download, FileSpreadsheet } from "lucide-react"
+import { Download, FileSpreadsheet } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { AttendanceListItem } from "./ListItem"
 import { AttendanceDialog } from "./Modal"
@@ -20,6 +20,7 @@ import type { Attendance } from "@/types/attendance"
 import { useExportCsv } from "@/hooks/useExportCsv"
 import { useExportXlsx } from "@/hooks/useExportXlsx"
 import { useAttendanceExportColumns } from "./useAttendanceExportColumns"
+import { Pagination } from "@/components/Pagination"
 
 export const Attendances = () => {
   const {
@@ -149,36 +150,11 @@ export const Attendances = () => {
       </div>
 
       {pagination && (
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>
-            Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} de{" "}
-            {pagination.total}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page - 1)}
-              disabled={!pagination.hasPrev}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Anterior
-            </Button>
-            <span>
-              Página {pagination.page} de {pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pagination.page + 1)}
-              disabled={!pagination.hasNext}
-            >
-              Próxima
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          resourceLabel="atendimentos"
+        />
       )}
 
       <AttendanceDialog
