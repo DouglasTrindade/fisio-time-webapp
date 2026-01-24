@@ -35,6 +35,7 @@ export type SidebarIconName = (typeof sidebarIcons)[number]
 const ALL_ROLES: AppRole[] = ["ADMIN", "PROFESSIONAL", "ASSISTANT"]
 const STAFF_ROLES: AppRole[] = ["ADMIN", "PROFESSIONAL"]
 const ADMIN_ONLY: AppRole[] = ["ADMIN"]
+const ADMIN_ASSISTANT: AppRole[] = ["ADMIN", "ASSISTANT"]
 
 export const menuItems: SidebarMenuItemConfig[] = [
   {
@@ -179,6 +180,6 @@ export const menuItems: SidebarMenuItemConfig[] = [
     title: "Configurações",
     url: "/configuracoes",
     icon: "settings",
-    roles: ADMIN_ONLY,
+    roles: ADMIN_ASSISTANT,
   },
 ]

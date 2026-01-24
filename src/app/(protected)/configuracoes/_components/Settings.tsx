@@ -19,24 +19,46 @@ import { Switch } from "@/components/ui/switch"
 import { useRecord, useUpdateRecord } from "@/hooks/useRecord"
 import type { UserProfile } from "@/types/user"
 import { userSettingsSchema, type UserSettingsValues } from "./schema"
+import { useRolePermissions } from "@/hooks/useRolePermissions"
 
-type SettingsSection = "profile" | "billing" | "notifications"
+type SettingsSectionId = "profile" | "billing" | "notifications"
 
-const baseSections: Array<{
-  id: SettingsSection
+type SettingsNavItem = {
+  id: SettingsSectionId
   label: string
   description: string
   icon: typeof UserRound
-}> = [
+  disabled?: boolean
+}
+
+const baseSections: SettingsNavItem[] = [
   { id: "profile", label: "Perfil", description: "Informações públicas e avatar.", icon: UserRound },
   { id: "billing", label: "Cobrança", description: "Planos e pagamentos.", icon: CreditCard },
   { id: "notifications", label: "Notificações", description: "Alertas e e-mails.", icon: BellRing },
 ]
 
 export const Settings = () => {
-  const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
+  const { role } = useRolePermissions()
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>("profile")
 
-  const sections = baseSections
+  const sections = useMemo(() => {
+    if (role === "ASSISTANT") {
+      return baseSections.map((section) =>
+        section.id === "billing" ? { ...section, disabled: true } : section,
+      )
+    }
+    return baseSections
+  }, [role])
+
+  useEffect(() => {
+    const current = sections.find((section) => section.id === activeSection)
+    if (current?.disabled) {
+      const fallback = sections.find((section) => !section.disabled)
+      if (fallback) {
+        setActiveSection(fallback.id)
+      }
+    }
+  }, [sections, activeSection])
 
   const renderSection = useMemo(() => {
     switch (activeSection) {
@@ -62,7 +84,7 @@ export const Settings = () => {
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <Card className="border-border/70 bg-card/80 shadow-lg">
           <nav className="flex flex-col">
-            {sections.map((section, index) => {
+            {sections.map((section) => {
               const isActive = section.id === activeSection
               const Icon = section.icon
               return (
@@ -70,10 +92,13 @@ export const Settings = () => {
                   key={section.id}
                   type="button"
                   onClick={() => setActiveSection(section.id)}
+                  disabled={section.disabled}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 text-left transition",
                     "border-b border-border/60 last:border-b-0",
-                    isActive
+                    section.disabled
+                      ? "cursor-not-allowed text-muted-foreground/60"
+                      : isActive
                       ? "bg-primary/10 font-semibold text-primary"
                       : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                   )}
@@ -81,14 +106,20 @@ export const Settings = () => {
                   <div
                     className={cn(
                       "flex h-8 w-8 items-center justify-center rounded-full border",
-                      isActive ? "border-primary/40 bg-primary/10 text-primary" : "border-border/60",
+                      section.disabled
+                        ? "border-border/40 bg-muted text-muted-foreground"
+                        : isActive
+                          ? "border-primary/40 bg-primary/10 text-primary"
+                          : "border-border/60",
                     )}
                   >
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex flex-col">
                     <span>{section.label}</span>
-                    <span className="text-xs text-muted-foreground">{section.description}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {section.disabled ? "Disponível apenas para administradores" : section.description}
+                    </span>
                   </div>
                 </button>
               )
