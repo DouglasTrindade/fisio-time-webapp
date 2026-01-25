@@ -24,15 +24,15 @@ export const Users = ({ currentRole }: UserProps) => {
     { page: 1, limit: 50, sortBy: "name", sortOrder: "asc" },
   )
 
-  const isAdmin = currentRole === "ADMIN"
+  const canManageUsers = currentRole === "ADMIN" || currentRole === "PROFESSIONAL"
   const sortedMembers = useMemo(() => members, [members])
 
-  if (!isAdmin) {
+  if (!canManageUsers) {
     return (
       <Card className="border-border/70 bg-card/85 shadow-lg">
         <CardHeader>
           <CardTitle>Usuários</CardTitle>
-          <CardDescription>Somente administradores podem gerenciar convites.</CardDescription>
+          <CardDescription>Somente administradores ou profissionais responsáveis podem gerenciar convites.</CardDescription>
         </CardHeader>
       </Card>
     )

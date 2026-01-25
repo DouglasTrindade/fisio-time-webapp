@@ -36,6 +36,7 @@ const ALL_ROLES: AppRole[] = ["ADMIN", "PROFESSIONAL", "ASSISTANT"]
 const STAFF_ROLES: AppRole[] = ["ADMIN", "PROFESSIONAL"]
 const ADMIN_ONLY: AppRole[] = ["ADMIN"]
 const ADMIN_ASSISTANT: AppRole[] = ["ADMIN", "ASSISTANT"]
+const ADMIN_PROFESSIONAL: AppRole[] = ["ADMIN", "PROFESSIONAL"]
 
 export const menuItems: SidebarMenuItemConfig[] = [
   {
@@ -158,20 +159,20 @@ export const menuItems: SidebarMenuItemConfig[] = [
     slug: "team-management",
     title: "Equipe",
     icon: "users",
-    roles: ADMIN_ONLY,
+    roles: ADMIN_PROFESSIONAL,
     children: [
       {
         slug: "users",
         title: "Usuários",
         url: "/usuarios",
-        roles: ADMIN_ONLY,
+        roles: ADMIN_PROFESSIONAL,
       },
       {
         slug: "collaborators",
         title: "Colaboradores",
         url: "/colaboradores",
         disabled: true,
-        roles: ADMIN_ONLY,
+        roles: ADMIN_PROFESSIONAL,
       },
     ]
   },
@@ -180,6 +181,6 @@ export const menuItems: SidebarMenuItemConfig[] = [
     title: "Configurações",
     url: "/configuracoes",
     icon: "settings",
-    roles: ADMIN_ASSISTANT,
+    roles: ADMIN_PROFESSIONAL,
   },
 ]
