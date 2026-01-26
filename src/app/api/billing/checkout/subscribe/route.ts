@@ -6,8 +6,11 @@ import { canManageSettings } from "@/lib/auth/permissions"
 import {
   attachStripePaymentMethod,
   createStripeSubscription,
+  confirmStripePaymentIntent,
+  fetchStripeInvoice,
+  fetchStripePaymentIntent,
+  fetchStripeSubscription,
   getStripeEnvironment,
-  payStripeInvoice,
   updateStripeDefaultPaymentMethod,
 } from "@/lib/stripe"
 import { createApiError, createApiResponse, handleApiError, validateJsonBody } from "@/lib/api/utils"
@@ -46,22 +49,78 @@ export async function POST(request: Request) {
     await attachStripePaymentMethod(stripeConfig, paymentMethodId)
     await updateStripeDefaultPaymentMethod(stripeConfig, paymentMethodId)
 
-    const subscription = await createStripeSubscription(stripeConfig, priceId, paymentMethodId, coupon)
-    const latestInvoiceId = typeof subscription.latest_invoice === "object"
-      ? subscription.latest_invoice.id
-      : subscription.latest_invoice
+    let subscription = await createStripeSubscription(stripeConfig, priceId, paymentMethodId, coupon)
+    let paymentIntentClientSecret: string | undefined
+    let paymentIntentStatus: string | undefined
 
-    if (latestInvoiceId) {
-      try {
-        await payStripeInvoice(stripeConfig, latestInvoiceId)
-      } catch (invoiceError) {
-        console.error("Falha ao confirmar a fatura automaticamente", invoiceError)
+    if (subscription.latest_invoice) {
+      const invoiceId =
+        typeof subscription.latest_invoice === "string"
+          ? subscription.latest_invoice
+          : subscription.latest_invoice.id
+
+      if (invoiceId) {
+        const invoice =
+          typeof subscription.latest_invoice === "object" &&
+          subscription.latest_invoice.payment_intent
+            ? subscription.latest_invoice
+            : await fetchStripeInvoice(stripeConfig, invoiceId)
+
+        const paymentIntentRef = invoice.payment_intent
+        if (paymentIntentRef) {
+          const resolveIntent = async (intentId: string, clientSecret?: string | null, status?: string) => {
+            let currentClientSecret = clientSecret ?? undefined
+            let currentStatus = status
+            if (
+              !currentStatus ||
+              currentStatus === "requires_payment_method" ||
+              currentStatus === "requires_confirmation"
+            ) {
+              const confirmed = await confirmStripePaymentIntent(stripeConfig, intentId, {
+                off_session: "true",
+                payment_method: paymentMethodId,
+              })
+              currentClientSecret = confirmed.client_secret ?? currentClientSecret
+              currentStatus = confirmed.status
+            }
+
+            paymentIntentClientSecret = currentClientSecret ?? undefined
+            paymentIntentStatus = currentStatus
+            if (paymentIntentStatus === "succeeded") {
+              paymentIntentClientSecret = undefined
+            }
+          }
+
+          if (typeof paymentIntentRef === "string") {
+            const paymentIntent = await fetchStripePaymentIntent(stripeConfig, paymentIntentRef)
+            await resolveIntent(
+              paymentIntent.id,
+              paymentIntent.client_secret,
+              paymentIntent.status,
+            )
+          } else if (paymentIntentRef.id) {
+            await resolveIntent(
+              paymentIntentRef.id,
+              paymentIntentRef.client_secret,
+              paymentIntentRef.status,
+            )
+          }
+        }
       }
+    }
+
+    if (paymentIntentStatus === "succeeded") {
+      subscription = await fetchStripeSubscription(stripeConfig, subscription.id)
     }
 
     return NextResponse.json(
       createApiResponse(
-        { subscriptionId: subscription.id, status: subscription.status },
+        {
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          paymentIntentClientSecret,
+          paymentIntentStatus,
+        },
         "Assinatura criada com sucesso",
       ),
     )

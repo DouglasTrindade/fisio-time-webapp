@@ -41,6 +41,7 @@ export type StripeInvoice = {
   amount_due?: number | null
   created?: number | null
   hosted_invoice_url?: string | null
+  payment_intent?: string | StripePaymentIntent | null
 }
 
 export type StripeSubscription = {
@@ -61,6 +62,12 @@ export type StripeSubscription = {
       }
     }>
   }
+}
+
+export type StripePaymentIntent = {
+  id: string
+  client_secret?: string | null
+  status: string
 }
 
 export type StripeSetupIntent = {
@@ -203,8 +210,69 @@ export const createStripeSubscription = (
   })
 }
 
-export const payStripeInvoice = (config: StripeEnvironment, invoiceId: string) => {
-  return stripeRequest(config, `/invoices/${invoiceId}/pay`, {
+export const detachStripePaymentMethod = (
+  config: StripeEnvironment,
+  paymentMethodId: string,
+) => {
+  return stripeRequest(config, `/payment_methods/${paymentMethodId}/detach`, {
     method: "POST",
   })
+}
+
+export const fetchStripeInvoice = (config: StripeEnvironment, invoiceId: string) => {
+  return stripeRequest<StripeInvoice>(config, `/invoices/${invoiceId}`)
+}
+
+export const fetchStripePaymentIntent = (
+  config: StripeEnvironment,
+  paymentIntentId: string,
+) => {
+  return stripeRequest<StripePaymentIntent>(config, `/payment_intents/${paymentIntentId}`)
+}
+
+export const confirmStripePaymentIntent = (
+  config: StripeEnvironment,
+  paymentIntentId: string,
+  params?: Record<string, string>,
+) => {
+  const body = new URLSearchParams({
+    ...(params ?? {}),
+  })
+
+  return stripeRequest<StripePaymentIntent>(config, `/payment_intents/${paymentIntentId}/confirm`, {
+    method: "POST",
+    body,
+  })
+}
+
+export const updateStripePaymentMethodDetails = (
+  config: StripeEnvironment,
+  paymentMethodId: string,
+  details: { billingName?: string },
+): Promise<StripePaymentMethod | null> => {
+  const body = new URLSearchParams()
+
+  if (details.billingName) {
+    body.append("billing_details[name]", details.billingName)
+  }
+
+  if ([...body.keys()].length === 0) {
+    return Promise.resolve(null)
+  }
+
+  return stripeRequest<StripePaymentMethod>(config, `/payment_methods/${paymentMethodId}`, {
+    method: "POST",
+    body,
+  })
+}
+
+export const fetchStripeSubscription = (
+  config: StripeEnvironment,
+  subscriptionId: string,
+) => {
+  const params = new URLSearchParams({
+    "expand[]": "latest_invoice.payment_intent",
+  })
+
+  return stripeRequest<StripeSubscription>(config, `/subscriptions/${subscriptionId}?${params}`)
 }
