@@ -179,7 +179,7 @@ export const menuItems: SidebarMenuItemConfig[] = [
   {
     slug: "configurations",
     title: "Configurações",
-    url: "/configuracoes",
+    url: "/configuracoes/perfil",
     icon: "settings",
     roles: ADMIN_PROFESSIONAL,
   },

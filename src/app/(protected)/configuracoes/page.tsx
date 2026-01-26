@@ -1,7 +1,7 @@
-import { Settings } from "./_components/Settings";
+import { redirect } from "next/navigation"
 
 const SettingsPage = () => {
-  return <Settings />;
+  redirect("/configuracoes/perfil")
 }
 
-export default SettingsPage;
+export default SettingsPage
