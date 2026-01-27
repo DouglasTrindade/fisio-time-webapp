@@ -13,6 +13,7 @@ export interface SubscriptionPlan {
 }
 
 export interface BillingSummary {
+  subscriptionId?: string
   planId: SubscriptionPlanId
   planName: string
   amount: number

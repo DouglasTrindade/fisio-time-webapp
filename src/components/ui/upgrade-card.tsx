@@ -1,8 +1,11 @@
 import { Sparkles } from "lucide-react"
-import { Button } from "./button"
 import Link from "next/link"
 
-export const UpgradeCard = () => {
+import { hasActiveWorkspaceSubscription } from "@/lib/billing/subscription"
+
+export const UpgradeCard = async () => {
+  const hasSubscription = await hasActiveWorkspaceSubscription().catch(() => false)
+  if (hasSubscription) return null
   return (
     <div className="mt-auto py-4">
       <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/15 via-background to-background p-4 shadow-inner">

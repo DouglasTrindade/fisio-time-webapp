@@ -223,6 +223,22 @@ export const fetchStripeInvoice = (config: StripeEnvironment, invoiceId: string)
   return stripeRequest<StripeInvoice>(config, `/invoices/${invoiceId}`)
 }
 
+export const payStripeInvoice = (
+  config: StripeEnvironment,
+  invoiceId: string,
+  paymentMethodId?: string,
+) => {
+  const body = new URLSearchParams()
+  if (paymentMethodId) {
+    body.append("payment_method", paymentMethodId)
+  }
+
+  return stripeRequest<StripeInvoice>(config, `/invoices/${invoiceId}/pay`, {
+    method: "POST",
+    body,
+  })
+}
+
 export const fetchStripePaymentIntent = (
   config: StripeEnvironment,
   paymentIntentId: string,
@@ -275,4 +291,19 @@ export const fetchStripeSubscription = (
   })
 
   return stripeRequest<StripeSubscription>(config, `/subscriptions/${subscriptionId}?${params}`)
+}
+
+export const updateStripeSubscriptionCancellation = (
+  config: StripeEnvironment,
+  subscriptionId: string,
+  cancelAtPeriodEnd: boolean,
+) => {
+  const body = new URLSearchParams({
+    cancel_at_period_end: cancelAtPeriodEnd ? "true" : "false",
+  })
+
+  return stripeRequest<StripeSubscription>(config, `/subscriptions/${subscriptionId}`, {
+    method: "POST",
+    body,
+  })
 }

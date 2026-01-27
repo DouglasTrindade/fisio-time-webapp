@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
 import { auth } from "@/auth"
@@ -11,6 +11,7 @@ import {
   fetchStripePaymentIntent,
   fetchStripeSubscription,
   getStripeEnvironment,
+  payStripeInvoice,
   updateStripeDefaultPaymentMethod,
 } from "@/lib/stripe"
 import { createApiError, createApiResponse, handleApiError, validateJsonBody } from "@/lib/api/utils"
@@ -27,7 +28,7 @@ const planPriceMap: Record<string, string | undefined> = {
   clinic: process.env.STRIPE_PRICE_ID_CLINIC,
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user || !canManageSettings(session.user.role)) {
@@ -52,9 +53,10 @@ export async function POST(request: Request) {
     let subscription = await createStripeSubscription(stripeConfig, priceId, paymentMethodId, coupon)
     let paymentIntentClientSecret: string | undefined
     let paymentIntentStatus: string | undefined
+    let invoiceId: string | undefined
 
     if (subscription.latest_invoice) {
-      const invoiceId =
+      invoiceId =
         typeof subscription.latest_invoice === "string"
           ? subscription.latest_invoice
           : subscription.latest_invoice.id
@@ -109,7 +111,12 @@ export async function POST(request: Request) {
       }
     }
 
-    if (paymentIntentStatus === "succeeded") {
+    if (paymentIntentStatus === "succeeded" && invoiceId) {
+      try {
+        await payStripeInvoice(stripeConfig, invoiceId, paymentMethodId)
+      } catch (error) {
+        console.error("Falha ao confirmar pagamento da fatura:", error)
+      }
       subscription = await fetchStripeSubscription(stripeConfig, subscription.id)
     }
 
@@ -120,6 +127,7 @@ export async function POST(request: Request) {
           status: subscription.status,
           paymentIntentClientSecret,
           paymentIntentStatus,
+          invoiceId,
         },
         "Assinatura criada com sucesso",
       ),
