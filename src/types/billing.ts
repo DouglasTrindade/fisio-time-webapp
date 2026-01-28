@@ -6,9 +6,9 @@ export interface SubscriptionPlan {
   description: string
   price: number
   features: string[]
-  highlight?: string
-  limits?: string[]
-  addOns?: string[]
+  highlight?: boolean
+  limits: string[]
+  addOns: string[]
   badge?: string
 }
 

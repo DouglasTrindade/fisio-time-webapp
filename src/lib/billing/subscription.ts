@@ -46,14 +46,18 @@ const mapSubscriptionToSummary = (subscription?: StripeSubscription): BillingSum
   }
 
   const plan = subscription.items.data[0]?.plan
-  const hasPeriodEnd =
+  const periodEndTimestamp =
     typeof subscription.current_period_end === "number" &&
     Number.isFinite(subscription.current_period_end) &&
     subscription.current_period_end > 0
-  const hasTrialEnd =
+      ? subscription.current_period_end
+      : null
+  const trialEndTimestamp =
     typeof subscription.trial_end === "number" &&
     Number.isFinite(subscription.trial_end) &&
     subscription.trial_end > 0
+      ? subscription.trial_end
+      : null
 
   const priceMetadataPlanId = plan?.metadata?.plan_id || plan?.metadata?.app_plan_id
   const mappedPlan = plan?.id ? PLAN_PRICE_MAP[plan.id] : undefined
@@ -67,10 +71,8 @@ const mapSubscriptionToSummary = (subscription?: StripeSubscription): BillingSum
     currency: plan?.currency || "brl",
     status: subscription.status,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    periodEndsAt: hasPeriodEnd
-      ? new Date(subscription.current_period_end * 1000).toISOString()
-      : undefined,
-    trialEndsAt: hasTrialEnd ? new Date(subscription.trial_end * 1000).toISOString() : undefined,
+    periodEndsAt: periodEndTimestamp ? new Date(periodEndTimestamp * 1000).toISOString() : undefined,
+    trialEndsAt: trialEndTimestamp ? new Date(trialEndTimestamp * 1000).toISOString() : undefined,
   }
 }
 

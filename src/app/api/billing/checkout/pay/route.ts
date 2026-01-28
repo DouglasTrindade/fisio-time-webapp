@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
 import { auth } from "@/auth"
@@ -11,7 +11,7 @@ const schema = z.object({
   paymentMethodId: z.string().optional(),
 })
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user || !canManageSettings(session.user.role)) {

@@ -122,7 +122,11 @@ export const CheckoutForm = ({
           throw new Error(confirmation.error?.message || "Falha ao confirmar o cartão")
         }
 
-        paymentMethodId = confirmation.setupIntent?.payment_method ?? null
+        const setupPaymentMethod = confirmation.setupIntent?.payment_method
+        paymentMethodId =
+          typeof setupPaymentMethod === "string"
+            ? setupPaymentMethod
+            : setupPaymentMethod?.id ?? null
         if (!paymentMethodId) {
           throw new Error("Stripe não retornou o método de pagamento")
         }

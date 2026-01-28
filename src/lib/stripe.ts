@@ -50,6 +50,7 @@ export type StripeSubscription = {
   current_period_end: number
   trial_end?: number | null
   cancel_at_period_end: boolean
+  latest_invoice?: string | (StripeInvoice & { payment_intent?: string | StripePaymentIntent | null }) | null
   items: {
     data: Array<{
       plan: {

@@ -1,12 +1,14 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Role, Status } from "@prisma/client";
-import { toPrismaEnumValue } from "../src/lib/prisma/enum-helpers";
+import { toPrismaEnumValue } from "@/lib/prisma/enum-helpers";
 import bcrypt from "bcryptjs";
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL (ou DIRECT_URL) precisa estar configurado para executar o seed.");
+  throw new Error(
+    "DATABASE_URL (ou DIRECT_URL) precisa estar configurado para executar o seed.",
+  );
 }
 
 const adapter = new PrismaPg({ connectionString });
@@ -17,7 +19,7 @@ async function main() {
 
   const hashedPassword = await bcrypt.hash("123123123", 10);
 
-  const seedUserEmail = "joao@fisiotime.com"
+  const seedUserEmail = "joao@fisiotime.com";
   await prisma.appointment.deleteMany({
     where: {
       patient: {
@@ -26,17 +28,17 @@ async function main() {
         },
       },
     },
-  })
+  });
   await prisma.patient.deleteMany({
     where: {
       phone: {
         in: ["11999999999", "11888888888", "11777777777"],
       },
     },
-  })
+  });
   await prisma.user.deleteMany({
     where: { email: seedUserEmail },
-  })
+  });
 
   const user = await prisma.user.create({
     data: {
@@ -72,7 +74,7 @@ async function main() {
       birthDate: new Date("1978-12-10"),
       notes: "Reabilitação do joelho",
     },
-  ] as const
+  ] as const;
 
   const patients = await Promise.all(
     patientSeedData.map((patient) =>
@@ -84,7 +86,9 @@ async function main() {
 
   console.log(`👥 ${patients.length} pacientes criados`);
 
-  const patientByPhone = new Map(patients.map((patient) => [patient.phone, patient.id]))
+  const patientByPhone = new Map(
+    patients.map((patient) => [patient.phone, patient.id]),
+  );
 
   const appointments = await Promise.all([
     prisma.appointment.create({

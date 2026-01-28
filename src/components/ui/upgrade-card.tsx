@@ -2,6 +2,7 @@ import { Sparkles } from "lucide-react"
 import Link from "next/link"
 
 import { hasActiveWorkspaceSubscription } from "@/lib/billing/subscription"
+import { Button } from "@/components/ui/button"
 
 export const UpgradeCard = async () => {
   const hasSubscription = await hasActiveWorkspaceSubscription().catch(() => false)

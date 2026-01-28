@@ -5,10 +5,10 @@ import { z } from "zod"
 export const checkoutSchema = z.object({
   cardHolder: z.string().min(3, "Informe o nome completo").optional(),
   coupon: z.string().optional(),
-  acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: "Você precisa aceitar os termos de uso" }),
-  }),
-  useSavedCard: z.boolean().default(false),
+  acceptTerms: z
+    .boolean()
+    .refine(Boolean, { message: "Você precisa aceitar os termos de uso" }),
+  useSavedCard: z.boolean(),
   savedPaymentMethodId: z.string().optional(),
 })
 
