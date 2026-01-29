@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Ban } from "lucide-react"
+import { Ban, Loader2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -48,9 +48,16 @@ export const CancelSubscriptionButton = ({ subscriptionId }: Props) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="gap-2">
-          <Ban className="h-4 w-4" />
-          Cancelar renovação
+        <Button
+          variant="outline"
+          className="gap-2 border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+        >
+          {mutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Ban className="h-4 w-4" />
+          )}
+          {mutation.isPending ? "Processando" : "Cancelar renovação"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -62,7 +69,11 @@ export const CancelSubscriptionButton = ({ subscriptionId }: Props) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={mutation.isPending}>Voltar</AlertDialogCancel>
-          <AlertDialogAction onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+          <AlertDialogAction
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {mutation.isPending ? "Cancelando..." : "Confirmar"}
           </AlertDialogAction>
         </AlertDialogFooter>
