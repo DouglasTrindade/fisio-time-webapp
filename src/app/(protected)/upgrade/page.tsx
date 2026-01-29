@@ -6,6 +6,8 @@ import { Check, Crown, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import type { SubscriptionPlan } from "@/types/billing"
+import { CheckoutDialog } from "./_components/CheckoutDialog"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -36,9 +38,9 @@ const billingCycles = [
   },
 ] as const
 
-const plans = [
+const plans: SubscriptionPlan[] = [
   {
-    slug: "solo",
+    id: "professional",
     name: "Profissional",
     description: "Perfeito para quem atende sozinho ou em home care.",
     price: 129,
@@ -63,7 +65,7 @@ const plans = [
     ],
   },
   {
-    slug: "team",
+    id: "team",
     name: "Equipe",
     description: "Mais fôlego para equipes multidisciplinares.",
     price: 219,
@@ -88,7 +90,7 @@ const plans = [
     ],
   },
   {
-    slug: "clinic",
+    id: "clinic",
     name: "Clínica",
     description: "Para redes e clínicas com alto volume.",
     price: 449,
@@ -116,8 +118,14 @@ const plans = [
 
 export default function UpgradePage() {
   const [cycle, setCycle] = useState<(typeof billingCycles)[number]>(billingCycles[0])
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
 
   const cycleOptions = useMemo(() => billingCycles, [])
+  const handleSelectPlan = (plan: SubscriptionPlan) => {
+    setSelectedPlan(plan)
+    setCheckoutOpen(true)
+  }
 
   return (
     <section className="space-y-10">
@@ -159,7 +167,7 @@ export default function UpgradePage() {
           const price = plan.price * cycle.multiplier
           return (
             <Card
-              key={plan.slug}
+              key={plan.id}
               className={cn(
                 "flex h-full flex-col border-2",
                 plan.highlight ? "border-primary shadow-lg shadow-primary/20" : "border-border/70",
@@ -221,7 +229,7 @@ export default function UpgradePage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" variant={plan.highlight ? "default" : "outline"}>
+                <Button className="w-full" variant={plan.highlight ? "default" : "outline"} onClick={() => handleSelectPlan(plan)}>
                   Quero este plano
                 </Button>
               </CardFooter>
@@ -235,6 +243,7 @@ export default function UpgradePage() {
           Precisa de algo personalizado? <span className="font-medium text-foreground">Fale com nosso time comercial</span> e montamos um plano com volume de mensagens, unidades adicionais ou integrações específicas.
         </p>
       </div>
+      <CheckoutDialog plan={selectedPlan} open={checkoutOpen} onOpenChange={setCheckoutOpen} />
     </section>
   )
 }

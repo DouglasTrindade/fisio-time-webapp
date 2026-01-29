@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/collapsible"
 import { cn } from "@/lib/utils"
 import type { SidebarMenuItemConfig, SidebarIconName } from "./sidebar.config"
+import { Button } from "@/components/ui/button"
 
 interface SidebarNavigationProps {
   items: SidebarMenuItemConfig[]

@@ -25,9 +25,9 @@ const routePermissions: Array<{ pattern: RegExp; roles: AppRole[] }> = [
   { pattern: /^\/tratamentos(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
   { pattern: /^\/resumo(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
   { pattern: /^\/relatorios(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
-  { pattern: /^\/usuarios(\/|$)/, roles: ["ADMIN"] },
-  { pattern: /^\/colaboradores(\/|$)/, roles: ["ADMIN"] },
-  { pattern: /^\/configuracoes(\/|$)/, roles: ["ADMIN", "ASSISTANT"] },
+  { pattern: /^\/usuarios(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/colaboradores(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
+  { pattern: /^\/configuracoes(\/|$)/, roles: ["ADMIN", "ASSISTANT", "PROFESSIONAL"] },
   { pattern: /^\/notas-fiscais(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
 ];
 

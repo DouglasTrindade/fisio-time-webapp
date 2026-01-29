@@ -10,7 +10,8 @@ const hasFullAccess = (role?: AppRole | null) =>
 const hasAssistantAccess = (role?: AppRole | null) =>
   hasFullAccess(role) || role === ASSISTANT
 
-export const canInviteUsers = (role?: AppRole | null) => role === ADMIN
+export const canInviteUsers = (role?: AppRole | null) =>
+  role === ADMIN || role === PROFESSIONAL
 
 export const canManageSettings = (role?: AppRole | null) => hasFullAccess(role)
 
