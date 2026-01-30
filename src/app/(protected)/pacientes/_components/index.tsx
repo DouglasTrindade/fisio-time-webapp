@@ -11,11 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Download, FileSpreadsheet } from "lucide-react";
 import { PatientsNew } from "./New";
@@ -30,6 +29,7 @@ import type { Patient } from "@/types/patient";
 import { useExportCsv } from "@/hooks/useExportCsv";
 import { useExportXlsx } from "@/hooks/useExportXlsx";
 import { Pagination } from "@/components/Pagination";
+import { useModalContext } from "@/contexts/modal-provider";
 
 const formatDate = (value?: Date | string | null) => {
   if (!value) return "-";
@@ -49,16 +49,11 @@ export const Patients = () => {
     isLoading,
     pagination,
     filters,
-    isNewDialogOpen,
-    editingPatientId,
-    openNew,
-    closeNew,
-    openEdit,
-    closeEdit,
     handleSearch,
     handlePageChange,
     handleSortChange,
   } = usePatientsContext();
+  const { openModal } = useModalContext();
   const exportCsv = useExportCsv<Patient>();
   const exportXlsx = useExportXlsx<Patient>();
   const patientsList = patients ?? [];
@@ -121,23 +116,10 @@ export const Patients = () => {
               </Button>
             </div>
 
-            <Dialog
-              open={isNewDialogOpen}
-              onOpenChange={(open) => (open ? openNew() : closeNew())}
-            >
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Paciente
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-3xl">
-                <DialogHeader>
-                  <DialogTitle>Novo Paciente</DialogTitle>
-                </DialogHeader>
-                <PatientsNew />
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => openModal({ component: PatientsNewModal })}>
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Paciente
+            </Button>
           </div>
         </div>
 
@@ -183,7 +165,6 @@ export const Patients = () => {
                   <PatientListItem
                     key={patient.id}
                     patient={patient}
-                    onEdit={openEdit}
                   />
                 ))
               )}
@@ -199,24 +180,17 @@ export const Patients = () => {
           />
         )}
 
-        {editingPatientId && (
-          <Dialog
-            open={!!editingPatientId}
-            onOpenChange={(open) => {
-              if (!open) closeEdit();
-            }}
-          >
-            <DialogContent className="sm:max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Editar Paciente</DialogTitle>
-              </DialogHeader>
-              <PatientsEdit
-                patientId={editingPatientId}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
     </ClientOnly>
   );
 };
+
+const PatientsNewModal = ({ closeModal }: { closeModal: () => void }) => (
+  <DialogContent className="sm:max-w-3xl">
+    <DialogHeader>
+      <DialogTitle>Novo Paciente</DialogTitle>
+      <DialogDescription>Preencha os dados para cadastrar um novo paciente.</DialogDescription>
+    </DialogHeader>
+    <PatientsNew onClose={closeModal} />
+  </DialogContent>
+)

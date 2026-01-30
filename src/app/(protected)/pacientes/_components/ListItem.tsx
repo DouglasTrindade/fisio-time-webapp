@@ -10,17 +10,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useModalContext } from "@/contexts/modal-provider";
 import type { Patient } from "@/types/patient";
 import { usePatientContext } from "@/contexts/PatientsContext";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
@@ -28,14 +26,13 @@ import { toast } from "sonner";
 
 interface PatientListItemProps {
   patient: Patient;
-  onEdit: (id: string) => void;
 }
 
-export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+export const PatientListItem = ({ patient }: PatientListItemProps) => {
   const { handleDelete, isDeleting } = usePatientContext();
   const router = useRouter();
   const { canManagePatients, canDeletePatients } = useRolePermissions();
+  const { openModal } = useModalContext()
 
   const ensureCanManage = () => {
     if (!canManagePatients) {
@@ -47,7 +44,7 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
 
   const handleEditClick = () => {
     if (!ensureCanManage()) return;
-    onEdit(patient?.id);
+    openModal({ component: PatientsEditModal }, { patientId: patient.id })
   };
 
   const handleRequestDelete = () => {
@@ -55,17 +52,7 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
       toast.error("Você não tem permissão para excluir pacientes.");
       return;
     }
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteClick = async () => {
-    if (!canDeletePatients) {
-      toast.error("Você não tem permissão para excluir pacientes.");
-      setShowDeleteDialog(false);
-      return;
-    }
-    await handleDelete(patient.id);
-    setShowDeleteDialog(false);
+    openModal({ component: PatientDeleteModal }, { patient })
   };
 
   const formatDate = (date: Date | string | null) => {
@@ -119,29 +106,53 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
         </TableCell>
       </TableRow>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o paciente{" "}
-              <strong>{patient.name}</strong>? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
+}
+
+const PatientsEditModal = ({ patientId, closeModal }: { patientId: string; closeModal: () => void }) => (
+  <DialogContent className="sm:max-w-3xl">
+    <DialogHeader>
+      <DialogTitle>Editar Paciente</DialogTitle>
+      <DialogDescription>Atualize as informações do paciente selecionado.</DialogDescription>
+    </DialogHeader>
+    <PatientsEdit patientId={patientId} onClose={closeModal} />
+  </DialogContent>
+)
+
+const PatientDeleteModal = ({ patient, closeModal }: { patient: Patient; closeModal: () => void }) => {
+  const { handleDelete, isDeleting } = usePatientContext()
+  const { canDeletePatients } = useRolePermissions()
+
+  const handleConfirm = async () => {
+    if (!canDeletePatients) {
+      toast.error("Você não tem permissão para excluir pacientes.")
+      return
+    }
+    await handleDelete(patient.id)
+    closeModal()
+  }
+
+  return (
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogDescription>
+          Tem certeza que deseja excluir o paciente <strong>{patient.name}</strong>? Esta ação não pode ser desfeita.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button variant="outline" onClick={closeModal} disabled={isDeleting}>
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleConfirm}
+          disabled={isDeleting}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {isDeleting ? "Excluindo..." : "Excluir"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  )
 }

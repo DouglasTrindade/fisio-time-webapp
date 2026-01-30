@@ -5,18 +5,19 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   StripeElementsProvider,
   CardElement,
   useElements,
   useStripe,
 } from "@/components/stripe/elements"
+import { useModalContext } from "@/contexts/modal-provider"
 import { apiRequest } from "@/services/api"
 import type { ApiResponse } from "@/types/api"
 
@@ -27,7 +28,25 @@ interface AddCardDialogProps {
 }
 
 export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
-  const [open, setOpen] = useState(false)
+  const { openModal } = useModalContext()
+
+  const handleOpen = () => {
+    openModal(
+      {
+        component: AddCardModal,
+      },
+      { onSuccess },
+    )
+  }
+
+  return (
+    <Button variant="outline" className="w-full" onClick={handleOpen}>
+      + Adicionar novo cartão
+    </Button>
+  )
+}
+
+const AddCardModal = ({ onSuccess, closeModal }: { onSuccess: () => void; closeModal: () => void }) => {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoadingSecret, setLoadingSecret] = useState(false)
   const [secretError, setSecretError] = useState<string | null>(null)
@@ -36,7 +55,7 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
 
   useEffect(() => {
     const fetchSecret = async () => {
-      if (!open || !hasStripeKey) {
+      if (!hasStripeKey) {
         setClientSecret(null)
         return
       }
@@ -61,53 +80,45 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
     }
 
     void fetchSecret()
-  }, [open, hasStripeKey, secretRefreshKey])
+  }, [hasStripeKey, secretRefreshKey])
 
   const handleCompleted = () => {
     onSuccess()
-    setOpen(false)
-    setClientSecret(null)
+    closeModal()
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-full">
-          + Adicionar novo cartão
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Adicionar novo cartão</DialogTitle>
-          <DialogDescription>
-            Cadastre um novo método de pagamento e escolha se ele deve ficar salvo e ser o padrão das cobranças.
-          </DialogDescription>
-        </DialogHeader>
-        {!hasStripeKey ? (
-          <p className="text-sm text-muted-foreground">
-            Configure a variável NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para habilitar o cadastro de cartões.
-          </p>
-        ) : isLoadingSecret ? (
-          <Skeleton className="h-32 w-full" />
-        ) : secretError ? (
-          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-            {secretError}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-3"
-              onClick={() => setSecretRefreshKey((prev) => prev + 1)}
-            >
-              Tentar novamente
-            </Button>
-          </div>
-        ) : clientSecret ? (
-          <StripeElementsProvider options={{ clientSecret }}>
-            <AddCardForm clientSecret={clientSecret} onCompleted={handleCompleted} />
-          </StripeElementsProvider>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+    <DialogContent className="sm:max-w-2xl">
+      <DialogHeader>
+        <DialogTitle>Adicionar novo cartão</DialogTitle>
+        <DialogDescription>
+          Cadastre um novo método de pagamento e escolha se ele deve ficar salvo e ser o padrão das cobranças.
+        </DialogDescription>
+      </DialogHeader>
+      {!hasStripeKey ? (
+        <p className="text-sm text-muted-foreground">
+          Configure a variável NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para habilitar o cadastro de cartões.
+        </p>
+      ) : isLoadingSecret ? (
+        <Skeleton className="h-32 w-full" />
+      ) : secretError ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+          {secretError}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-3"
+            onClick={() => setSecretRefreshKey((prev) => prev + 1)}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      ) : clientSecret ? (
+        <StripeElementsProvider options={{ clientSecret }}>
+          <AddCardForm clientSecret={clientSecret} onCompleted={handleCompleted} />
+        </StripeElementsProvider>
+      ) : null}
+    </DialogContent>
   )
 }
 

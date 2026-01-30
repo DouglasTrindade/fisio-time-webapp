@@ -13,19 +13,11 @@ import type {
   AttendanceCreateInput,
   AttendanceFilters,
   AttendanceUpdateInput,
-  AttendanceType,
 } from "@/types/attendance"
-import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { attendancesCrudConfig } from "@/app/(protected)/atendimentos/_components/config"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 
 interface AttendancesUiContextValue {
-  isDialogOpen: boolean
-  creatingType: AttendanceType
-  editingAttendance: Attendance | null
-  openNew: (type: AttendanceType) => void
-  openEdit: (attendance: Attendance) => void
-  closeDialog: () => void
   handleSearch: (value: string) => void
   handlePageChange: (page: number) => void
   handleSortChange: (value: string) => void
@@ -40,22 +32,8 @@ const { CrudProvider, useCrud } = createCrudContext<
 
 const AttendancesUiContext = createContext<AttendancesUiContextValue | null>(null)
 
-const normalizeAttendanceType = (
-  value?: AttendanceType | string | null,
-): AttendanceType => {
-  const normalized = value ? `${value}`.toLowerCase() : ""
-  return normalized === "evolution"
-    ? PrismaAttendanceType.EVOLUTION
-    : PrismaAttendanceType.EVALUATION
-}
-
 const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
   const { setFilters } = useCrud()
-  const [dialogState, setDialogState] = useState<{
-    type: AttendanceType
-    attendance: Attendance | null
-  } | null>(null)
-
   const handleSearch = useCallback(
     (value: string) => {
       setFilters((prev) => ({ ...prev, search: value, page: 1 }))
@@ -83,40 +61,13 @@ const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
     [setFilters],
   )
 
-  const openNew = useCallback(
-    (type: AttendanceType) =>
-      setDialogState({ type: normalizeAttendanceType(type), attendance: null }),
-    [],
-  )
-
-  const openEdit = useCallback(
-    (attendance: Attendance) =>
-      setDialogState({
-        type: normalizeAttendanceType(attendance.type),
-        attendance,
-      }),
-    [],
-  )
-
-  const closeDialog = useCallback(() => setDialogState(null), [])
-
   const value = useMemo(
     () => ({
-      isDialogOpen: !!dialogState,
-      creatingType: dialogState?.type ?? PrismaAttendanceType.EVALUATION,
-      editingAttendance: dialogState?.attendance ?? null,
-      openNew,
-      openEdit,
-      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,
     }),
     [
-      dialogState,
-      openNew,
-      openEdit,
-      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,

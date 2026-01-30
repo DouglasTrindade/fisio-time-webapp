@@ -34,6 +34,7 @@ interface CheckoutFormProps {
   savedCards: BillingPaymentMethod[]
   savedCardsLoading: boolean
   cardsError: string | null
+  onRetryCards: () => void
   onSuccess: () => void
 }
 
@@ -48,6 +49,7 @@ export const CheckoutForm = ({
   savedCards,
   savedCardsLoading,
   cardsError,
+  onRetryCards,
   onSuccess,
 }: CheckoutFormProps) => {
   const stripe = useStripe()
@@ -217,7 +219,12 @@ export const CheckoutForm = ({
               </div>
               {useSavedCard ? (
                 cardsError ? (
-                  <p className="text-xs text-destructive">{cardsError}</p>
+                  <div className="text-xs text-destructive">
+                    <p>{cardsError}</p>
+                    <Button type="button" variant="link" onClick={onRetryCards}>
+                      Tentar novamente
+                    </Button>
+                  </div>
                 ) : (
                   <RadioGroup
                     value={selectedSavedCardId ?? ""}

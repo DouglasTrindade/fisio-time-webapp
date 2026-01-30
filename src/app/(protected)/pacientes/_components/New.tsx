@@ -10,8 +10,8 @@ import { PersonalFields } from "./Fields/PersonalFields";
 import { AddressFields } from "./Fields/AddressFields";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
-export const PatientsNew = () => {
-  const { handleCreate, isCreating, closeNew } = usePatientContext();
+export const PatientsNew = ({ onClose }: { onClose?: () => void } = {}) => {
+  const { handleCreate, isCreating } = usePatientContext();
   const [step, setStep] = useState(0);
   const steps = ["Informações pessoais", "Endereço"];
   const stepFieldMap: ReadonlyArray<FieldPath<PatientSchema>[]> = [
@@ -71,12 +71,12 @@ export const PatientsNew = () => {
 
     form.reset();
     setStep(0);
-    closeNew();
+    onClose?.();
   }
 
   const handleClose = () => {
     setStep(0);
-    closeNew();
+    onClose?.();
   };
 
   const validateStep = async (index: number) => {

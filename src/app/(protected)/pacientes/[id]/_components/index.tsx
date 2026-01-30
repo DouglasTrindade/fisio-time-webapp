@@ -3,22 +3,7 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AboutPatient } from "./AboutPatient"
 import { TimelineCard } from "./TimelineCard"
 import { Filters } from "./Filters"
@@ -28,6 +13,7 @@ import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { apiRequest } from "@/services/api"
 import type { ApiResponse } from "@/types/api"
 import { toast } from "sonner"
+import { useModalContext } from "@/contexts/modal-provider"
 import type {
   HistoryEntry,
   HistoryFilters,
@@ -53,11 +39,7 @@ const defaultFilters: HistoryFilters = {
 export const PatientShow = ({ patient, entries, professionals }: PatientHistoryViewProps) => {
   const router = useRouter()
   const [filters, setFilters] = useState<HistoryFilters>(defaultFilters)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [newAttendanceType, setNewAttendanceType] = useState<PrismaAttendanceType | null>(null)
-  const [attendanceToEdit, setAttendanceToEdit] = useState<HistoryEntry | null>(null)
-  const [attendanceToDelete, setAttendanceToDelete] = useState<HistoryEntry | null>(null)
-  const [isDeletingAttendance, setIsDeletingAttendance] = useState(false)
+  const { openModal } = useModalContext()
 
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {

@@ -18,12 +18,7 @@ interface AppointmentsUiContextValue {
   calendarAppointments: Appointment[]
   isCalendarLoading: boolean
   selectedDate: Date | null
-  isDialogOpen: boolean
-  editingAppointment: Appointment | null
   handleDateSelect: (date: Date) => void
-  openNew: (date?: Date | null) => void
-  openEdit: (appointment: Appointment) => void
-  closeDialog: () => void
 }
 
 const { CrudProvider, useCrud } = createCrudContext<
@@ -52,32 +47,9 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isCalendarLoading,
   } = useRecords<Appointment>(appointmentsCrudConfig.endpoint, calendarQuery)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date)
-    setEditingAppointment(null)
-    setIsDialogOpen(false)
-  }, [])
-
-  const openNew = useCallback((date?: Date | null) => {
-    if (date) {
-      setSelectedDate(date)
-    }
-    setEditingAppointment(null)
-    setIsDialogOpen(true)
-  }, [])
-
-  const openEdit = useCallback((appointment: Appointment) => {
-    setEditingAppointment(appointment)
-    setSelectedDate(new Date(appointment.date))
-    setIsDialogOpen(true)
-  }, [])
-
-  const closeDialog = useCallback(() => {
-    setIsDialogOpen(false)
-    setEditingAppointment(null)
   }, [])
 
   const value = useMemo(
@@ -85,23 +57,13 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
       calendarAppointments,
       isCalendarLoading,
       selectedDate,
-      isDialogOpen,
-      editingAppointment,
       handleDateSelect,
-      openNew,
-      openEdit,
-      closeDialog,
     }),
     [
       calendarAppointments,
       isCalendarLoading,
       selectedDate,
-      isDialogOpen,
-      editingAppointment,
       handleDateSelect,
-      openNew,
-      openEdit,
-      closeDialog,
     ]
   )
 

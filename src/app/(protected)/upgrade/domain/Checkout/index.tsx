@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useQuery } from "@tanstack/react-query"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
+import { StripeElementsProvider } from "@/components/stripe/elements"
+import { useModalContext } from "@/contexts/modal-provider"
 import type { ApiResponse } from "@/types/api"
 import type { BillingPaymentMethod, SubscriptionPlan } from "@/types/billing"
 import { apiRequest } from "@/services/api"
-import { StripeElementsProvider } from "@/components/stripe/elements"
 
 import { CheckoutForm } from "./components/CheckoutForm"
 
@@ -18,107 +19,196 @@ interface CheckoutDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+const fetchSetupIntent = async () => {
+  const response = await apiRequest<ApiResponse<{ clientSecret: string }>>(
+    "/billing/checkout/setup-intent",
+    { method: "POST" },
+  )
+  if (!response.data?.clientSecret) {
+    throw new Error("Stripe não retornou o client secret")
+  }
+  return response.data.clientSecret
+}
+
+const fetchPaymentMethods = async () => {
+  const response = await apiRequest<ApiResponse<BillingPaymentMethod[]>>(
+    "/billing/payment-methods",
+  )
+  return response.data ?? []
+}
+
 export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps) => {
   const router = useRouter()
+  const { openModal } = useModalContext()
 
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [isLoadingSecret, setLoadingSecret] = useState(false)
-  const [secretError, setSecretError] = useState<string | null>(null)
-  const [savedCards, setSavedCards] = useState<BillingPaymentMethod[] | null>(null)
-  const [isLoadingCards, setLoadingCards] = useState(false)
-  const [cardsError, setCardsError] = useState<string | null>(null)
+  const shouldFetch = Boolean(open && plan)
+
+  const {
+    data: clientSecret,
+    isLoading: isLoadingSecret,
+    error: secretError,
+    refetch: refetchSecret,
+  } = useQuery({
+    queryKey: ["checkout", "setupIntent", plan?.id],
+    queryFn: fetchSetupIntent,
+    enabled: shouldFetch,
+    retry: 1,
+  })
+
+  const {
+    data: savedCards = [],
+    isLoading: isLoadingCards,
+    error: cardsError,
+    refetch: refetchCards,
+  } = useQuery({
+    queryKey: ["checkout", "paymentMethods"],
+    queryFn: fetchPaymentMethods,
+    enabled: shouldFetch,
+    retry: 1,
+  })
+
+  const payloadRef = useRef<string>("")
+
+  const modalPayload = useMemo(() => {
+    if (!shouldFetch) return ""
+    return JSON.stringify({
+      planId: plan?.id,
+      clientSecret,
+      isLoadingSecret,
+      secretError: secretError instanceof Error ? secretError.message : null,
+      savedCards: savedCards.map((card) => card.id).join("|"),
+      isLoadingCards,
+      cardsError: cardsError instanceof Error ? cardsError.message : null,
+    })
+  }, [
+    shouldFetch,
+    plan?.id,
+    clientSecret,
+    isLoadingSecret,
+    secretError,
+    savedCards,
+    isLoadingCards,
+    cardsError,
+  ])
 
   useEffect(() => {
-    const fetchSecret = async () => {
-      if (!open || !plan) {
-        setClientSecret(null)
-        setSavedCards(null)
-        return
-      }
-
-      setLoadingSecret(true)
-      setSecretError(null)
-      try {
-        const response = await apiRequest<ApiResponse<{ clientSecret: string }>>(
-          "/billing/checkout/setup-intent",
-          { method: "POST" },
-        )
-        if (!response.data?.clientSecret) {
-          throw new Error("Stripe não retornou o client secret")
-        }
-        setClientSecret(response.data.clientSecret)
-      } catch (error) {
-        console.error(error)
-        setSecretError("Não foi possível iniciar o checkout. Tente novamente.")
-      } finally {
-        setLoadingSecret(false)
-      }
+    if (!shouldFetch) {
+      payloadRef.current = ""
+      return
     }
 
-    void fetchSecret()
-  }, [open, plan])
-
-  useEffect(() => {
-    const fetchSavedCards = async () => {
-      if (!open) {
-        setSavedCards(null)
-        return
-      }
-      setLoadingCards(true)
-      setCardsError(null)
-      try {
-        const response = await apiRequest<ApiResponse<BillingPaymentMethod[]>>(
-          "/billing/payment-methods",
-        )
-        setSavedCards(response.data ?? [])
-      } catch (error) {
-        console.error(error)
-        setCardsError("Não foi possível carregar os cartões salvos.")
-        setSavedCards([])
-      } finally {
-        setLoadingCards(false)
-      }
+    if (payloadRef.current === modalPayload) {
+      return
     }
 
-    void fetchSavedCards()
-  }, [open])
+    payloadRef.current = modalPayload
 
-  const handleSuccess = () => {
-    onOpenChange(false)
-    router.push("/configuracoes/cobranca")
+    openModal({
+      component: CheckoutModal,
+      props: {
+        plan,
+        clientSecret: clientSecret ?? null,
+        isLoadingSecret,
+        secretError: secretError instanceof Error ? secretError.message : null,
+        savedCards,
+        isLoadingCards,
+        cardsError: cardsError instanceof Error ? cardsError.message : null,
+        onRetrySecret: () => refetchSecret(),
+        onRetryCards: () => refetchCards(),
+        onSuccess: () => {
+          onOpenChange(false)
+          router.push("/configuracoes/cobranca")
+        },
+      },
+      onClose: () => onOpenChange(false),
+    })
+  }, [
+    shouldFetch,
+    modalPayload,
+    openModal,
+    plan,
+    clientSecret,
+    isLoadingSecret,
+    secretError,
+    savedCards,
+    isLoadingCards,
+    cardsError,
+    refetchSecret,
+    refetchCards,
+    onOpenChange,
+    router,
+  ])
+
+  return null
+}
+
+const CheckoutModal = ({
+  plan,
+  clientSecret,
+  isLoadingSecret,
+  secretError,
+  savedCards,
+  isLoadingCards,
+  cardsError,
+  onRetrySecret,
+  onRetryCards,
+  onSuccess,
+}: {
+  plan: SubscriptionPlan | null
+  clientSecret: string | null
+  isLoadingSecret: boolean
+  secretError: string | null
+  savedCards: BillingPaymentMethod[]
+  isLoadingCards: boolean
+  cardsError: string | null
+  onRetrySecret: () => void
+  onRetryCards: () => void
+  onSuccess: () => void
+}) => {
+  const hasStripeKey = useMemo(() => Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY), [])
+
+  if (!plan) {
+    return null
   }
 
-  const canRenderForm = plan && clientSecret && !isLoadingSecret && !secretError
+  if (!hasStripeKey) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para iniciar o checkout.
+      </p>
+    )
+  }
+
+  if (isLoadingSecret) {
+    return <Skeleton className="h-36 w-full" />
+  }
+
+  if (secretError) {
+    return (
+      <div className="space-y-3 text-sm text-destructive">
+        <p>{secretError}</p>
+        <button type="button" onClick={onRetrySecret} className="text-primary">
+          Tentar novamente
+        </button>
+      </div>
+    )
+  }
+
+  if (!clientSecret) {
+    return null
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Checkout</DialogTitle>
-          <DialogDescription>Preencha os dados para concluir a assinatura.</DialogDescription>
-        </DialogHeader>
-
-        {!plan ? null : !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
-          <p className="text-sm text-muted-foreground">
-            Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para iniciar o checkout.
-          </p>
-        ) : isLoadingSecret ? (
-          <Skeleton className="h-32 w-full" />
-        ) : secretError ? (
-          <p className="text-sm text-destructive">{secretError}</p>
-        ) : canRenderForm ? (
-          <StripeElementsProvider options={{ clientSecret: clientSecret! }}>
-            <CheckoutForm
-              plan={plan}
-              clientSecret={clientSecret!}
-              savedCards={savedCards ?? []}
-              savedCardsLoading={isLoadingCards}
-              cardsError={cardsError}
-              onSuccess={handleSuccess}
-            />
-          </StripeElementsProvider>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+    <StripeElementsProvider options={{ clientSecret }}>
+      <CheckoutForm
+        plan={plan}
+        clientSecret={clientSecret}
+        savedCards={savedCards}
+        savedCardsLoading={isLoadingCards}
+        cardsError={cardsError}
+        onRetryCards={onRetryCards}
+        onSuccess={onSuccess}
+      />
+    </StripeElementsProvider>
   )
 }

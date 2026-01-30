@@ -14,12 +14,6 @@ import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import { patientsCrudConfig } from "@/app/(protected)/pacientes/_components/config"
 
 interface PatientsUiContextValue {
-  isNewDialogOpen: boolean
-  editingPatientId: string | null
-  openNew: () => void
-  closeNew: () => void
-  openEdit: (id: string) => void
-  closeEdit: () => void
   handleSearch: (search: string) => void
   handlePageChange: (page: number) => void
   handleSortChange: (sortValue: string) => void
@@ -36,14 +30,6 @@ const PatientsUiContext = createContext<PatientsUiContextValue | null>(null)
 
 const PatientsUiProvider = ({ children }: { children: ReactNode }) => {
   const { setFilters } = useCrud()
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false)
-  const [editingPatientId, setEditingPatientId] = useState<string | null>(null)
-
-  const openNew = useCallback(() => setIsNewDialogOpen(true), [])
-  const closeNew = useCallback(() => setIsNewDialogOpen(false), [])
-  const openEdit = useCallback((id: string) => setEditingPatientId(id), [])
-  const closeEdit = useCallback(() => setEditingPatientId(null), [])
-
   const handleSearch = useCallback(
     (search: string) => {
       setFilters((prev) => ({ ...prev, search, page: 1 }))
@@ -73,27 +59,11 @@ const PatientsUiProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      isNewDialogOpen,
-      editingPatientId,
-      openNew,
-      closeNew,
-      openEdit,
-      closeEdit,
       handleSearch,
       handlePageChange,
       handleSortChange,
     }),
-    [
-      isNewDialogOpen,
-      editingPatientId,
-      openNew,
-      closeNew,
-      openEdit,
-      closeEdit,
-      handleSearch,
-      handlePageChange,
-      handleSortChange,
-    ],
+    [handleSearch, handlePageChange, handleSortChange],
   )
 
   return (

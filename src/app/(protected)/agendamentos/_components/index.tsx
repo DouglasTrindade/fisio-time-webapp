@@ -3,8 +3,9 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
 import { Calendar } from "./Calendar";
-import { AppointmentsModal } from "./Modal";
+import { AppointmentsModal, type AppointmentsModalInputProps } from "./Modal";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
+import { useModalContext } from "@/contexts/modal-provider";
 import type { Appointment } from "@/types/appointment";
 import { Status } from "@prisma/client";
 
@@ -62,18 +63,49 @@ export const Appointments = () => {
     records: appointments,
     isFetching,
     selectedDate,
-    isDialogOpen,
-    editingAppointment,
     handleDateSelect,
-    openNew,
-    openEdit,
-    closeDialog,
+    handleCreate,
+    handleUpdate,
+    isCreating,
+    isUpdating,
   } = useAppointmentsContext();
+  const { openModal } = useModalContext();
   const [statusFilter, setStatusFilter] = useState<Status | "all">("all");
-  const handleDayCreate = useCallback((date: Date) => {
-    handleDateSelect(date);
-    openNew(date);
-  }, [handleDateSelect, openNew]);
+  const buildInitialDate = useCallback((source?: Date | null, applyDefaultHour = false) => {
+    if (!source) return undefined;
+    const date = new Date(source);
+    if (applyDefaultHour) {
+      date.setHours(9, 0, 0, 0);
+    }
+    return date.toISOString();
+  }, []);
+
+  const openAppointmentsModal = useCallback((props: Partial<AppointmentsModalInputProps>) => {
+    openModal(
+      { component: AppointmentsModal },
+      {
+        handleCreate,
+        handleUpdate,
+        isCreating,
+        isUpdating,
+        appointment: null,
+        ...props,
+      },
+    );
+  }, [handleCreate, handleUpdate, isCreating, isUpdating, openModal]);
+
+  const handleCreateNew = useCallback((date?: Date | null) => {
+    if (date) {
+      handleDateSelect(date);
+    }
+    const initialDate = buildInitialDate(date ?? selectedDate, Boolean(date ?? selectedDate));
+    openAppointmentsModal({ initialDate });
+  }, [buildInitialDate, handleDateSelect, openAppointmentsModal, selectedDate]);
+
+  const handleEditAppointment = useCallback((appointment: Appointment) => {
+    handleDateSelect(new Date(appointment.date));
+    openAppointmentsModal({ appointment, initialDate: appointment.date });
+  }, [handleDateSelect, openAppointmentsModal]);
 
   if (process.env.NODE_ENV !== "production") {
     console.debug("[Appointments] selectedDate=", selectedDate?.toISOString(), "records=", appointments.length, appointments[0]);
@@ -146,7 +178,7 @@ export const Appointments = () => {
           </p>
         </div>
 
-        <Button onClick={() => openNew()}>
+        <Button onClick={() => handleCreateNew()}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Agendamento
         </Button>
@@ -158,8 +190,8 @@ export const Appointments = () => {
         isLoading={isFetching}
         onDateSelect={handleDateSelect}
         onCreateFromDate={handleDayCreate}
-        onEventClick={openEdit}
-        onCreateNew={() => openNew()}
+        onEventClick={handleEditAppointment}
+        onCreateNew={() => handleCreateNew()}
       />
 
       <section className="space-y-6">
@@ -205,7 +237,7 @@ export const Appointments = () => {
               <UpcomingGroup
                 key={group.key}
                 group={group}
-                onEdit={openEdit}
+                onEdit={handleEditAppointment}
               />
             ))
           ) : (
@@ -218,20 +250,7 @@ export const Appointments = () => {
         </div>
       </section>
 
-      <AppointmentsModal
-        open={isDialogOpen}
-        onClose={() => {
-          closeDialog();
-        }}
-        initialDate={(selectedDate && !editingAppointment)
-          ? (() => {
-            const d = new Date(selectedDate);
-            d.setHours(9, 0, 0, 0); // 09:00
-            return d.toISOString();
-          })()
-          : selectedDate?.toISOString()}
-        appointment={editingAppointment}
-      />
+      {selectedDate ? null : null}
     </div>
   );
 };
