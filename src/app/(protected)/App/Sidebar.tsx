@@ -17,6 +17,7 @@ import { SidebarNavigation } from "./SidebarNavigation";
 import { menuItems } from "./sidebar.config";
 import type { SidebarMenuItemConfig } from "./sidebar.config";
 import type { AppRole } from "@/types/user";
+import { UpgradeCard } from "@/components/ui/upgrade-card";
 
 export async function AppSidebar({
   ...props
@@ -40,10 +41,11 @@ export async function AppSidebar({
       <SidebarContent>
         <Separator border="solid" borderSize="0" className="my-2" />
         <SidebarGroup>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="h-full">
             <SidebarNavigation items={filteredMenuItems} />
           </SidebarGroupContent>
         </SidebarGroup>
+        <UpgradeCard />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user ?? {}} />
