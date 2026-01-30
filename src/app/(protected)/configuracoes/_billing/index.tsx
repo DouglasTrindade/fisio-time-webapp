@@ -1,8 +1,8 @@
 "use client"
 
-import { SummaryCard } from "./components/SummaryCard"
-import { PaymentMethodsSection } from "./components/PaymentMethodsSection"
-import { InvoicesSection } from "./components/InvoicesSection"
+import { SummaryCard } from "./_components/SummaryCard"
+import { PaymentMethodsSection } from "./_components/PaymentMethodsSection"
+import { InvoicesSection } from "./_components/InvoicesSection"
 import {
   useBillingInvoices,
   useBillingPaymentMethods,

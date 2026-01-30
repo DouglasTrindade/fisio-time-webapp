@@ -1,3 +1,3 @@
 "use client"
 
-export { BillingView as BillingSettings } from "../domain/Billing"
+export { BillingView as BillingSettings } from "../_billing"
