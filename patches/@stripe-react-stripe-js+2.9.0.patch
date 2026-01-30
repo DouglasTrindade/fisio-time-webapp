@@ -1,8 +1,0 @@
-patch-package
---- a/node_modules/@stripe/react-stripe-js/package.json
-+++ b/node_modules/@stripe/react-stripe-js/package.json
--    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
--    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
-+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
-@@
