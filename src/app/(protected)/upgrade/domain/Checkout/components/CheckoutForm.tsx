@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import { CardElement, useElements, useStripe } from "@/components/stripe/elements"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -105,7 +105,7 @@ export const CheckoutForm = ({
         if (!stripe || !elements) {
           throw new Error("Stripe não inicializado.")
         }
-        const cardElement = elements.getElement(CardElement)
+        const cardElement = elements.getElement("card")
         if (!cardElement) {
           throw new Error("Não foi possível carregar o campo de cartão.")
         }

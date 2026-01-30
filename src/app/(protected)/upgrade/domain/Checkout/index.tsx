@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Elements } from "@stripe/react-stripe-js"
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ApiResponse } from "@/types/api"
 import type { BillingPaymentMethod, SubscriptionPlan } from "@/types/billing"
 import { apiRequest } from "@/services/api"
-import { getStripe } from "@/lib/stripe-client"
+import { StripeElementsProvider } from "@/components/stripe/elements"
 
 import { CheckoutForm } from "./components/CheckoutForm"
 
@@ -21,14 +20,6 @@ interface CheckoutDialogProps {
 
 export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps) => {
   const router = useRouter()
-  const stripePromise = useMemo(() => {
-    try {
-      return getStripe()
-    } catch (error) {
-      console.error(error)
-      return undefined
-    }
-  }, [])
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoadingSecret, setLoadingSecret] = useState(false)
@@ -97,7 +88,7 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
     router.push("/configuracoes/cobranca")
   }
 
-  const canRenderForm = plan && stripePromise && clientSecret && !isLoadingSecret && !secretError
+  const canRenderForm = plan && clientSecret && !isLoadingSecret && !secretError
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,7 +98,7 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
           <DialogDescription>Preencha os dados para concluir a assinatura.</DialogDescription>
         </DialogHeader>
 
-        {!plan ? null : !stripePromise ? (
+        {!plan ? null : !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
           <p className="text-sm text-muted-foreground">
             Configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para iniciar o checkout.
           </p>
@@ -116,7 +107,7 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
         ) : secretError ? (
           <p className="text-sm text-destructive">{secretError}</p>
         ) : canRenderForm ? (
-          <Elements stripe={stripePromise}>
+          <StripeElementsProvider options={{ clientSecret: clientSecret! }}>
             <CheckoutForm
               plan={plan}
               clientSecret={clientSecret!}
@@ -125,7 +116,7 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
               cardsError={cardsError}
               onSuccess={handleSuccess}
             />
-          </Elements>
+          </StripeElementsProvider>
         ) : null}
       </DialogContent>
     </Dialog>

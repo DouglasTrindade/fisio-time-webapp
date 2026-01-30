@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Elements, CardElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -12,7 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { getStripe } from "@/lib/stripe-client"
+import {
+  StripeElementsProvider,
+  CardElement,
+  useElements,
+  useStripe,
+} from "@/components/stripe/elements"
 import { apiRequest } from "@/services/api"
 import type { ApiResponse } from "@/types/api"
 
@@ -28,18 +32,11 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
   const [isLoadingSecret, setLoadingSecret] = useState(false)
   const [secretError, setSecretError] = useState<string | null>(null)
   const [secretRefreshKey, setSecretRefreshKey] = useState(0)
-  const stripePromise = useMemo(() => {
-    try {
-      return getStripe()
-    } catch (error) {
-      console.error(error)
-      return undefined
-    }
-  }, [])
+  const hasStripeKey = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
   useEffect(() => {
     const fetchSecret = async () => {
-      if (!open || !stripePromise) {
+      if (!open || !hasStripeKey) {
         setClientSecret(null)
         return
       }
@@ -64,7 +61,7 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
     }
 
     void fetchSecret()
-  }, [open, stripePromise, secretRefreshKey])
+  }, [open, hasStripeKey, secretRefreshKey])
 
   const handleCompleted = () => {
     onSuccess()
@@ -86,7 +83,7 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
             Cadastre um novo método de pagamento e escolha se ele deve ficar salvo e ser o padrão das cobranças.
           </DialogDescription>
         </DialogHeader>
-        {!stripePromise ? (
+        {!hasStripeKey ? (
           <p className="text-sm text-muted-foreground">
             Configure a variável NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY para habilitar o cadastro de cartões.
           </p>
@@ -105,9 +102,9 @@ export const AddCardDialog = ({ onSuccess }: AddCardDialogProps) => {
             </Button>
           </div>
         ) : clientSecret ? (
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
+          <StripeElementsProvider options={{ clientSecret }}>
             <AddCardForm clientSecret={clientSecret} onCompleted={handleCompleted} />
-          </Elements>
+          </StripeElementsProvider>
         ) : null}
       </DialogContent>
     </Dialog>
@@ -147,7 +144,7 @@ const AddCardForm = ({
       return
     }
 
-    const cardElement = elements.getElement(CardElement)
+    const cardElement = elements.getElement("card")
     if (!cardElement) {
       toast.error("Não foi possível carregar o campo de cartão.")
       return
