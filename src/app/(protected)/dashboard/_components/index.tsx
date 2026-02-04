@@ -1,18 +1,47 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, type ComponentType } from "react";
-import { Users, UserPlus, CalendarClock, AlertTriangle, Gift, Bell } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  CalendarClock,
+  AlertTriangle,
+  Gift,
+  Bell,
+  CalendarRange,
+  UsersRound,
+  Stethoscope,
+  ClipboardList,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useRecords } from "@/hooks/useRecords";
 import type { Patient } from "@/types/patient";
 import type { Appointment } from "@/types/appointment";
 import { Status } from "@prisma/client";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 const NEW_PATIENT_WINDOW_DAYS = 21;
 const INACTIVE_THRESHOLD_DAYS = 30;
 const BIRTHDAY_WINDOW_DAYS = 14;
+
+const toDateKey = (date: Date) => {
+  const normalized = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return normalized.toISOString().slice(0, 10);
+};
 
 const formatTime = (date: string) => {
   const d = new Date(date);
@@ -27,6 +56,103 @@ const formatDate = (date: Date) =>
     day: "2-digit",
     month: "2-digit",
   });
+
+const QUICK_ACTIONS = [
+  {
+    title: "Agendamentos",
+    description: "Confirme, reagende e acompanhe o dia",
+    href: "/agendamentos",
+    icon: CalendarRange,
+    badge: "Agenda do dia",
+  },
+  {
+    title: "Pacientes",
+    description: "Cadastre e gerencie seus pacientes",
+    href: "/pacientes",
+    icon: UsersRound,
+    badge: "Base completa",
+  },
+  {
+    title: "Atendimentos",
+    description: "Registre evoluções e avaliações",
+    href: "/atendimentos",
+    icon: Stethoscope,
+    badge: "Clínico",
+  },
+  {
+    title: "Planos de tratamento",
+    description: "Crie e acompanhe os planos ativos",
+    href: "/tratamentos",
+    icon: ClipboardList,
+    badge: "Tratamentos",
+  },
+] as const;
+
+const APPOINTMENT_TREND_CHART_CONFIG = {
+  scheduled: {
+    label: "Agendados",
+    color: "hsl(var(--chart-2))",
+  },
+  confirmed: {
+    label: "Confirmados",
+    color: "hsl(var(--chart-1))",
+  },
+  canceled: {
+    label: "Cancelados",
+    color: "hsl(var(--chart-4))",
+  },
+} satisfies ChartConfig;
+
+const STATUS_STYLE: Record<
+  Status,
+  { label: string; badgeClass: string }
+> = {
+  [Status.CONFIRMED]: {
+    label: "Confirmado",
+    badgeClass: "bg-emerald-100 text-emerald-800",
+  },
+  [Status.CANCELED]: {
+    label: "Cancelado",
+    badgeClass: "bg-rose-100 text-rose-800",
+  },
+  [Status.RESCHEDULED]: {
+    label: "Reagendado",
+    badgeClass: "bg-amber-100 text-amber-800",
+  },
+  [Status.WAITING]: {
+    label: "Aguardando",
+    badgeClass: "bg-sky-100 text-sky-800",
+  },
+};
+
+const QuickActionCard = ({ action }: { action: (typeof QUICK_ACTIONS)[number] }) => {
+  const { title, description, badge, href, icon: Icon } = action;
+  return (
+    <Link
+      href={href}
+      className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-2xl"
+    >
+      <Card className="rounded-2xl border-border/60 bg-card/80 transition hover:border-primary/60 hover:shadow-md h-full">
+        <CardHeader className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-base font-semibold">{title}</p>
+              <p className="text-sm text-muted-foreground">
+                {description}
+              </p>
+            </div>
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Icon className="h-5 w-5" />
+            </span>
+          </div>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {badge}
+          </span>
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
 
 interface MetricCardProps {
   title: string;
@@ -69,13 +195,7 @@ const MetricCard = ({
 );
 
 export const DashboardHome = () => {
-  const today = useMemo(() => {
-    const now = new Date();
-    const normalized = new Date(
-      now.getTime() - now.getTimezoneOffset() * 60000
-    );
-    return normalized.toISOString().slice(0, 10);
-  }, []);
+  const today = useMemo(() => toDateKey(new Date()), []);
 
   const patientQuery = useMemo(
     () => ({
@@ -233,6 +353,40 @@ export const DashboardHome = () => {
     };
   }, [patients, appointments, patientPagination]);
 
+  const appointmentTrendData = useMemo(() => {
+    const grouped = appointments.reduce<Record<string, Appointment[]>>((acc, appointment) => {
+      const key = toDateKey(new Date(appointment.date));
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(appointment);
+      return acc;
+    }, {});
+    const reference = new Date();
+    return Array.from({ length: 7 }).map((_, index) => {
+      const day = new Date(reference);
+      day.setDate(reference.getDate() - (6 - index));
+      const key = toDateKey(day);
+      const dayAppointments = grouped[key] ?? [];
+      const scheduled = dayAppointments.length;
+      const confirmed = dayAppointments.filter((item) => item.status === Status.CONFIRMED).length;
+      const canceled = dayAppointments.filter((item) => item.status === Status.CANCELED).length;
+
+      return {
+        key,
+        label: day.toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "short",
+        }),
+        scheduled,
+        confirmed,
+        canceled,
+      };
+    });
+  }, [appointments]);
+
+  const hasAppointmentTrendData = appointmentTrendData.some((entry) => entry.scheduled > 0);
+
   const isLoadingMetrics =
     isLoadingPatients || isLoadingTodayAppointments || isLoadingAppointments;
 
@@ -242,6 +396,34 @@ export const DashboardHome = () => {
         <h1 className="text-3xl font-semibold leading-tight">
           Bem-vindo!
         </h1>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Acesso rápido
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Principais módulos para o fluxo diário da clínica
+          </p>
+        </div>
+        <div className="md:hidden">
+          <ScrollArea className="-mx-4">
+            <div className="flex gap-4 px-4 py-1">
+              {QUICK_ACTIONS.map((action) => (
+                <div key={action.title} className="min-w-[240px] flex-1">
+                  <QuickActionCard action={action} />
+                </div>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+        <div className="hidden gap-4 md:grid md:grid-cols-2 xl:grid-cols-4">
+          {QUICK_ACTIONS.map((action) => (
+            <QuickActionCard key={action.title} action={action} />
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -280,17 +462,99 @@ export const DashboardHome = () => {
         />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+      <section>
+        <Card className="border-border/70 bg-card/85 shadow-sm">
+          <CardHeader className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <CardTitle>Agenda de hoje</CardTitle>
+              <CardTitle>Tendência de atendimentos</CardTitle>
               <p className="text-sm text-muted-foreground">
-                {todayAppointments.length} compromisso
-                {todayAppointments.length === 1 ? "" : "s"} agendado
+                Comparativo dos últimos 7 dias por status
               </p>
             </div>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/relatorios/atendimentos/profissionais">Ver relatórios</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {isLoadingAppointments ? (
+              <Skeleton className="h-[280px] w-full" />
+            ) : hasAppointmentTrendData ? (
+              <ChartContainer config={APPOINTMENT_TREND_CHART_CONFIG} className="h-[280px] w-full">
+                <AreaChart data={appointmentTrendData} margin={{ left: 12, right: 12 }}>
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tickMargin={12} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value, name) => [
+                          `${value as number} atend.`,
+                          APPOINTMENT_TREND_CHART_CONFIG[name as keyof typeof APPOINTMENT_TREND_CHART_CONFIG]?.label ??
+                            name,
+                        ]}
+                      />
+                    }
+                  />
+                  <ChartLegend content={<ChartLegendContent className="pt-4" />} />
+                  <Area
+                    type="monotone"
+                    dataKey="confirmed"
+                    stroke="var(--color-confirmed)"
+                    fill="var(--color-confirmed)"
+                    fillOpacity={0.25}
+                    strokeWidth={3}
+                    dot={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="scheduled"
+                    stroke="var(--color-scheduled)"
+                    fill="var(--color-scheduled)"
+                    fillOpacity={0.12}
+                    strokeDasharray="6 4"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="canceled"
+                    stroke="var(--color-canceled)"
+                    fill="var(--color-canceled)"
+                    fillOpacity={0.15}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground">
+                Ainda não há dados suficientes para exibir o gráfico.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                Agenda de hoje
+                <Badge variant="secondary" className="text-xs font-medium">
+                  {todayAppointments.length} compromisso
+                  {todayAppointments.length === 1 ? "" : "s"}
+                </Badge>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Inclui todos os profissionais conectados
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/agendamentos">
+                <Bell className="mr-2 h-4 w-4" />
+                Ver agenda completa
+              </Link>
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoadingTodayAppointments ? (
@@ -316,28 +580,15 @@ export const DashboardHome = () => {
                         {appointment.phone}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right space-y-1">
                       <p className="text-sm font-semibold">
                         {formatTime(appointment.date)}
                       </p>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${appointment.status === Status.CONFIRMED
-                          ? "bg-emerald-100 text-emerald-800"
-                          : appointment.status === Status.CANCELED
-                            ? "bg-rose-100 text-rose-800"
-                            : appointment.status === Status.RESCHEDULED
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-sky-100 text-sky-800"
-                          }`}
+                      <Badge
+                        className={`text-xs ${STATUS_STYLE[appointment.status]?.badgeClass ?? "bg-muted text-foreground"}`}
                       >
-                        {appointment.status === Status.CONFIRMED
-                          ? "Confirmado"
-                          : appointment.status === Status.CANCELED
-                            ? "Cancelado"
-                            : appointment.status === Status.RESCHEDULED
-                              ? "Reagendado"
-                              : "Aguardando"}
-                      </span>
+                        {STATUS_STYLE[appointment.status]?.label ?? "Status"}
+                      </Badge>
                     </div>
                   </div>
                 ))}
@@ -347,11 +598,18 @@ export const DashboardHome = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Próximos agendamentos</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Visão rápida dos próximos dias
-            </p>
+          <CardHeader className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <CardTitle>Próximos agendamentos</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Visão rápida dos próximos dias
+              </p>
+            </div>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/agendamentos" className="text-primary">
+                Ver calendário
+              </Link>
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoadingAppointments ? (
@@ -370,13 +628,18 @@ export const DashboardHome = () => {
                   <div key={appointment.id} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{appointment.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(appointment.date).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                        })}{" "}
-                        às {formatTime(appointment.date)}
-                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>
+                          {new Date(appointment.date).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "short",
+                          })}{" "}
+                          às {formatTime(appointment.date)}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] uppercase">
+                          {STATUS_STYLE[appointment.status]?.label ?? "Status"}
+                        </Badge>
+                      </div>
                     </div>
                     <span className="text-sm font-semibold">
                       {formatDate(new Date(appointment.date))}
@@ -391,11 +654,16 @@ export const DashboardHome = () => {
 
       <section className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Alertas de retorno</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Pacientes sem retorno há mais de {INACTIVE_THRESHOLD_DAYS} dias
-            </p>
+          <CardHeader className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <CardTitle>Alertas de retorno</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Pacientes sem retorno há mais de {INACTIVE_THRESHOLD_DAYS} dias
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/pacientes">Ver pacientes</Link>
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoadingAppointments ? (
@@ -418,10 +686,13 @@ export const DashboardHome = () => {
                     <div>
                       <p className="font-medium">{patient.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {patient.days} dias sem retorno
+                        Último contato há {patient.days} dia
+                        {patient.days === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <Badge className="bg-amber-100 text-amber-800 text-[11px]">
+                      {patient.days} dias
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -430,11 +701,16 @@ export const DashboardHome = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Aniversários próximos</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Pacientes com aniversário nos próximos {BIRTHDAY_WINDOW_DAYS} dias
-            </p>
+          <CardHeader className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <CardTitle>Aniversários próximos</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Pacientes com aniversário nos próximos {BIRTHDAY_WINDOW_DAYS} dias
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/pacientes">Enviar felicitação</Link>
+            </Button>
           </CardHeader>
           <CardContent>
             {isLoadingPatients ? (
@@ -456,13 +732,15 @@ export const DashboardHome = () => {
                   >
                     <div>
                       <p className="font-medium">{patient.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(patient.nextBirthday)} · em{" "}
-                        {patient.diffDays} dia
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        {formatDate(patient.nextBirthday)} · em {patient.diffDays} dia
                         {patient.diffDays === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <Gift className="h-4 w-4 text-pink-500" />
+                    <Badge className="bg-pink-100 text-pink-700 text-[11px]">
+                      <Gift className="mr-1 h-3 w-3" />
+                      {patient.diffDays}d
+                    </Badge>
                   </div>
                 ))}
               </div>
