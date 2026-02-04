@@ -88,5 +88,5 @@ export const CardElement = ({ className, options, onChange }: CardElementProps) 
     }
   }, [elements, optionsKey, onChange])
 
-  return <div ref={containerRef} className={cn("min-h-[48px]", className)} />
+  return <div ref={containerRef} className={cn("min-h-12", className)} />
 }
