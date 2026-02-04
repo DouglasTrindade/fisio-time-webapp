@@ -6,6 +6,7 @@ import { Calendar, Clock, Text, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditEventDialog } from "@/calendar/components/dialogs/edit-event-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -32,7 +33,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <User className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Responsible</p>
+                <p className="text-sm font-medium">Responsável</p>
                 <p className="text-sm text-muted-foreground">{event.user.name}</p>
               </div>
             </div>
@@ -40,23 +41,23 @@ export function EventDetailsDialog({ event, children }: IProps) {
             <div className="flex items-start gap-2">
               <Calendar className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Start Date</p>
-                <p className="text-sm text-muted-foreground">{format(startDate, "MMM d, yyyy h:mm a")}</p>
+                <p className="text-sm font-medium">Início</p>
+                <p className="text-sm text-muted-foreground">{format(startDate, "d 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: appDateLocale })}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2">
               <Clock className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">End Date</p>
-                <p className="text-sm text-muted-foreground">{format(endDate, "MMM d, yyyy h:mm a")}</p>
+                <p className="text-sm font-medium">Término</p>
+                <p className="text-sm text-muted-foreground">{format(endDate, "d 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: appDateLocale })}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2">
               <Text className="mt-1 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Description</p>
+                <p className="text-sm font-medium">Descrição</p>
                 <p className="text-sm text-muted-foreground">{event.description}</p>
               </div>
             </div>
@@ -65,7 +66,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
           <DialogFooter>
             <EditEventDialog event={event}>
               <Button type="button" variant="outline">
-                Edit
+                Editar
               </Button>
             </EditEventDialog>
           </DialogFooter>

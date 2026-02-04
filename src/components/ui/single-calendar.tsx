@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { DayPickerSingleProps } from "react-day-picker";
 
@@ -19,6 +20,7 @@ function SingleCalendar({ className, classNames, showOutsideDays = true, selecte
       showOutsideDays={showOutsideDays}
       month={currentMonth}
       onMonthChange={setCurrentMonth}
+      locale={appDateLocale}
       className={cn("p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",

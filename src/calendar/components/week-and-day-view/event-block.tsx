@@ -7,6 +7,7 @@ import { DraggableEvent } from "@/calendar/components/dnd/draggable-event";
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
 
 import { cn } from "@/lib/utils";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { HTMLAttributes } from "react";
 import type { IEvent } from "@/calendar/interfaces";
@@ -81,7 +82,7 @@ export function EventBlock({ event, className }: IProps) {
 
           {durationInMinutes > 25 && (
             <p>
-              {format(start, "h:mm a")} - {format(end, "h:mm a")}
+              {format(start, "HH:mm", { locale: appDateLocale })} - {format(end, "HH:mm", { locale: appDateLocale })}
             </p>
           )}
         </div>

@@ -9,7 +9,7 @@ export function ChangeBadgeVariantInput() {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-semibold">Change badge variant</p>
+      <p className="text-sm font-semibold">Alterar estilo dos eventos</p>
 
       <Select value={badgeVariant} onValueChange={setBadgeVariant}>
         <SelectTrigger className="w-48">
@@ -17,9 +17,9 @@ export function ChangeBadgeVariantInput() {
         </SelectTrigger>
 
         <SelectContent>
-          <SelectItem value="dot">Dot</SelectItem>
-          <SelectItem value="colored">Colored</SelectItem>
-          <SelectItem value="mixed">Mixed</SelectItem>
+          <SelectItem value="dot">Ponto</SelectItem>
+          <SelectItem value="colored">Colorido</SelectItem>
+          <SelectItem value="mixed">Misto</SelectItem>
         </SelectContent>
       </Select>
     </div>

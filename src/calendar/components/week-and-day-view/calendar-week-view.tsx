@@ -12,6 +12,7 @@ import { WeekViewMultiDayEventsRow } from "@/calendar/components/week-and-day-vi
 
 import { cn } from "@/lib/utils";
 import { groupEvents, getEventBlockStyle, isWorkingHour, getVisibleHours } from "@/calendar/helpers";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -31,8 +32,8 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
   return (
     <>
       <div className="flex flex-col items-center justify-center border-b py-4 text-sm text-muted-foreground sm:hidden">
-        <p>Weekly view is not available on smaller devices.</p>
-        <p>Please switch to daily or monthly view.</p>
+        <p>A visão semanal não está disponível em telas menores.</p>
+        <p>Altere para a visão diária ou mensal.</p>
       </div>
 
       <div className="hidden flex-col sm:flex">
@@ -45,7 +46,11 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
             <div className="grid flex-1 grid-cols-7 divide-x border-l">
               {weekDays.map((day, index) => (
                 <span key={index} className="py-2 text-center text-xs font-medium text-muted-foreground">
-                  {format(day, "EE")} <span className="ml-1 font-semibold text-foreground">{format(day, "d")}</span>
+                  {(() => {
+                    const label = format(day, "EEE", { locale: appDateLocale });
+                    return label.charAt(0).toUpperCase() + label.slice(1);
+                  })()}{" "}
+                  <span className="ml-1 font-semibold text-foreground">{format(day, "d", { locale: appDateLocale })}</span>
                 </span>
               ))}
             </div>
@@ -59,7 +64,7 @@ export function CalendarWeekView({ singleDayEvents, multiDayEvents }: IProps) {
               {hours.map((hour, index) => (
                 <div key={hour} className="relative" style={{ height: "96px" }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
-                    {index !== 0 && <span className="text-xs text-muted-foreground">{format(new Date().setHours(hour, 0, 0, 0), "hh a")}</span>}
+                    {index !== 0 && <span className="text-xs text-muted-foreground">{format(new Date().setHours(hour, 0, 0, 0), "HH:mm", { locale: appDateLocale })}</span>}
                   </div>
                 </div>
               ))}

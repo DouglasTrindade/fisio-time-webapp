@@ -70,7 +70,7 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
         {cellEvents.length > MAX_VISIBLE_EVENTS && (
           <p className={cn("h-4.5 px-1.5 text-xs font-semibold text-muted-foreground", !currentMonth && "opacity-50")}>
             <span className="sm:hidden">+{cellEvents.length - MAX_VISIBLE_EVENTS}</span>
-            <span className="hidden sm:inline"> {cellEvents.length - MAX_VISIBLE_EVENTS} more...</span>
+            <span className="hidden sm:inline"> {cellEvents.length - MAX_VISIBLE_EVENTS} mais...</span>
           </p>
         )}
       </div>

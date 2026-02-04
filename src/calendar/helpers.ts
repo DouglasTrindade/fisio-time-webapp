@@ -28,11 +28,12 @@ import {
 
 import type { ICalendarCell, IEvent } from "@/calendar/interfaces";
 import type { TCalendarView, TVisibleHours, TWorkingHours } from "@/calendar/types";
+import { appDateLocale } from "@/lib/date-locale";
 
 // ================ Header helper functions ================ //
 
 export function rangeText(view: TCalendarView, date: Date) {
-  const formatString = "MMM d, yyyy";
+  const formatString = "d 'de' MMMM 'de' yyyy";
   let start: Date;
   let end: Date;
 
@@ -54,12 +55,12 @@ export function rangeText(view: TCalendarView, date: Date) {
       end = endOfWeek(date);
       break;
     case "day":
-      return format(date, formatString);
+      return format(date, formatString, { locale: appDateLocale });
     default:
-      return "Error while formatting ";
+      return "Erro ao formatar intervalo";
   }
 
-  return `${format(start, formatString)} - ${format(end, formatString)}`;
+  return `${format(start, formatString, { locale: appDateLocale })} - ${format(end, formatString, { locale: appDateLocale })}`;
 }
 
 export function navigateDate(date: Date, view: TCalendarView, direction: "previous" | "next"): Date {

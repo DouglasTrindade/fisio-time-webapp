@@ -7,6 +7,7 @@ import { Clock, Text, User } from "lucide-react";
 import { useCalendar } from "@/calendar/contexts/calendar-context";
 
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
@@ -78,7 +79,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
             <p className="font-medium">
               {eventCurrentDay && eventTotalDays && (
                 <span className="mr-1 text-xs">
-                  Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                  Dia {eventCurrentDay} de {eventTotalDays} •{" "}
                 </span>
               )}
               {event.title}
@@ -93,7 +94,7 @@ export function AgendaEventCard({ event, eventCurrentDay, eventTotalDays }: IPro
           <div className="flex items-center gap-1">
             <Clock className="size-3 shrink-0" />
             <p className="text-xs text-foreground">
-              {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
+              {format(startDate, "HH:mm", { locale: appDateLocale })} - {format(endDate, "HH:mm", { locale: appDateLocale })}
             </p>
           </div>
 

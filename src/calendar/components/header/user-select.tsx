@@ -24,7 +24,7 @@ export function UserSelect() {
                 </Avatar>
               ))}
             </AvatarGroup>
-            All
+            Todos
           </div>
         </SelectItem>
 

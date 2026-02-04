@@ -1,6 +1,7 @@
 import { differenceInDays, format, parseISO, startOfDay } from "date-fns";
 
 import { AgendaEventCard } from "@/calendar/components/agenda-view/agenda-event-card";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 
@@ -16,7 +17,12 @@ export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
   return (
     <div className="space-y-4">
       <div className="sticky top-0 flex items-center gap-4 bg-background py-2">
-        <p className="text-sm font-semibold">{format(date, "EEEE, MMMM d, yyyy")}</p>
+        <p className="text-sm font-semibold">
+          {(() => {
+            const label = format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: appDateLocale });
+            return label.charAt(0).toUpperCase() + label.slice(1);
+          })()}
+        </p>
       </div>
 
       <div className="space-y-2">

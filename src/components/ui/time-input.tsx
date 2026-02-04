@@ -56,7 +56,7 @@ const TimeInput = forwardRef<HTMLDivElement, TimeInputProps>(function TimeInput(
         value={selectedHour}
         onChange={handleHourChange}
         disabled={disabled}
-        aria-label="Hour"
+        aria-label="Hora"
       >
         {HOURS.map((hour) => (
           <option key={hour} value={hour}>
@@ -72,7 +72,7 @@ const TimeInput = forwardRef<HTMLDivElement, TimeInputProps>(function TimeInput(
         value={selectedMinute}
         onChange={handleMinuteChange}
         disabled={disabled}
-        aria-label="Minute"
+        aria-label="Minuto"
       >
         {minuteOptions.map((minute) => (
           <option key={minute} value={minute}>

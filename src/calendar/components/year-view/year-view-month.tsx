@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { format, isSameDay, parseISO, getDaysInMonth, startOfMonth } from "date-fns";
 
 import { useCalendar } from "@/calendar/contexts/calendar-context";
+import { appDateLocale } from "@/lib/date-locale";
 
 import { YearViewDayCell } from "@/calendar/components/year-view/year-view-day-cell";
 
@@ -17,7 +18,7 @@ export function YearViewMonth({ month, events }: IProps) {
   const { push } = useRouter();
   const { setSelectedDate } = useCalendar();
 
-  const monthName = format(month, "MMMM");
+  const monthName = format(month, "MMMM", { locale: appDateLocale });
 
   const daysInMonth = useMemo(() => {
     const totalDays = getDaysInMonth(month);
@@ -29,7 +30,7 @@ export function YearViewMonth({ month, events }: IProps) {
     return [...blanks, ...days];
   }, [month]);
 
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
   const handleClick = () => {
     setSelectedDate(new Date(month.getFullYear(), month.getMonth(), 1));

@@ -7,6 +7,7 @@ import { DraggableEvent } from "@/calendar/components/dnd/draggable-event";
 import { EventDetailsDialog } from "@/calendar/components/dialogs/event-details-dialog";
 
 import { cn } from "@/lib/utils";
+import { appDateLocale } from "@/lib/date-locale";
 
 import type { IEvent } from "@/calendar/interfaces";
 import type { VariantProps } from "class-variance-authority";
@@ -108,7 +109,7 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
               <p className="flex-1 truncate font-semibold">
                 {eventCurrentDay && (
                   <span className="text-xs">
-                    Day {eventCurrentDay} of {eventTotalDays} •{" "}
+                    Dia {eventCurrentDay} de {eventTotalDays} •{" "}
                   </span>
                 )}
                 {event.title}
@@ -116,7 +117,7 @@ export function MonthEventBadge({ event, cellDate, eventCurrentDay, eventTotalDa
             )}
           </div>
 
-          {renderBadgeText && <span>{format(new Date(event.startDate), "h:mm a")}</span>}
+          {renderBadgeText && <span>{format(new Date(event.startDate), "HH:mm", { locale: appDateLocale })}</span>}
         </div>
       </EventDetailsDialog>
     </DraggableEvent>

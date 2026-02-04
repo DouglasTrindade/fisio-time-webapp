@@ -12,13 +12,13 @@ import { Tooltip, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const DAYS_OF_WEEK = [
-  { index: 0, name: "Sunday" },
-  { index: 1, name: "Monday" },
-  { index: 2, name: "Tuesday" },
-  { index: 3, name: "Wednesday" },
-  { index: 4, name: "Thursday" },
-  { index: 5, name: "Friday" },
-  { index: 6, name: "Saturday" },
+  { index: 0, name: "Domingo", slug: "sunday" },
+  { index: 1, name: "Segunda-feira", slug: "monday" },
+  { index: 2, name: "Terça-feira", slug: "tuesday" },
+  { index: 3, name: "Quarta-feira", slug: "wednesday" },
+  { index: 4, name: "Quinta-feira", slug: "thursday" },
+  { index: 5, name: "Sexta-feira", slug: "friday" },
+  { index: 6, name: "Sábado", slug: "saturday" },
 ];
 
 export function ChangeWorkingHoursInput() {
@@ -65,7 +65,7 @@ export function ChangeWorkingHoursInput() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <p className="text-sm font-semibold">Change working hours</p>
+        <p className="text-sm font-semibold">Definir horas de funcionamento</p>
 
         <TooltipProvider delayDuration={100}>
           <Tooltip>
@@ -74,7 +74,7 @@ export function ChangeWorkingHoursInput() {
             </TooltipTrigger>
 
             <TooltipContent className="max-w-80 text-center">
-              <p>This will apply a dashed background to the hour cells that fall outside the working hours — only for week and day views.</p>
+              <p>Mostra um fundo tracejado para horários fora do expediente — válido apenas nas visões semanal e diária.</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -94,18 +94,18 @@ export function ChangeWorkingHoursInput() {
               {isDayActive ? (
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span>From</span>
+                    <span>De</span>
                     <TimeInput
-                      id={`${day.name.toLowerCase()}-from`}
+                      id={`${day.slug}-from`}
                       value={{ hour: localWorkingHours[day.index].from, minute: 0 }}
                       onChange={value => handleTimeChange(day.index, "from", value)}
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span>To</span>
+                    <span>Até</span>
                     <TimeInput
-                      id={`${day.name.toLowerCase()}-to`}
+                      id={`${day.slug}-to`}
                       value={{ hour: localWorkingHours[day.index].to, minute: 0 }}
                       onChange={value => handleTimeChange(day.index, "to", value)}
                     />
@@ -114,7 +114,7 @@ export function ChangeWorkingHoursInput() {
               ) : (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Moon className="size-4" />
-                  <span>Closed</span>
+                  <span>Fechado</span>
                 </div>
               )}
             </div>
@@ -123,7 +123,7 @@ export function ChangeWorkingHoursInput() {
       </div>
 
       <Button className="mt-4 w-fit" onClick={handleSave}>
-        Apply
+        Salvar
       </Button>
     </div>
   );

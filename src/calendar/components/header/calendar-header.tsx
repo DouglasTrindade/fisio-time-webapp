@@ -27,7 +27,7 @@ export function CalendarHeader({ view, events }: IProps) {
       <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">
         <div className="flex w-full items-center gap-1.5">
           <div className="inline-flex first:rounded-r-none last:rounded-l-none [&:not(:first-child):not(:last-child)]:rounded-none">
-            <Button asChild aria-label="View by day" size="icon" variant={view === "day" ? "default" : "outline"} className="rounded-r-none [&_svg]:size-5">
+            <Button asChild aria-label="Ver por dia" size="icon" variant={view === "day" ? "default" : "outline"} className="rounded-r-none [&_svg]:size-5">
               <Link href="?view=day" scroll={false}>
                 <List strokeWidth={1.8} />
               </Link>
@@ -35,7 +35,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
             <Button
               asChild
-              aria-label="View by week"
+              aria-label="Ver por semana"
               size="icon"
               variant={view === "week" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
@@ -47,7 +47,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
             <Button
               asChild
-              aria-label="View by month"
+              aria-label="Ver por mês"
               size="icon"
               variant={view === "month" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
@@ -59,7 +59,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
             <Button
               asChild
-              aria-label="View by year"
+              aria-label="Ver por ano"
               size="icon"
               variant={view === "year" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
@@ -71,7 +71,7 @@ export function CalendarHeader({ view, events }: IProps) {
 
             <Button
               asChild
-              aria-label="View by agenda"
+              aria-label="Ver por agenda"
               size="icon"
               variant={view === "agenda" ? "default" : "outline"}
               className="-ml-px rounded-l-none [&_svg]:size-5"
@@ -88,7 +88,7 @@ export function CalendarHeader({ view, events }: IProps) {
         <AddEventDialog>
           <Button className="w-full sm:w-auto">
             <Plus />
-            Add Event
+            Adicionar evento
           </Button>
         </AddEventDialog>
       </div>
