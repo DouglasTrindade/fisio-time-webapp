@@ -1,13 +1,13 @@
 import { Status } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { CalendarProvider } from "@/calendar/contexts/calendar-context";
-import { ClientContainer } from "@/calendar/components/client-container";
-import { ChangeBadgeVariantInput } from "@/calendar/components/change-badge-variant-input";
-import { ChangeVisibleHoursInput } from "@/calendar/components/change-visible-hours-input";
-import { ChangeWorkingHoursInput } from "@/calendar/components/change-working-hours-input";
-import type { IEvent, IUser } from "@/calendar/interfaces";
-import type { TCalendarView, TEventColor } from "@/calendar/types";
+import { CalendarProvider } from "@/components/calendar/contexts/calendar-context";
+import { ClientContainer } from "@/components/calendar/components/client-container";
+import { ChangeBadgeVariantInput } from "@/components/calendar/components/change-badge-variant-input";
+import { ChangeVisibleHoursInput } from "@/components/calendar/components/change-visible-hours-input";
+import { ChangeWorkingHoursInput } from "@/components/calendar/components/change-working-hours-input";
+import type { IEvent, IUser } from "@/components/calendar/interfaces";
+import type { TCalendarView, TEventColor } from "@/components/calendar/types";
 
 const EVENT_COLOR_BY_STATUS: Record<Status, TEventColor> = {
   CONFIRMED: "green",
