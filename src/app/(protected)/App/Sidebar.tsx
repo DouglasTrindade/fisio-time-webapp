@@ -18,11 +18,11 @@ import { menuItems } from "./sidebar.config";
 import type { SidebarMenuItemConfig } from "./sidebar.config";
 import type { AppRole } from "@/types/user";
 import { UpgradeCard } from "@/components/ui/upgrade-card";
-
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const session = await auth();
+
   const user = session?.user?.id
     ? await prisma.user.findUnique({
       where: { id: session.user.id },

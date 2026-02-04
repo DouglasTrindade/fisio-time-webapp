@@ -1,6 +1,7 @@
 "use client";
 
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Button } from "./button";
 import { Loader2, Upload } from "lucide-react";
@@ -25,6 +26,8 @@ export const ImageInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRefreshing, startTransition] = useTransition();
+  const router = useRouter();
   const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -74,6 +77,9 @@ export const ImageInput = ({
       setPreview(result.data.url);
       onChange(result.data.url);
       toast.success("Avatar atualizado com sucesso!");
+      startTransition(() => {
+        router.refresh();
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao enviar avatar";
@@ -109,13 +115,13 @@ export const ImageInput = ({
           <Button
             type="button"
             variant="outline"
-            disabled={isUploading}
+            disabled={isUploading || isRefreshing}
             onClick={handleSelectClick}
           >
-            {isUploading ? (
+            {isUploading || isRefreshing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enviando...
+                {isUploading ? "Enviando..." : "Atualizando..."}
               </>
             ) : (
               <>
