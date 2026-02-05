@@ -23,6 +23,7 @@ import { Fields } from "./Fields";
 import { Button } from "@/components/ui/button";
 import type { Appointment, ApiResponse } from "@/types/appointment";
 import { handleApiError } from "@/services/handleApiError";
+import { useRecord } from "@/hooks/useRecord";
 
 interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDate?: string; appointment?: Appointment | null }
 
@@ -38,7 +39,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             phone: "",
             date: initialDate || "",
             status: Status.WAITING,
-            patientId: null,
+            patientId: "",
             notes: null,
             professionalId: session?.user?.id ?? "",
         },
@@ -55,19 +56,38 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
     useEffect(() => { if (session?.user?.id) form.setValue("professionalId", session.user.id); }, [session, form]);
     useEffect(() => { if (initialDate && !appointment) form.setValue("date", initialDate); }, [initialDate, form, appointment]);
 
+    const { data: appointmentDetails, isLoading: isLoadingAppointment } = useRecord<Appointment>(
+        "/appointments",
+        appointment?.id,
+        {
+            enabled: !!appointment?.id,
+        },
+    );
+
     useEffect(() => {
-        if (appointment) {
+        const source = appointmentDetails ?? appointment;
+        if (source) {
             form.reset({
-                name: appointment.name || "",
-                phone: appointment.phone || "",
-                date: appointment.date,
-                status: appointment.status,
-                patientId: appointment.patientId ?? null,
-                notes: appointment.notes ?? null,
-                professionalId: appointment.professionalId,
+                name: source.name || "",
+                phone: source.phone || "",
+                date: source.date,
+                status: source.status,
+                patientId: source.patientId ?? "",
+                notes: source.notes ?? null,
+                professionalId: source.professionalId,
+            });
+        } else {
+            form.reset({
+                name: "",
+                phone: "",
+                date: initialDate || "",
+                status: Status.WAITING,
+                patientId: "",
+                notes: null,
+                professionalId: professionalId ?? "",
             });
         }
-    }, [appointment, form]);
+    }, [appointmentDetails, appointment, form, initialDate, professionalId]);
 
     const handleClose = useCallback(() => {
         form.reset({
@@ -75,7 +95,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             phone: "",
             date: initialDate || "",
             status: Status.WAITING,
-            patientId: null,
+            patientId: "",
             notes: null,
             professionalId: professionalId,
         });
@@ -86,7 +106,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
         const basePayload: AppointmentPayload = {
             ...values,
             notes: values.notes || null,
-            patientId: values.patientId || null,
+            patientId: values.patientId,
             professionalId: values.professionalId,
             status: values.status.toLowerCase(),
         };
@@ -103,7 +123,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 phone: "",
                 date: initialDate || "",
                 status: Status.WAITING,
-                patientId: null,
+                patientId: "",
                 notes: null,
                 professionalId: values.professionalId,
             });
@@ -141,8 +161,8 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
                         <Fields form={form} />
                         <DialogFooter className="flex gap-2 pt-2">
-                            <Button type="button" variant="outline" onClick={handleClose} disabled={isCreating || isUpdating}>Cancelar</Button>
-                            <Button type="submit" className="flex-1" disabled={isCreating || isUpdating}>
+                            <Button type="button" variant="outline" onClick={handleClose} disabled={isCreating || isUpdating || isLoadingAppointment}>Cancelar</Button>
+                            <Button type="submit" disabled={isCreating || isUpdating || isLoadingAppointment}>
                                 {(isCreating || isUpdating) ? "Salvando..." : "Salvar"}
                             </Button>
                         </DialogFooter>
