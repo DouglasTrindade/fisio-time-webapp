@@ -162,7 +162,9 @@ export function CalendarDayView({ singleDayAppointments, multiDayAppointments }:
           <SingleCalendar
             mode="single"
             selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
+            onSelect={(date?: Date) => {
+              if (date) setSelectedDate(date);
+            }}
           />
         </div>
 
