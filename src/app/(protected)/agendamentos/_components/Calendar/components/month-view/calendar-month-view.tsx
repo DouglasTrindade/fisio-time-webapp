@@ -4,27 +4,27 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 
 import { DayCell } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/day-cell";
 
-import { getCalendarCells, calculateMonthEventPositions } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
+import { getCalendarCells, calculateMonthAppointmentPositions } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayAppointments: IAppointment[];
+  multiDayAppointments: IAppointment[];
 }
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
+export function CalendarMonthView({ singleDayAppointments, multiDayAppointments }: IProps) {
   const { selectedDate } = useCalendar();
 
-  const allEvents = [...multiDayEvents, ...singleDayEvents];
+  const allAppointments = [...multiDayAppointments, ...singleDayAppointments];
 
   const cells = useMemo(() => getCalendarCells(selectedDate), [selectedDate]);
 
-  const eventPositions = useMemo(
-    () => calculateMonthEventPositions(multiDayEvents, singleDayEvents, selectedDate),
-    [multiDayEvents, singleDayEvents, selectedDate]
+  const appointmentPositions = useMemo(
+    () => calculateMonthAppointmentPositions(multiDayAppointments, singleDayAppointments, selectedDate),
+    [multiDayAppointments, singleDayAppointments, selectedDate]
   );
 
   return (
@@ -39,7 +39,7 @@ export function CalendarMonthView({ singleDayEvents, multiDayEvents }: IProps) {
 
       <div className="grid grid-cols-7 overflow-hidden">
         {cells.map(cell => (
-          <DayCell key={cell.date.toISOString()} cell={cell} events={allEvents} eventPositions={eventPositions} />
+          <DayCell key={cell.date.toISOString()} cell={cell} appointments={allAppointments} appointmentPositions={appointmentPositions} />
         ))}
       </div>
     </div>

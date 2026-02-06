@@ -5,13 +5,13 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 
 import { YearViewMonth } from "@/app/(protected)/agendamentos/_components/Calendar/components/year-view/year-view-month";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
-  allEvents: IEvent[];
+  allAppointments: IAppointment[];
 }
 
-export function CalendarYearView({ allEvents }: IProps) {
+export function CalendarYearView({ allAppointments }: IProps) {
   const { selectedDate } = useCalendar();
 
   const months = useMemo(() => {
@@ -23,7 +23,7 @@ export function CalendarYearView({ allEvents }: IProps) {
     <div className="p-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {months.map(month => (
-          <YearViewMonth key={month.toString()} month={month} events={allEvents} />
+          <YearViewMonth key={month.toString()} month={month} appointments={allAppointments} />
         ))}
       </div>
     </div>

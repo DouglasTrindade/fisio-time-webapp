@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const eventSchema = z
+export const appointmentSchema = z
   .object({
     user: z.string(),
     title: z.string().min(1, "Title is required"),
@@ -27,4 +27,4 @@ export const eventSchema = z
     }
   );
 
-export type TEventFormData = z.infer<typeof eventSchema>;
+export type TAppointmentFormData = z.infer<typeof appointmentSchema>;

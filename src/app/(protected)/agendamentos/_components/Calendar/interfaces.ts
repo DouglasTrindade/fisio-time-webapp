@@ -1,4 +1,4 @@
-import type { TEventColor } from "@/app/(protected)/agendamentos/_components/Calendar/types";
+import type { TAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
 export interface IUser {
   id: string;
@@ -6,12 +6,12 @@ export interface IUser {
   picturePath: string | null;
 }
 
-export interface IEvent {
+export interface IAppointment {
   id: string;
   startDate: string;
   endDate: string;
   title: string;
-  color: TEventColor;
+  color: TAppointment;
   description: string;
   user: IUser;
 }

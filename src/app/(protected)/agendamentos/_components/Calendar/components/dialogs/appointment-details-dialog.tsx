@@ -2,28 +2,51 @@
 
 import { format, parseISO } from "date-fns";
 import { Calendar, Clock, Text, User } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { appDateLocale } from "@/lib/date-locale";
 import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar/contexts/calendar-context";
+import { useRecord } from "@/hooks/useRecord";
+import type { Appointment } from "@/types/appointment";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
-  event: IEvent;
+  appointment: IAppointment;
   children: React.ReactNode;
 }
 
-export function EventDetailsDialog({ event, children }: IProps) {
-  const startDate = parseISO(event.startDate);
-  const endDate = parseISO(event.endDate);
-  const { editEvent } = useCalendar();
+export function AppointmentDetailsDialog({ appointment, children }: IProps) {
+  const { editAppointment } = useCalendar();
   const [open, setOpen] = useState(false);
 
+  const appointmentId = open ? appointment.id : undefined;
+  const { data: appointmentDetails } = useRecord<Appointment>("/appointments", appointmentId, {
+    enabled: open,
+    staleTime: 30_000,
+  });
+
+  const startDate = useMemo(
+    () => parseISO(appointmentDetails?.date ?? appointment.startDate),
+    [appointmentDetails?.date, appointment.startDate],
+  );
+  const endDate = useMemo(
+    () => {
+      const source = appointmentDetails?.date
+        ? appointmentDetails.date
+        : appointment.endDate;
+      return parseISO(source);
+    },
+    [appointmentDetails?.date, appointment.endDate],
+  );
+
+  const professionalName = appointmentDetails?.professional?.name ?? appointment.user.name;
+  const description = appointmentDetails?.notes ?? appointment.description;
+
   const handleEdit = () => {
-    editEvent(event);
+    editAppointment(appointment);
     setOpen(false);
   };
 
@@ -34,7 +57,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{event.title}</DialogTitle>
+            <DialogTitle>{appointment.title}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -42,7 +65,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <User className="mt-1 size-4 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Responsável</p>
-                <p className="text-sm text-muted-foreground">{event.user.name}</p>
+                <p className="text-sm text-muted-foreground">{professionalName || "Não informado"}</p>
               </div>
             </div>
 
@@ -66,7 +89,7 @@ export function EventDetailsDialog({ event, children }: IProps) {
               <Text className="mt-1 size-4 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Descrição</p>
-                <p className="text-sm text-muted-foreground">{event.description}</p>
+                <p className="text-sm text-muted-foreground">{description || "Sem observações."}</p>
               </div>
             </div>
           </div>

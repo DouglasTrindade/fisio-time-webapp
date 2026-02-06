@@ -9,9 +9,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { appDateLocale } from "@/lib/date-locale";
 
-import type { DayPickerSingleProps } from "react-day-picker";
+import type { DayPickerProps } from "react-day-picker";
 
-function SingleCalendar({ className, classNames, showOutsideDays = true, selected, ...props }: DayPickerSingleProps) {
+type SingleCalendarProps = DayPickerProps & { mode?: "single" };
+
+function SingleCalendar({ className, classNames, showOutsideDays = true, selected, ...props }: SingleCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState<Date | undefined>(selected instanceof Date ? selected : undefined);
 
   return (

@@ -17,9 +17,9 @@ import {
 import type { Control } from "react-hook-form";
 import type { FieldPath } from "react-hook-form";
 import type { ControllerRenderProps } from "react-hook-form";
-import type { TEventColor } from "@/app/(protected)/agendamentos/_components/Calendar/types";
+import type { TAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
-const COLOR_OPTIONS: { value: TEventColor; label: string; className: string }[] =
+const COLOR_OPTIONS: { value: TAppointment; label: string; className: string }[] =
   [
     { value: "blue", label: "Azul", className: "bg-blue-600" },
     { value: "green", label: "Verde", className: "bg-green-600" },
@@ -30,7 +30,7 @@ const COLOR_OPTIONS: { value: TEventColor; label: string; className: string }[] 
     { value: "gray", label: "Cinza", className: "bg-neutral-600" },
   ];
 
-type EventColorSelectProps<
+type AppointmentColorSelectProps<
   TFieldValues extends Record<string, unknown>,
   TName extends FieldPath<TFieldValues>,
 > = {
@@ -39,10 +39,10 @@ type EventColorSelectProps<
   showMessage?: boolean;
 };
 
-export function EventColorSelect<
+export function AppointmentColorSelect<
   TFieldValues extends Record<string, unknown>,
   TName extends FieldPath<TFieldValues>,
->({ field, label = "Cor", showMessage = true }: EventColorSelectProps<TFieldValues, TName>) {
+>({ field, label = "Cor", showMessage = true }: AppointmentColorSelectProps<TFieldValues, TName>) {
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
@@ -68,4 +68,4 @@ export function EventColorSelect<
   );
 }
 
-export { COLOR_OPTIONS as EVENT_COLOR_OPTIONS };
+export { COLOR_OPTIONS as APPOINTMENT_COLOR_OPTIONS };

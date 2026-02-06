@@ -4,30 +4,30 @@ import { isToday, startOfDay } from "date-fns";
 
 import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar/contexts/calendar-context";
 
-import { EventBullet } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/event-bullet";
+import { AppointmentBullet } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/appointment-bullet";
 import { DroppableDayCell } from "@/app/(protected)/agendamentos/_components/Calendar/components/dnd/droppable-day-cell";
-import { MonthEventBadge } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/month-event-badge";
+import { MonthAppointmentBadge } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/month-appointment-badge";
 
 import { cn } from "@/lib/utils";
-import { getMonthCellEvents } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
+import { getMonthCellAppointments } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
 
-import type { ICalendarCell, IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { ICalendarCell, IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
   cell: ICalendarCell;
-  events: IEvent[];
-  eventPositions: Record<string, number>;
+  appointments: IAppointment[];
+  appointmentPositions: Record<string, number>;
 }
 
-const MAX_VISIBLE_EVENTS = 3;
+const MAX_VISIBLE_APPOINTMENTS = 3;
 
-export function DayCell({ cell, events, eventPositions }: IProps) {
+export function DayCell({ cell, appointments, appointmentPositions }: IProps) {
   const { push } = useRouter();
   const { setSelectedDate } = useCalendar();
 
   const { day, currentMonth, date } = cell;
 
-  const cellEvents = useMemo(() => getMonthCellEvents(date, events, eventPositions), [date, events, eventPositions]);
+  const cellAppointments = useMemo(() => getMonthCellAppointments(date, appointments, appointmentPositions), [date, appointments, appointmentPositions]);
   const isSunday = date.getDay() === 0;
 
   const handleClick = () => {
@@ -51,15 +51,15 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
 
         <div className={cn("flex h-6 gap-1 px-2 lg:h-[94px] lg:flex-col lg:gap-2 lg:px-0", !currentMonth && "opacity-50")}>
           {[0, 1, 2].map(position => {
-            const event = cellEvents.find(e => e.position === position);
-            const eventKey = event ? `event-${event.id}-${position}` : `empty-${position}`;
+            const appointment = cellAppointments.find(e => e.position === position);
+            const appointmentKey = appointment ? `appointment-${appointment.id}-${position}` : `empty-${position}`;
 
             return (
-              <div key={eventKey} className="lg:flex-1">
-                {event && (
+              <div key={appointmentKey} className="lg:flex-1">
+                {appointment && (
                   <>
-                    <EventBullet className="lg:hidden" color={event.color} />
-                    <MonthEventBadge className="hidden lg:flex" event={event} cellDate={startOfDay(date)} />
+                    <AppointmentBullet className="lg:hidden" color={appointment.color} />
+                    <MonthAppointmentBadge className="hidden lg:flex" appointment={appointment} cellDate={startOfDay(date)} />
                   </>
                 )}
               </div>
@@ -67,10 +67,10 @@ export function DayCell({ cell, events, eventPositions }: IProps) {
           })}
         </div>
 
-        {cellEvents.length > MAX_VISIBLE_EVENTS && (
+        {cellAppointments.length > MAX_VISIBLE_APPOINTMENTS && (
           <p className={cn("h-4.5 px-1.5 text-xs font-semibold text-muted-foreground", !currentMonth && "opacity-50")}>
-            <span className="sm:hidden">+{cellEvents.length - MAX_VISIBLE_EVENTS}</span>
-            <span className="hidden sm:inline"> {cellEvents.length - MAX_VISIBLE_EVENTS} mais...</span>
+            <span className="sm:hidden">+{cellAppointments.length - MAX_VISIBLE_APPOINTMENTS}</span>
+            <span className="hidden sm:inline"> {cellAppointments.length - MAX_VISIBLE_APPOINTMENTS} mais...</span>
           </p>
         )}
       </div>

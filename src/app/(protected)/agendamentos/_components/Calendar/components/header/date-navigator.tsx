@@ -7,25 +7,25 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import { getEventsCount, navigateDate, rangeText } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
+import { getAppointmentsCount, navigateDate, rangeText } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
 import { appDateLocale } from "@/lib/date-locale";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 import type { TCalendarView } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
 interface IProps {
   view: TCalendarView;
-  events: IEvent[];
+  appointments: IAppointment[];
 }
 
-export function DateNavigator({ view, events }: IProps) {
+export function DateNavigator({ view, appointments }: IProps) {
   const { selectedDate, setSelectedDate } = useCalendar();
 
   const month = format(selectedDate, "MMMM", { locale: appDateLocale });
   const monthLabel = month.charAt(0).toUpperCase() + month.slice(1);
   const year = selectedDate.getFullYear();
 
-  const eventCount = useMemo(() => getEventsCount(events, selectedDate, view), [events, selectedDate, view]);
+  const appointmentCount = useMemo(() => getAppointmentsCount(appointments, selectedDate, view), [appointments, selectedDate, view]);
 
   const handlePrevious = () => setSelectedDate(navigateDate(selectedDate, view, "previous"));
   const handleNext = () => setSelectedDate(navigateDate(selectedDate, view, "next"));
@@ -37,7 +37,7 @@ export function DateNavigator({ view, events }: IProps) {
           {monthLabel} {year}
         </span>
         <Badge variant="outline" className="px-1.5">
-          {eventCount} {eventCount === 1 ? "agendamento" : "agendamentos"}
+          {appointmentCount} {appointmentCount === 1 ? "agendamento" : "agendamentos"}
         </Badge>
       </div>
 

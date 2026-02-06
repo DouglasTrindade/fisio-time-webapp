@@ -6,39 +6,39 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SingleCalendar } from "@/components/ui/single-calendar";
 
-import { EventBlock } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/event-block";
+import { AppointmentBlock } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/appointment-block";
 import { DroppableTimeBlock } from "@/app/(protected)/agendamentos/_components/Calendar/components/dnd/droppable-time-block";
 import { CalendarTimeline } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/calendar-time-line";
-import { DayViewMultiDayEventsRow } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/day-view-multi-day-events-row";
+import { DayViewMultiDayAppointmentsRow } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/day-view-multi-day-appointments-row";
 
 import { cn } from "@/lib/utils";
-import { groupEvents, getEventBlockStyle, isWorkingHour, getCurrentEvents, getVisibleHours } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
+import { groupAppointments, getAppointmentBlockStyle, isWorkingHour, getCurrentAppointments, getVisibleHours } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
 import { appDateLocale } from "@/lib/date-locale";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayAppointments: IAppointment[];
+  multiDayAppointments: IAppointment[];
 }
 
-export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
-  const { selectedDate, setSelectedDate, users, visibleHours, workingHours, createEvent } = useCalendar();
+export function CalendarDayView({ singleDayAppointments, multiDayAppointments }: IProps) {
+  const { selectedDate, setSelectedDate, users, visibleHours, workingHours, createAppointment } = useCalendar();
 
-  const { hours, earliestEventHour, latestEventHour } = getVisibleHours(visibleHours, singleDayEvents);
+  const { hours, earliestAppointmentHour, latestAppointmentHour } = getVisibleHours(visibleHours, singleDayAppointments);
 
-  const currentEvents = getCurrentEvents(singleDayEvents);
+  const currentAppointments = getCurrentAppointments(singleDayAppointments);
 
-  const dayEvents = singleDayEvents.filter(event => {
-    const eventDate = parseISO(event.startDate);
+  const dayAppointments = singleDayAppointments.filter(appointment => {
+    const appointmentDate = parseISO(appointment.startDate);
     return (
-      eventDate.getDate() === selectedDate.getDate() &&
-      eventDate.getMonth() === selectedDate.getMonth() &&
-      eventDate.getFullYear() === selectedDate.getFullYear()
+      appointmentDate.getDate() === selectedDate.getDate() &&
+      appointmentDate.getMonth() === selectedDate.getMonth() &&
+      appointmentDate.getFullYear() === selectedDate.getFullYear()
     );
   });
 
-  const groupedEvents = groupEvents(dayEvents);
+  const groupedAppointments = groupAppointments(dayAppointments);
   const dayLabel = format(selectedDate, "EEE", { locale: appDateLocale });
   const normalizedDayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
   const todayLabel = format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: appDateLocale });
@@ -48,14 +48,14 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
     if (!selectedDate) return;
     const date = new Date(selectedDate);
     date.setHours(hour, minute, 0, 0);
-    createEvent(date);
+    createAppointment(date);
   };
 
   return (
     <div className="flex">
       <div className="flex flex-1 flex-col">
         <div>
-          <DayViewMultiDayEventsRow selectedDate={selectedDate} multiDayEvents={multiDayEvents} />
+          <DayViewMultiDayAppointmentsRow selectedDate={selectedDate} multiDayAppointments={multiDayAppointments} />
 
           {/* Day header */}
           <div className="relative z-20 flex border-b">
@@ -87,7 +87,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
 
                   return (
                     <div key={hour} className={cn("relative", isDisabled && "bg-calendar-disabled-hour")} style={{ height: "96px" }}>
-                      {index !== 0 && <div className="pointer-events-none absolute inset-x-0 top-0 border-b"></div>}
+                      {index !== 0 && <div className="pointer-appointments-none absolute inset-x-0 top-0 border-b"></div>}
 
                       <DroppableTimeBlock date={selectedDate} hour={hour} minute={0}>
                         <button
@@ -105,7 +105,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                         />
                       </DroppableTimeBlock>
 
-                      <div className="pointer-events-none absolute inset-x-0 top-1/2 border-b border-dashed"></div>
+                      <div className="pointer-appointments-none absolute inset-x-0 top-1/2 border-b border-dashed"></div>
 
                       <DroppableTimeBlock date={selectedDate} hour={hour} minute={30}>
                         <button
@@ -126,16 +126,16 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                   );
                 })}
 
-                {groupedEvents.map((group, groupIndex) =>
-                  group.map(event => {
-                    let style = getEventBlockStyle(event, selectedDate, groupIndex, groupedEvents.length, { from: earliestEventHour, to: latestEventHour });
-                    const hasOverlap = groupedEvents.some(
+                {groupedAppointments.map((group, groupIndex) =>
+                  group.map(appointment => {
+                    let style = getAppointmentBlockStyle(appointment, selectedDate, groupIndex, groupedAppointments.length, { from: earliestAppointmentHour, to: latestAppointmentHour });
+                    const hasOverlap = groupedAppointments.some(
                       (otherGroup, otherIndex) =>
                         otherIndex !== groupIndex &&
-                        otherGroup.some(otherEvent =>
+                        otherGroup.some(otherAppointment =>
                           areIntervalsOverlapping(
-                            { start: parseISO(event.startDate), end: parseISO(event.endDate) },
-                            { start: parseISO(otherEvent.startDate), end: parseISO(otherEvent.endDate) }
+                            { start: parseISO(appointment.startDate), end: parseISO(appointment.endDate) },
+                            { start: parseISO(otherAppointment.startDate), end: parseISO(otherAppointment.endDate) }
                           )
                         )
                     );
@@ -143,25 +143,31 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                     if (!hasOverlap) style = { ...style, width: "100%", left: "0%" };
 
                     return (
-                      <div key={event.id} className="absolute p-1" style={style}>
-                        <EventBlock event={event} />
+                      <div key={appointment.id} className="absolute p-1" style={style}>
+                        <AppointmentBlock appointment={appointment} />
                       </div>
                     );
                   })
                 )}
               </div>
 
-              <CalendarTimeline firstVisibleHour={earliestEventHour} lastVisibleHour={latestEventHour} />
+              <CalendarTimeline firstVisibleHour={earliestAppointmentHour} lastVisibleHour={latestAppointmentHour} />
             </div>
           </div>
         </ScrollArea>
       </div>
 
       <div className="hidden w-64 divide-y border-l md:block">
-        <SingleCalendar className="mx-auto w-fit" mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
+        <div className="mx-auto w-fit">
+          <SingleCalendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => date && setSelectedDate(date)}
+          />
+        </div>
 
         <div className="flex-1 space-y-3">
-          {currentEvents.length > 0 ? (
+          {currentAppointments.length > 0 ? (
             <div className="flex items-start gap-2 px-4 pt-4">
               <span className="relative mt-[5px] flex size-2.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75"></span>
@@ -174,15 +180,15 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
             <p className="p-4 text-center text-sm italic text-muted-foreground">Sem atendimentos ou consultas no momento</p>
           )}
 
-          {currentEvents.length > 0 && (
+          {currentAppointments.length > 0 && (
             <ScrollArea className="h-[422px] px-4" type="always">
               <div className="space-y-6 pb-4">
-                {currentEvents.map(event => {
-                  const user = users.find(user => user.id === event.user.id);
+                {currentAppointments.map(appointment => {
+                  const user = users.find(user => user.id === appointment.user.id);
 
                   return (
-                    <div key={event.id} className="space-y-1.5">
-                      <p className="line-clamp-2 text-sm font-semibold">{event.title}</p>
+                    <div key={appointment.id} className="space-y-1.5">
+                      <p className="line-clamp-2 text-sm font-semibold">{appointment.title}</p>
 
                       {user && (
                         <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -199,7 +205,7 @@ export function CalendarDayView({ singleDayEvents, multiDayEvents }: IProps) {
                       <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Clock className="size-3.5" />
                         <span className="text-sm">
-                          {format(parseISO(event.startDate), "HH:mm", { locale: appDateLocale })} - {format(parseISO(event.endDate), "HH:mm", { locale: appDateLocale })}
+                          {format(parseISO(appointment.startDate), "HH:mm", { locale: appDateLocale })} - {format(parseISO(appointment.endDate), "HH:mm", { locale: appDateLocale })}
                         </span>
                       </div>
                     </div>

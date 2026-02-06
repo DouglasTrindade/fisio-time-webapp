@@ -5,20 +5,20 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 
 import { cn } from "@/lib/utils";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
   day: number;
   date: Date;
-  events: IEvent[];
+  appointments: IAppointment[];
 }
 
-export function YearViewDayCell({ day, date, events }: IProps) {
+export function YearViewDayCell({ day, date, appointments }: IProps) {
   const { push } = useRouter();
   const { setSelectedDate } = useCalendar();
 
   const maxIndicators = 3;
-  const eventCount = events.length;
+  const appointmentCount = appointments.length;
 
   const handleClick = () => {
     setSelectedDate(date);
@@ -40,21 +40,21 @@ export function YearViewDayCell({ day, date, events }: IProps) {
         {day}
       </div>
 
-      {eventCount > 0 && (
+      {appointmentCount > 0 && (
         <div className="mt-0.5 flex gap-0.5">
-          {eventCount <= maxIndicators ? (
-            events.map(event => (
+          {appointmentCount <= maxIndicators ? (
+            appointments.map(appointment => (
               <div
-                key={event.id}
+                key={appointment.id}
                 className={cn(
                   "size-1.5 rounded-full",
-                  event.color === "blue" && "bg-blue-600",
-                  event.color === "green" && "bg-green-600",
-                  event.color === "red" && "bg-red-600",
-                  event.color === "yellow" && "bg-yellow-600",
-                  event.color === "purple" && "bg-purple-600",
-                  event.color === "orange" && "bg-orange-600",
-                  event.color === "gray" && "bg-neutral-600"
+                  appointment.color === "blue" && "bg-blue-600",
+                  appointment.color === "green" && "bg-green-600",
+                  appointment.color === "red" && "bg-red-600",
+                  appointment.color === "yellow" && "bg-yellow-600",
+                  appointment.color === "purple" && "bg-purple-600",
+                  appointment.color === "orange" && "bg-orange-600",
+                  appointment.color === "gray" && "bg-neutral-600"
                 )}
               />
             ))
@@ -63,15 +63,15 @@ export function YearViewDayCell({ day, date, events }: IProps) {
               <div
                 className={cn(
                   "size-1.5 rounded-full",
-                  events[0].color === "blue" && "bg-blue-600",
-                  events[0].color === "green" && "bg-green-600",
-                  events[0].color === "red" && "bg-red-600",
-                  events[0].color === "yellow" && "bg-yellow-600",
-                  events[0].color === "purple" && "bg-purple-600",
-                  events[0].color === "orange" && "bg-orange-600"
+                  appointments[0].color === "blue" && "bg-blue-600",
+                  appointments[0].color === "green" && "bg-green-600",
+                  appointments[0].color === "red" && "bg-red-600",
+                  appointments[0].color === "yellow" && "bg-yellow-600",
+                  appointments[0].color === "purple" && "bg-purple-600",
+                  appointments[0].color === "orange" && "bg-orange-600"
                 )}
               />
-              <span className="text-[7px] text-muted-foreground">+{eventCount - 1}</span>
+              <span className="text-[7px] text-muted-foreground">+{appointmentCount - 1}</span>
             </>
           )}
         </div>

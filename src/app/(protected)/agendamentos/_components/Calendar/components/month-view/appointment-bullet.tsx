@@ -2,9 +2,9 @@ import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-import type { TEventColor } from "@/app/(protected)/agendamentos/_components/Calendar/types";
+import type { TAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
-const eventBulletVariants = cva("size-2 rounded-full", {
+const appointmentBulletVariants = cva("size-2 rounded-full", {
   variants: {
     color: {
       blue: "bg-blue-600 dark:bg-blue-500",
@@ -21,6 +21,6 @@ const eventBulletVariants = cva("size-2 rounded-full", {
   },
 });
 
-export function EventBullet({ color, className }: { color: TEventColor; className: string }) {
-  return <div className={cn(eventBulletVariants({ color, className }))} />;
+export function AppointmentBullet({ color, className }: { color: TAppointment; className: string }) {
+  return <div className={cn(appointmentBulletVariants({ color, className }))} />;
 }

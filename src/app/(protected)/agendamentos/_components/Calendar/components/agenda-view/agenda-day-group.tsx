@@ -1,18 +1,18 @@
 import { differenceInDays, format, parseISO, startOfDay } from "date-fns";
 
-import { AgendaEventCard } from "@/app/(protected)/agendamentos/_components/Calendar/components/agenda-view/agenda-event-card";
+import { AgendaAppointmentCard } from "@/app/(protected)/agendamentos/_components/Calendar/components/agenda-view/agenda-appointment-card";
 import { appDateLocale } from "@/lib/date-locale";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
   date: Date;
-  events: IEvent[];
-  multiDayEvents: IEvent[];
+  appointments: IAppointment[];
+  multiDayAppointments: IAppointment[];
 }
 
-export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
-  const sortedEvents = [...events].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+export function AgendaDayGroup({ date, appointments, multiDayAppointments }: IProps) {
+  const sortedAppointments = [...appointments].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   return (
     <div className="space-y-4">
@@ -26,18 +26,18 @@ export function AgendaDayGroup({ date, events, multiDayEvents }: IProps) {
       </div>
 
       <div className="space-y-2">
-        {multiDayEvents.length > 0 &&
-          multiDayEvents.map(event => {
-            const eventStart = startOfDay(parseISO(event.startDate));
-            const eventEnd = startOfDay(parseISO(event.endDate));
+        {multiDayAppointments.length > 0 &&
+          multiDayAppointments.map(appointment => {
+            const appointmentStart = startOfDay(parseISO(appointment.startDate));
+            const appointmentEnd = startOfDay(parseISO(appointment.endDate));
             const currentDate = startOfDay(date);
 
-            const eventTotalDays = differenceInDays(eventEnd, eventStart) + 1;
-            const eventCurrentDay = differenceInDays(currentDate, eventStart) + 1;
-            return <AgendaEventCard key={event.id} event={event} eventCurrentDay={eventCurrentDay} eventTotalDays={eventTotalDays} />;
+            const appointmentTotalDays = differenceInDays(appointmentEnd, appointmentStart) + 1;
+            const appointmentCurrentDay = differenceInDays(currentDate, appointmentStart) + 1;
+            return <AgendaAppointmentCard key={appointment.id} appointment={appointment} appointmentCurrentDay={appointmentCurrentDay} appointmentTotalDays={appointmentTotalDays} />;
           })}
 
-        {sortedEvents.length > 0 && sortedEvents.map(event => <AgendaEventCard key={event.id} event={event} />)}
+        {sortedAppointments.length > 0 && sortedAppointments.map(appointment => <AgendaAppointmentCard key={appointment.id} appointment={appointment} />)}
       </div>
     </div>
   );

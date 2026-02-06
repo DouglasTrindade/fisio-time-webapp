@@ -32,7 +32,7 @@ export function ChangeVisibleHoursInput() {
             </TooltipTrigger>
 
             <TooltipContent className="max-w-80 text-center">
-              <p>Se um evento estiver fora das horas visíveis, o calendário ajustará automaticamente o intervalo para incluí-lo.</p>
+              <p>Se um appointmento estiver fora das horas visíveis, o calendário ajustará automaticamente o intervalo para incluí-lo.</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

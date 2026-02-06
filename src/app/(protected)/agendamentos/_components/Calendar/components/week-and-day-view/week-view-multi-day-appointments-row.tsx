@@ -1,32 +1,32 @@
 import { useMemo } from "react";
 import { parseISO, startOfDay, startOfWeek, endOfWeek, addDays, differenceInDays, isBefore, isAfter } from "date-fns";
 
-import { MonthEventBadge } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/month-event-badge";
+import { MonthAppointmentBadge } from "@/app/(protected)/agendamentos/_components/Calendar/components/month-view/month-appointment-badge";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
   selectedDate: Date;
-  multiDayEvents: IEvent[];
+  multiDayAppointments: IAppointment[];
 }
 
-export function WeekViewMultiDayEventsRow({ selectedDate, multiDayEvents }: IProps) {
+export function WeekViewMultiDayAppointmentsRow({ selectedDate, multiDayAppointments }: IProps) {
   const weekStart = startOfWeek(selectedDate);
   const weekEnd = endOfWeek(selectedDate);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const processedEvents = useMemo(() => {
-    return multiDayEvents
-      .map(event => {
-        const start = parseISO(event.startDate);
-        const end = parseISO(event.endDate);
+  const processedAppointments = useMemo(() => {
+    return multiDayAppointments
+      .map(appointment => {
+        const start = parseISO(appointment.startDate);
+        const end = parseISO(appointment.endDate);
         const adjustedStart = isBefore(start, weekStart) ? weekStart : start;
         const adjustedEnd = isAfter(end, weekEnd) ? weekEnd : end;
         const startIndex = differenceInDays(adjustedStart, weekStart);
         const endIndex = differenceInDays(adjustedEnd, weekStart);
 
         return {
-          ...event,
+          ...appointment,
           adjustedStart,
           adjustedEnd,
           startIndex,
@@ -38,42 +38,42 @@ export function WeekViewMultiDayEventsRow({ selectedDate, multiDayEvents }: IPro
         if (startDiff !== 0) return startDiff;
         return b.endIndex - b.startIndex - (a.endIndex - a.startIndex);
       });
-  }, [multiDayEvents, weekStart, weekEnd]);
+  }, [multiDayAppointments, weekStart, weekEnd]);
 
-  const eventRows = useMemo(() => {
-    const rows: (typeof processedEvents)[] = [];
+  const appointmentRows = useMemo(() => {
+    const rows: (typeof processedAppointments)[] = [];
 
-    processedEvents.forEach(event => {
-      let rowIndex = rows.findIndex(row => row.every(e => e.endIndex < event.startIndex || e.startIndex > event.endIndex));
+    processedAppointments.forEach(appointment => {
+      let rowIndex = rows.findIndex(row => row.every(e => e.endIndex < appointment.startIndex || e.startIndex > appointment.endIndex));
 
       if (rowIndex === -1) {
         rowIndex = rows.length;
         rows.push([]);
       }
 
-      rows[rowIndex].push(event);
+      rows[rowIndex].push(appointment);
     });
 
     return rows;
-  }, [processedEvents]);
+  }, [processedAppointments]);
 
-  const hasEventsInWeek = useMemo(() => {
-    return multiDayEvents.some(event => {
-      const start = parseISO(event.startDate);
-      const end = parseISO(event.endDate);
+  const hasAppointmentsInWeek = useMemo(() => {
+    return multiDayAppointments.some(appointment => {
+      const start = parseISO(appointment.startDate);
+      const end = parseISO(appointment.endDate);
 
       return (
-        // Event starts within the week
+        // Appointment starts within the week
         (start >= weekStart && start <= weekEnd) ||
-        // Event ends within the week
+        // Appointment ends within the week
         (end >= weekStart && end <= weekEnd) ||
-        // Event spans the entire week
+        // Appointment spans the entire week
         (start <= weekStart && end >= weekEnd)
       );
     });
-  }, [multiDayEvents, weekStart, weekEnd]);
+  }, [multiDayAppointments, weekStart, weekEnd]);
 
-  if (!hasEventsInWeek) {
+  if (!hasAppointmentsInWeek) {
     return null;
   }
 
@@ -83,26 +83,26 @@ export function WeekViewMultiDayEventsRow({ selectedDate, multiDayEvents }: IPro
       <div className="grid flex-1 grid-cols-7 divide-x border-b border-l">
         {weekDays.map((day, dayIndex) => (
           <div key={day.toISOString()} className="flex h-full flex-col gap-1 py-1">
-            {eventRows.map((row, rowIndex) => {
-              const event = row.find(e => e.startIndex <= dayIndex && e.endIndex >= dayIndex);
+            {appointmentRows.map((row, rowIndex) => {
+              const appointment = row.find(e => e.startIndex <= dayIndex && e.endIndex >= dayIndex);
 
-              if (!event) {
+              if (!appointment) {
                 return <div key={`${rowIndex}-${dayIndex}`} className="h-6.5" />;
               }
 
               let position: "first" | "middle" | "last" | "none" = "none";
 
-              if (dayIndex === event.startIndex && dayIndex === event.endIndex) {
+              if (dayIndex === appointment.startIndex && dayIndex === appointment.endIndex) {
                 position = "none";
-              } else if (dayIndex === event.startIndex) {
+              } else if (dayIndex === appointment.startIndex) {
                 position = "first";
-              } else if (dayIndex === event.endIndex) {
+              } else if (dayIndex === appointment.endIndex) {
                 position = "last";
               } else {
                 position = "middle";
               }
 
-              return <MonthEventBadge key={`${event.id}-${dayIndex}`} event={event} cellDate={startOfDay(day)} position={position} />;
+              return <MonthAppointmentBadge key={`${appointment.id}-${dayIndex}`} appointment={appointment} cellDate={startOfDay(day)} position={position} />;
             })}
           </div>
         ))}

@@ -8,20 +8,20 @@ import { TodayButton } from "@/app/(protected)/agendamentos/_components/Calendar
 import { DateNavigator } from "@/app/(protected)/agendamentos/_components/Calendar/components/header/date-navigator";
 import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar/contexts/calendar-context";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 import type { TCalendarView } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
 interface IProps {
   view: TCalendarView;
-  events: IEvent[];
+  appointments: IAppointment[];
 }
 
-export function CalendarHeader({ view, events }: IProps) {
-  const { selectedDate, createEvent } = useCalendar();
+export function CalendarHeader({ view, appointments }: IProps) {
+  const { selectedDate, createAppointment } = useCalendar();
 
   const handleCreateClick = () => {
     if (selectedDate) {
-      createEvent(selectedDate);
+      createAppointment(selectedDate);
     }
   };
 
@@ -29,7 +29,7 @@ export function CalendarHeader({ view, events }: IProps) {
     <div className="flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-3">
         <TodayButton />
-        <DateNavigator view={view} events={events} />
+        <DateNavigator view={view} appointments={appointments} />
       </div>
 
       <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">

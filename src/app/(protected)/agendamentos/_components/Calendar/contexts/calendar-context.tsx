@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 
 import type { Dispatch, SetStateAction } from "react";
-import type { IEvent, IUser } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment, IUser } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 import type { TBadgeVariant, TVisibleHours, TWorkingHours } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
 interface ICalendarContext {
@@ -18,10 +18,10 @@ interface ICalendarContext {
   setWorkingHours: Dispatch<SetStateAction<TWorkingHours>>;
   visibleHours: TVisibleHours;
   setVisibleHours: Dispatch<SetStateAction<TVisibleHours>>;
-  events: IEvent[];
-  setLocalEvents: Dispatch<SetStateAction<IEvent[]>>;
-  createEvent: (date: Date) => void;
-  editEvent: (event: IEvent) => void;
+  appointments: IAppointment[];
+  setLocalAppointments: Dispatch<SetStateAction<IAppointment[]>>;
+  createAppointment: (date: Date) => void;
+  editAppointment: (appointment: IAppointment) => void;
 }
 
 const CalendarContext = createContext({} as ICalendarContext);
@@ -41,17 +41,17 @@ const VISIBLE_HOURS = { from: 7, to: 18 };
 interface CalendarProviderProps {
   children: React.ReactNode;
   users: IUser[];
-  events: IEvent[];
-  onCreateEvent?: (date: Date) => void;
-  onEventEdit?: (event: IEvent) => void;
+  appointments: IAppointment[];
+  onCreateAppointment?: (date: Date) => void;
+  onAppointmentEdit?: (appointment: IAppointment) => void;
 }
 
 export function CalendarProvider({
   children,
   users,
-  events,
-  onCreateEvent,
-  onEventEdit,
+  appointments,
+  onCreateAppointment,
+  onAppointmentEdit,
 }: CalendarProviderProps) {
   const [badgeVariant, setBadgeVariant] = useState<TBadgeVariant>("colored");
   const [visibleHours, setVisibleHours] = useState<TVisibleHours>(VISIBLE_HOURS);
@@ -60,37 +60,37 @@ export function CalendarProvider({
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedUserId, setSelectedUserId] = useState<IUser["id"] | "all">("all");
 
-  // This localEvents doesn't need to exists in a real scenario.
-  // It's used here just to simulate the update of the events.
-  // In a real scenario, the events would be updated in the backend
-  // and the request that fetches the events should be refetched
-  const [localEvents, setLocalEvents] = useState<IEvent[]>(events);
+  // This localAppointments doesn't need to exists in a real scenario.
+  // It's used here just to simulate the update of the appointments.
+  // In a real scenario, the appointments would be updated in the backend
+  // and the request that fetches the appointments should be refetched
+  const [localAppointments, setLocalAppointments] = useState<IAppointment[]>(appointments);
 
   useEffect(() => {
-    setLocalEvents(events);
-  }, [events]);
+    setLocalAppointments(appointments);
+  }, [appointments]);
 
   const handleSelectDate = (date: Date | undefined) => {
     if (!date) return;
     setSelectedDate(date);
   };
 
-  const handleCreateEvent = useCallback(
+  const handleCreateAppointment = useCallback(
     (date: Date) => {
-      if (onCreateEvent) {
-        onCreateEvent(date);
+      if (onCreateAppointment) {
+        onCreateAppointment(date);
       }
     },
-    [onCreateEvent],
+    [onCreateAppointment],
   );
 
-  const handleEditEvent = useCallback(
-    (event: IEvent) => {
-      if (onEventEdit) {
-        onEventEdit(event);
+  const handleEditAppointment = useCallback(
+    (appointment: IAppointment) => {
+      if (onAppointmentEdit) {
+        onAppointmentEdit(appointment);
       }
     },
-    [onEventEdit],
+    [onAppointmentEdit],
   );
 
   const contextValue = useMemo(
@@ -106,10 +106,10 @@ export function CalendarProvider({
       setVisibleHours,
       workingHours,
       setWorkingHours,
-      events: localEvents,
-      setLocalEvents,
-      createEvent: handleCreateEvent,
-      editEvent: handleEditEvent,
+      appointments: localAppointments,
+      setLocalAppointments,
+      createAppointment: handleCreateAppointment,
+      editAppointment: handleEditAppointment,
     }),
     [
       selectedDate,
@@ -118,9 +118,9 @@ export function CalendarProvider({
       users,
       visibleHours,
       workingHours,
-      localEvents,
-      handleCreateEvent,
-      handleEditEvent,
+      localAppointments,
+      handleCreateAppointment,
+      handleEditAppointment,
     ],
   );
 

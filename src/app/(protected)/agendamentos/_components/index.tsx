@@ -9,22 +9,22 @@ import { ClientContainer } from "@/app/(protected)/agendamentos/_components/Cale
 import { ChangeBadgeVariantInput } from "@/app/(protected)/agendamentos/_components/Calendar/components/change-badge-variant-input";
 import { ChangeVisibleHoursInput } from "@/app/(protected)/agendamentos/_components/Calendar/components/change-visible-hours-input";
 import { ChangeWorkingHoursInput } from "@/app/(protected)/agendamentos/_components/Calendar/components/change-working-hours-input";
-import type { IEvent, IUser } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
-import type { TCalendarView, TEventColor } from "@/app/(protected)/agendamentos/_components/Calendar/types";
+import type { IAppointment, IUser } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { TCalendarView, TAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
 import { AppointmentsModal } from "./Modal";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 import { useRecords } from "@/hooks/useRecords";
+import { toast } from "sonner";
 import type { UserProfile } from "@/types/user";
+import { DEFAULT_APPOINTMENT_DURATION_MINUTES } from "./constants";
 
-const EVENT_COLOR_BY_STATUS: Record<Status, TEventColor> = {
-  CONFIRMED: "green",
-  WAITING: "yellow",
-  RESCHEDULED: "purple",
-  CANCELED: "red",
+const APPOINTMENT_COLOR_BY_STATUS: Record<Status, TAppointment> = {
+  [Status.CONFIRMED]: "green",
+  [Status.WAITING]: "yellow",
+  [Status.RESCHEDULED]: "purple",
+  [Status.CANCELED]: "red",
 };
-
-const DEFAULT_EVENT_DURATION_MINUTES = 60;
 
 interface CalendarPageClientProps {
   view: TCalendarView;
@@ -32,7 +32,7 @@ interface CalendarPageClientProps {
 
 export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
   const {
-    records: appointments,
+    records: appointmentRecords,
     isDialogOpen,
     editingAppointment,
     selectedDate,
@@ -67,10 +67,10 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     );
   }, [professionals]);
 
-  const events: IEvent[] = useMemo(() => {
-    return appointments.map((appointment) => {
+  const calendarAppointments: IAppointment[] = useMemo(() => {
+    return appointmentRecords.map((appointment) => {
       const startDate = new Date(appointment.date);
-      const endDate = addMinutes(startDate, DEFAULT_EVENT_DURATION_MINUTES);
+      const endDate = addMinutes(startDate, DEFAULT_APPOINTMENT_DURATION_MINUTES);
 
       const user =
         professionalsMap.get(appointment.professionalId) ?? {
@@ -85,13 +85,13 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
         description: appointment.notes ?? "",
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        color: EVENT_COLOR_BY_STATUS[appointment.status] ?? "blue",
+        color: APPOINTMENT_COLOR_BY_STATUS[appointment.status] ?? "blue",
         user,
       };
     });
-  }, [appointments, professionalsMap]);
+  }, [appointmentRecords, professionalsMap]);
 
-  const handleCreateEvent = useCallback(
+  const handleCreateAppointment = useCallback(
     (date: Date) => {
       handleDateSelect(date);
       openNew(date);
@@ -99,17 +99,20 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     [handleDateSelect, openNew],
   );
 
-  const handleEventEdit = useCallback(
-    (event: IEvent) => {
-      const appointment = appointments.find(
-        (current) => current.id === event.id,
+  const handleAppointmentEdit = useCallback(
+    (appointment: IAppointment) => {
+      const targetAppointment = appointmentRecords.find(
+        (current) => current.id === appointment.id,
       );
-      if (appointment) {
-        handleDateSelect(new Date(appointment.date));
-        openEdit(appointment);
+      if (!targetAppointment) {
+        toast.error("Não foi possível encontrar esse agendamento.");
+        return;
       }
+
+      openEdit(targetAppointment);
+      handleDateSelect(new Date(targetAppointment.date));
     },
-    [appointments, handleDateSelect, openEdit],
+    [appointmentRecords, handleDateSelect, openEdit],
   );
 
   const modalInitialDate = useMemo(() => {
@@ -128,10 +131,10 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
 
   return (
     <CalendarProvider
-      events={events}
+      appointments={calendarAppointments}
       users={professionals}
-      onCreateEvent={handleCreateEvent}
-      onEventEdit={handleEventEdit}
+      onCreateAppointment={handleCreateAppointment}
+      onAppointmentEdit={handleAppointmentEdit}
     >
       <ClientContainer view={view} />
       <div className="grid gap-4 lg:grid-cols-2">

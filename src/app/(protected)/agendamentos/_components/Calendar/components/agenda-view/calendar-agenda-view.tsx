@@ -7,70 +7,70 @@ import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AgendaDayGroup } from "@/app/(protected)/agendamentos/_components/Calendar/components/agenda-view/agenda-day-group";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
-  singleDayEvents: IEvent[];
-  multiDayEvents: IEvent[];
+  singleDayAppointments: IAppointment[];
+  multiDayAppointments: IAppointment[];
 }
 
-export function CalendarAgendaView({ singleDayEvents, multiDayEvents }: IProps) {
+export function CalendarAgendaView({ singleDayAppointments, multiDayAppointments }: IProps) {
   const { selectedDate } = useCalendar();
 
-  const eventsByDay = useMemo(() => {
-    const allDates = new Map<string, { date: Date; events: IEvent[]; multiDayEvents: IEvent[] }>();
+  const appointmentsByDay = useMemo(() => {
+    const allDates = new Map<string, { date: Date; appointments: IAppointment[]; multiDayAppointments: IAppointment[] }>();
 
-    singleDayEvents.forEach(event => {
-      const eventDate = parseISO(event.startDate);
-      if (!isSameMonth(eventDate, selectedDate)) return;
+    singleDayAppointments.forEach(appointment => {
+      const appointmentDate = parseISO(appointment.startDate);
+      if (!isSameMonth(appointmentDate, selectedDate)) return;
 
-      const dateKey = format(eventDate, "yyyy-MM-dd");
+      const dateKey = format(appointmentDate, "yyyy-MM-dd");
 
       if (!allDates.has(dateKey)) {
-        allDates.set(dateKey, { date: startOfDay(eventDate), events: [], multiDayEvents: [] });
+        allDates.set(dateKey, { date: startOfDay(appointmentDate), appointments: [], multiDayAppointments: [] });
       }
 
-      allDates.get(dateKey)?.events.push(event);
+      allDates.get(dateKey)?.appointments.push(appointment);
     });
 
-    multiDayEvents.forEach(event => {
-      const eventStart = parseISO(event.startDate);
-      const eventEnd = parseISO(event.endDate);
+    multiDayAppointments.forEach(appointment => {
+      const appointmentStart = parseISO(appointment.startDate);
+      const appointmentEnd = parseISO(appointment.endDate);
 
-      let currentDate = startOfDay(eventStart);
-      const lastDate = endOfDay(eventEnd);
+      let currentDate = startOfDay(appointmentStart);
+      const lastDate = endOfDay(appointmentEnd);
 
       while (currentDate <= lastDate) {
         if (isSameMonth(currentDate, selectedDate)) {
           const dateKey = format(currentDate, "yyyy-MM-dd");
 
           if (!allDates.has(dateKey)) {
-            allDates.set(dateKey, { date: new Date(currentDate), events: [], multiDayEvents: [] });
+            allDates.set(dateKey, { date: new Date(currentDate), appointments: [], multiDayAppointments: [] });
           }
 
-          allDates.get(dateKey)?.multiDayEvents.push(event);
+          allDates.get(dateKey)?.multiDayAppointments.push(appointment);
         }
         currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
       }
     });
 
     return Array.from(allDates.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
-  }, [singleDayEvents, multiDayEvents, selectedDate]);
+  }, [singleDayAppointments, multiDayAppointments, selectedDate]);
 
-  const hasAnyEvents = singleDayEvents.length > 0 || multiDayEvents.length > 0;
+  const hasAnyAppointments = singleDayAppointments.length > 0 || multiDayAppointments.length > 0;
 
   return (
     <div className="h-[800px]">
       <ScrollArea className="h-full" type="always">
         <div className="space-y-6 p-4">
-          {eventsByDay.map(dayGroup => (
-            <AgendaDayGroup key={format(dayGroup.date, "yyyy-MM-dd")} date={dayGroup.date} events={dayGroup.events} multiDayEvents={dayGroup.multiDayEvents} />
+          {appointmentsByDay.map(dayGroup => (
+            <AgendaDayGroup key={format(dayGroup.date, "yyyy-MM-dd")} date={dayGroup.date} appointments={dayGroup.appointments} multiDayAppointments={dayGroup.multiDayAppointments} />
           ))}
 
-          {!hasAnyEvents && (
+          {!hasAnyAppointments && (
             <div className="flex flex-col items-center justify-center gap-2 py-20 text-muted-foreground">
               <CalendarX2 className="size-10" />
-              <p className="text-sm md:text-base">Nenhum evento agendado para o mês selecionado</p>
+              <p className="text-sm md:text-base">Nenhum appointmento agendado para o mês selecionado</p>
             </div>
           )}
         </div>

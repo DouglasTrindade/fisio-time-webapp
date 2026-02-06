@@ -7,14 +7,14 @@ import { appDateLocale } from "@/lib/date-locale";
 
 import { YearViewDayCell } from "@/app/(protected)/agendamentos/_components/Calendar/components/year-view/year-view-day-cell";
 
-import type { IEvent } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
+import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
 interface IProps {
   month: Date;
-  events: IEvent[];
+  appointments: IAppointment[];
 }
 
-export function YearViewMonth({ month, events }: IProps) {
+export function YearViewMonth({ month, appointments }: IProps) {
   const { push } = useRouter();
   const { setSelectedDate } = useCalendar();
 
@@ -61,9 +61,9 @@ export function YearViewMonth({ month, events }: IProps) {
             if (day === null) return <div key={`blank-${index}`} className="h-10" />;
 
             const date = new Date(month.getFullYear(), month.getMonth(), day);
-            const dayEvents = events.filter(event => isSameDay(parseISO(event.startDate), date) || isSameDay(parseISO(event.endDate), date));
+            const dayAppointments = appointments.filter(appointment => isSameDay(parseISO(appointment.startDate), date) || isSameDay(parseISO(appointment.endDate), date));
 
-            return <YearViewDayCell key={`day-${day}`} day={day} date={date} events={dayEvents} />;
+            return <YearViewDayCell key={`day-${day}`} day={day} date={date} appointments={dayAppointments} />;
           })}
         </div>
       </div>
