@@ -10,6 +10,7 @@ import { AppointmentBlock } from "@/app/(protected)/agendamentos/_components/Cal
 import { DroppableTimeBlock } from "@/app/(protected)/agendamentos/_components/Calendar/components/dnd/droppable-time-block";
 import { CalendarTimeline } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/calendar-time-line";
 import { DayViewMultiDayAppointmentsRow } from "@/app/(protected)/agendamentos/_components/Calendar/components/week-and-day-view/day-view-multi-day-appointments-row";
+import { AppointmentDetailsDialog } from "@/app/(protected)/agendamentos/_components/Calendar/components/dialogs/appointment-details-dialog";
 
 import { cn } from "@/lib/utils";
 import { groupAppointments, getAppointmentBlockStyle, isWorkingHour, getCurrentAppointments, getVisibleHours } from "@/app/(protected)/agendamentos/_components/Calendar/helpers";
@@ -189,28 +190,40 @@ export function CalendarDayView({ singleDayAppointments, multiDayAppointments }:
                   const user = users.find(user => user.id === appointment.user.id);
 
                   return (
-                    <div key={appointment.id} className="space-y-1.5">
-                      <p className="line-clamp-2 text-sm font-semibold">{appointment.title}</p>
+                    <AppointmentDetailsDialog key={appointment.id} appointment={appointment}>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        className="w-full space-y-1.5 rounded-md border border-transparent p-2 text-left transition hover:border-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        onKeyDown={event => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            event.currentTarget.click();
+                          }
+                        }}
+                      >
+                        <p className="line-clamp-2 text-sm font-semibold">{appointment.title}</p>
 
-                      {user && (
+                        {user && (
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <User className="size-3.5" />
+                            <span className="text-sm">{user.name}</span>
+                          </div>
+                        )}
+
                         <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <User className="size-3.5" />
-                          <span className="text-sm">{user.name}</span>
+                          <Calendar className="size-3.5" />
+                          <span className="text-sm">{normalizedTodayLabel}</span>
                         </div>
-                      )}
 
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Calendar className="size-3.5" />
-                        <span className="text-sm">{normalizedTodayLabel}</span>
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Clock className="size-3.5" />
+                          <span className="text-sm">
+                            {format(parseISO(appointment.startDate), "HH:mm", { locale: appDateLocale })} - {format(parseISO(appointment.endDate), "HH:mm", { locale: appDateLocale })}
+                          </span>
+                        </div>
                       </div>
-
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Clock className="size-3.5" />
-                        <span className="text-sm">
-                          {format(parseISO(appointment.startDate), "HH:mm", { locale: appDateLocale })} - {format(parseISO(appointment.endDate), "HH:mm", { locale: appDateLocale })}
-                        </span>
-                      </div>
-                    </div>
+                    </AppointmentDetailsDialog>
                   );
                 })}
               </div>

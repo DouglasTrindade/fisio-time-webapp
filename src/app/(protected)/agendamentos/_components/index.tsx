@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { addMinutes } from "date-fns";
 import { Status } from "@prisma/client";
+import { useSession } from "next-auth/react";
 
 import { CalendarProvider } from "@/app/(protected)/agendamentos/_components/Calendar/contexts/calendar-context";
 import { ClientContainer } from "@/app/(protected)/agendamentos/_components/Calendar/components/client-container";
@@ -31,6 +32,7 @@ interface CalendarPageClientProps {
 }
 
 export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
+  const { data: session } = useSession();
   const {
     records: appointmentRecords,
     isDialogOpen,
@@ -61,11 +63,26 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     [usersResponse],
   );
 
+  const loggedProfessional = useMemo<IUser | null>(() => {
+    if (!session?.user?.id) return null;
+    return {
+      id: session.user.id,
+      name: session.user.name ?? "Meu perfil",
+      picturePath: session.user.image ?? null,
+    };
+  }, [session]);
+
+  const professionalsWithLoggedUser = useMemo(() => {
+    if (!loggedProfessional) return professionals;
+    const exists = professionals.some((user) => user.id === loggedProfessional.id);
+    return exists ? professionals : [...professionals, loggedProfessional];
+  }, [professionals, loggedProfessional]);
+
   const professionalsMap = useMemo(() => {
     return new Map<string, IUser>(
-      professionals.map((professional) => [professional.id, professional]),
+      professionalsWithLoggedUser.map((professional) => [professional.id, professional]),
     );
-  }, [professionals]);
+  }, [professionalsWithLoggedUser]);
 
   const calendarAppointments: IAppointment[] = useMemo(() => {
     return appointmentRecords.map((appointment) => {
@@ -132,7 +149,7 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
   return (
     <CalendarProvider
       appointments={calendarAppointments}
-      users={professionals}
+      users={professionalsWithLoggedUser}
       onCreateAppointment={handleCreateAppointment}
       onAppointmentEdit={handleAppointmentEdit}
     >

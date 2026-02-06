@@ -49,7 +49,7 @@ export function DraggableAppointment({ appointment, children }: DraggableAppoint
     <div
       ref={setNodeRef}
       style={style}
-      className={cn("cursor-grab", isDragging && "opacity-80")}
+      className={cn("cursor-default", isDragging && "cursor-grabbing opacity-80")}
       onClickCapture={(event) => {
         if (suppressClickRef.current) {
           event.preventDefault();
