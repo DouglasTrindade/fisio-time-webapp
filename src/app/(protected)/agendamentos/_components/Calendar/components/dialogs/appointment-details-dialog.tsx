@@ -7,9 +7,9 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { appDateLocale } from "@/lib/date-locale";
-import { useCalendar } from "@/app/(protected)/agendamentos/_components/Calendar/contexts/calendar-context";
 import { useRecord } from "@/hooks/useRecord";
 import type { Appointment } from "@/types/appointment";
+import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 
 import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
@@ -19,7 +19,7 @@ interface IProps {
 }
 
 export function AppointmentDetailsDialog({ appointment, children }: IProps) {
-  const { editAppointment } = useCalendar();
+  const { records: appointmentRecords, openEdit } = useAppointmentsContext();
   const [open, setOpen] = useState(false);
 
   const appointmentId = open ? appointment.id : undefined;
@@ -46,7 +46,10 @@ export function AppointmentDetailsDialog({ appointment, children }: IProps) {
   const description = appointmentDetails?.notes ?? appointment.description;
 
   const handleEdit = () => {
-    editAppointment(appointment);
+    const target = appointmentRecords.find((record) => record.id === appointment.id);
+    if (target) {
+      openEdit(target);
+    }
     setOpen(false);
   };
 

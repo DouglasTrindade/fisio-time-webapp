@@ -11,7 +11,7 @@ import { appDateLocale } from "@/lib/date-locale";
 
 import type { DayPickerProps } from "react-day-picker";
 
-type SingleCalendarProps = DayPickerProps & { mode?: "single" };
+type SingleCalendarProps = DayPickerProps & { selected?: Date };
 
 function SingleCalendar({ className, classNames, showOutsideDays = true, selected, ...props }: SingleCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState<Date | undefined>(selected instanceof Date ? selected : undefined);

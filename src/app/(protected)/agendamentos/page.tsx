@@ -2,6 +2,8 @@ import type { TCalendarView } from "@/app/(protected)/agendamentos/_components/C
 import { AppointmentsProvider } from "@/contexts/AppointmentsContext";
 import { CalendarPageClient } from "./_components";
 
+export const dynamic = "force-dynamic";
+
 const VIEWS: TCalendarView[] = ["day", "week", "month", "year", "agenda"];
 
 const isCalendarView = (value: string | undefined): value is TCalendarView => {

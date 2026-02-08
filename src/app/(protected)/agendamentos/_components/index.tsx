@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
 import { addMinutes } from "date-fns";
 import { Status } from "@prisma/client";
 import { useSession } from "next-auth/react";
@@ -146,6 +146,18 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     return undefined;
   }, [editingAppointment, selectedDate]);
 
+  const [currentView, setCurrentView] = useState<TCalendarView>(view);
+
+  useEffect(() => {
+    setCurrentView(view);
+  }, [view]);
+
+  const handleViewChange = useCallback((next: TCalendarView) => {
+    startTransition(() => {
+      setCurrentView(next);
+    });
+  }, []);
+
   return (
     <CalendarProvider
       appointments={calendarAppointments}
@@ -153,11 +165,12 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
       onCreateAppointment={handleCreateAppointment}
       onAppointmentEdit={handleAppointmentEdit}
     >
-      <ClientContainer view={view} />
+      <ClientContainer view={currentView} onViewChange={handleViewChange} />
       <div className="grid gap-4 lg:grid-cols-2">
         <ChangeBadgeVariantInput />
-        <ChangeVisibleHoursInput />
-        <ChangeWorkingHoursInput />
+        {/* integration with public appointments */}
+        {/* <ChangeVisibleHoursInput /> */}
+        {/* <ChangeWorkingHoursInput /> */}
       </div>
       <AppointmentsModal
         open={isDialogOpen}

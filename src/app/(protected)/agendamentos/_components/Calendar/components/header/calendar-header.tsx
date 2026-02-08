@@ -14,9 +14,10 @@ import type { TCalendarView } from "@/app/(protected)/agendamentos/_components/C
 interface IProps {
   view: TCalendarView;
   appointments: IAppointment[];
+  onViewChange?: (view: TCalendarView) => void;
 }
 
-export function CalendarHeader({ view, appointments }: IProps) {
+export function CalendarHeader({ view, appointments, onViewChange }: IProps) {
   const { selectedDate, createAppointment } = useCalendar();
 
   const handleCreateClick = () => {
@@ -35,58 +36,84 @@ export function CalendarHeader({ view, appointments }: IProps) {
       <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:justify-between">
         <div className="flex w-full items-center gap-1.5">
           <div className="inline-flex first:rounded-r-none last:rounded-l-none [&:not(:first-child):not(:last-child)]:rounded-none">
-            <Button asChild aria-label="Ver por dia" size="icon" variant={view === "day" ? "default" : "outline"} className="rounded-r-none [&_svg]:size-5">
-              <Link href="?view=day" scroll={false}>
+            <Button
+              aria-label="Ver por dia"
+              size="icon"
+              variant={view === "day" ? "default" : "outline"}
+              className="rounded-r-none [&_svg]:size-5"
+              onClick={() => onViewChange?.("day")}
+            >
+              {onViewChange ? (
                 <List strokeWidth={1.8} />
-              </Link>
+              ) : (
+                <Link href="?view=day" scroll={false}>
+                  <List strokeWidth={1.8} />
+                </Link>
+              )}
             </Button>
 
             <Button
-              asChild
               aria-label="Ver por semana"
               size="icon"
               variant={view === "week" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
+              onClick={() => onViewChange?.("week")}
             >
-              <Link href="?view=week" scroll={false}>
+              {onViewChange ? (
                 <Columns strokeWidth={1.8} />
-              </Link>
+              ) : (
+                <Link href="?view=week" scroll={false}>
+                  <Columns strokeWidth={1.8} />
+                </Link>
+              )}
             </Button>
 
             <Button
-              asChild
               aria-label="Ver por mês"
               size="icon"
               variant={view === "month" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
+              onClick={() => onViewChange?.("month")}
             >
-              <Link href="?view=month" scroll={false}>
+              {onViewChange ? (
                 <Grid2x2 strokeWidth={1.8} />
-              </Link>
+              ) : (
+                <Link href="?view=month" scroll={false}>
+                  <Grid2x2 strokeWidth={1.8} />
+                </Link>
+              )}
             </Button>
 
             <Button
-              asChild
               aria-label="Ver por ano"
               size="icon"
               variant={view === "year" ? "default" : "outline"}
               className="-ml-px rounded-none [&_svg]:size-5"
+              onClick={() => onViewChange?.("year")}
             >
-              <Link href="?view=year" scroll={false}>
+              {onViewChange ? (
                 <Grid3x3 strokeWidth={1.8} />
-              </Link>
+              ) : (
+                <Link href="?view=year" scroll={false}>
+                  <Grid3x3 strokeWidth={1.8} />
+                </Link>
+              )}
             </Button>
 
             <Button
-              asChild
               aria-label="Ver por agenda"
               size="icon"
               variant={view === "agenda" ? "default" : "outline"}
               className="-ml-px rounded-l-none [&_svg]:size-5"
+              onClick={() => onViewChange?.("agenda")}
             >
-              <Link href="?view=agenda" scroll={false}>
+              {onViewChange ? (
                 <CalendarRange strokeWidth={1.8} />
-              </Link>
+              ) : (
+                <Link href="?view=agenda" scroll={false}>
+                  <CalendarRange strokeWidth={1.8} />
+                </Link>
+              )}
             </Button>
           </div>
 

@@ -18,9 +18,10 @@ import type { TCalendarView } from "@/app/(protected)/agendamentos/_components/C
 
 interface IProps {
   view: TCalendarView;
+  onViewChange?: (view: TCalendarView) => void;
 }
 
-export function ClientContainer({ view }: IProps) {
+export function ClientContainer({ view, onViewChange }: IProps) {
   const { selectedDate, selectedUserId, appointments } = useCalendar();
 
   const filteredAppointments = useMemo(() => {
@@ -91,7 +92,7 @@ export function ClientContainer({ view }: IProps) {
 
   return (
     <div className="overflow-hidden rounded-xl border">
-      <CalendarHeader view={view} appointments={filteredAppointments} />
+      <CalendarHeader view={view} appointments={filteredAppointments} onViewChange={onViewChange} />
 
       <DndProviderWrapper>
         {view === "day" && <CalendarDayView singleDayAppointments={singleDayAppointments} multiDayAppointments={multiDayAppointments} />}
