@@ -4,6 +4,7 @@ import { DayPicker } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "./button"
+import { appDateLocale } from "@/lib/date-locale"
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
@@ -53,6 +54,7 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
+      locale={appDateLocale}
       {...props}
     />
   )

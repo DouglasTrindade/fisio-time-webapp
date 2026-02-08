@@ -8,6 +8,12 @@ export interface Appointment
   date: string;
   createdAt: string;
   updatedAt: string;
+  professional?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  } | null;
 }
 
 export type AppointmentCreateInput = Omit<

@@ -12,6 +12,48 @@ import {
   normalizeAppointmentStatus,
 } from "../schema";
 import type { Appointment, ApiResponse } from "@/types/appointment";
+import type { Status } from "@prisma/client";
+
+const professionalSelect = {
+  id: true,
+  name: true,
+  email: true,
+  image: true,
+} as const;
+
+const mapAppointmentResponse = (
+  appointment: {
+    id: string;
+    name: string;
+    phone: string;
+    date: Date;
+    status: Status;
+    professionalId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    patientId: string | null;
+    notes: string | null;
+    User?: { id: string; name: string | null; email: string | null; image: string | null } | null;
+  } | null,
+) => {
+  if (!appointment) return null;
+  const { User, ...rest } = appointment;
+  return {
+    ...rest,
+    date: appointment.date.toISOString(),
+    createdAt: appointment.createdAt.toISOString(),
+    updatedAt: appointment.updatedAt.toISOString(),
+    status: appointment.status,
+    professional: User
+      ? {
+          id: User.id,
+          name: User.name,
+          email: User.email,
+          image: User.image,
+        }
+      : null,
+  };
+};
 
 export async function GET(
   _request: NextRequest,
@@ -20,7 +62,12 @@ export async function GET(
   try {
     const { id } = appointmentParamsSchema.parse(await context.params);
 
-    const appointment = await prisma.appointment.findUnique({ where: { id } });
+    const appointment = await prisma.appointment.findUnique({
+      where: { id },
+      include: {
+        User: { select: professionalSelect },
+      },
+    });
 
     if (!appointment) {
       return NextResponse.json<ApiResponse<Appointment>>(
@@ -30,12 +77,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      createApiResponse<Appointment>({
-        ...appointment,
-        date: appointment.date.toISOString(),
-        createdAt: appointment.createdAt.toISOString(),
-        updatedAt: appointment.updatedAt.toISOString(),
-      })
+      createApiResponse<Appointment>(mapAppointmentResponse(appointment)!),
     );
   } catch (error) {
     return handleApiError<Appointment>(error);
@@ -68,18 +110,16 @@ export async function PUT(
         notes: body.notes ?? undefined,
         patientId: body.patientId ?? undefined,
       },
+      include: {
+        User: { select: professionalSelect },
+      },
     });
 
     return NextResponse.json(
       createApiResponse<Appointment>(
-        {
-          ...updated,
-          date: updated.date.toISOString(),
-          createdAt: updated.createdAt.toISOString(),
-          updatedAt: updated.updatedAt.toISOString(),
-        },
-        "Agendamento atualizado com sucesso"
-      )
+        mapAppointmentResponse(updated)!,
+        "Agendamento atualizado com sucesso",
+      ),
     );
   } catch (error) {
     return handleApiError<Appointment>(error);

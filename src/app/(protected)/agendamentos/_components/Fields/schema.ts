@@ -8,7 +8,11 @@ export const appointmentSchema = z.object({
   phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
   date: z.string().datetime("Data inválida"),
   status: z.nativeEnum(Status).default(Status.WAITING),
-  patientId: z.string().nullable().optional(),
+  patientId: z
+    .string({
+      required_error: "Paciente é obrigatório",
+    })
+    .cuid("Paciente inválido"),
   notes: z.string().optional().or(z.literal("")).nullable(),
   professionalId: z.string().min(1, "ID do profissional é obrigatório"),
 })

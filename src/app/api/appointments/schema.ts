@@ -29,7 +29,11 @@ export const createAppointmentSchema = z.object({
   date: z.string().datetime("Data inválida"),
   status: statusSchema.optional(),
   notes: z.string().optional().or(z.literal("")).nullable(),
-  patientId: z.string().nullable().optional(),
+  patientId: z
+    .string({
+      required_error: "Paciente é obrigatório",
+    })
+    .cuid("Paciente inválido"),
   professionalId: z.string().min(1, "ID do profissional é obrigatório"),
 });
 
