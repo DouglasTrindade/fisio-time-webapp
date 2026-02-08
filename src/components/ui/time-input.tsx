@@ -9,11 +9,14 @@ export type TimeValue = {
   minute: number;
 };
 
-interface TimeInputProps extends React.HTMLAttributes<HTMLDivElement> {
+interface TimeInputProps {
   value?: TimeValue;
   onChange?: (value: TimeValue) => void;
   disabled?: boolean;
   "data-invalid"?: boolean;
+  className?: string;
+  id?: string;
+  "aria-label"?: string;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, index) => index);

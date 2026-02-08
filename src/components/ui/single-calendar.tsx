@@ -9,19 +9,29 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { appDateLocale } from "@/lib/date-locale";
 
-import type { DayPickerProps } from "react-day-picker";
+import type { DayPickerSingleProps } from "react-day-picker";
 
-type SingleCalendarProps = DayPickerProps & { selected?: Date };
+type SingleCalendarProps = Omit<DayPickerSingleProps, "selected" | "onSelect" | "mode" | "className" | "classNames" | "showOutsideDays" | "initialFocus"> & {
+  selected?: Date;
+  onSelect?: (date?: Date) => void;
+  className?: string;
+  classNames?: Partial<Record<string, string>>;
+  showOutsideDays?: boolean;
+  initialFocus?: boolean;
+};
 
-function SingleCalendar({ className, classNames, showOutsideDays = true, selected, ...props }: SingleCalendarProps) {
+function SingleCalendar({ className, classNames, showOutsideDays = true, selected, onSelect, ...props }: SingleCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState<Date | undefined>(selected instanceof Date ? selected : undefined);
 
   return (
     <DayPicker
+      {...(props as DayPickerSingleProps)}
+      mode="single"
       selected={selected}
       showOutsideDays={showOutsideDays}
       month={currentMonth}
       onMonthChange={setCurrentMonth}
+      onSelect={(value) => onSelect?.(value)}
       locale={appDateLocale}
       className={cn("p-3", className)}
       classNames={{
@@ -52,11 +62,6 @@ function SingleCalendar({ className, classNames, showOutsideDays = true, selecte
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ className, ...props }) => <ChevronLeft className={cn("h-4 w-4", className)} {...props} />,
-        IconRight: ({ className, ...props }) => <ChevronRight className={cn("h-4 w-4", className)} {...props} />,
-      }}
-      {...props}
     />
   );
 }

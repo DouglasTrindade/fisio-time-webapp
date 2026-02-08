@@ -161,7 +161,6 @@ export function CalendarDayView({ singleDayAppointments, multiDayAppointments }:
       <div className="hidden w-64 divide-y border-l md:block">
         <div className="mx-auto w-fit">
           <SingleCalendar
-            mode="single"
             selected={selectedDate}
             onSelect={(date?: Date) => {
               if (date) setSelectedDate(date);
