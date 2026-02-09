@@ -1,16 +1,22 @@
 import { type NextRequest, NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
+import { Role } from "@prisma/client"
+import { z } from "zod"
 
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import {
   createApiError,
   createApiResponse,
   getPaginationParams,
   handleApiError,
+  validateJsonBody,
 } from "@/lib/api/utils"
+import { canManageUsers } from "@/lib/auth/permissions"
 import type { ApiResponse, RecordsResponse } from "@/types/api"
 import type { UserProfile } from "@/types/user"
 
-const selectUserFields = {
+export const selectUserFields = {
   id: true,
   name: true,
   email: true,
@@ -18,6 +24,16 @@ const selectUserFields = {
   role: true,
   createdAt: true,
 } as const
+
+const baseUserSchema = z.object({
+  name: z.string().min(1, "Informe o nome do usuário"),
+  email: z.string().email("Informe um e-mail válido"),
+  role: z.nativeEnum(Role, { required_error: "Selecione uma função" }),
+})
+
+const createUserSchema = baseUserSchema.extend({
+  password: z.string().min(8, "A senha precisa ter ao menos 8 caracteres"),
+})
 
 export async function GET(
   request: NextRequest,
@@ -76,6 +92,41 @@ export async function GET(
 
     return NextResponse.json(
       createApiResponse(responseBody, "Usuários listados com sucesso"),
+    )
+  } catch (error) {
+    return handleApiError(error)
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<ApiResponse<UserProfile>>> {
+  try {
+    const session = await auth()
+    if (!session?.user || !canManageUsers(session.user.role)) {
+      return NextResponse.json(
+        createApiError("Você não tem permissão para criar usuários."),
+        { status: 403 },
+      )
+    }
+
+    const payload = await validateJsonBody(request, createUserSchema)
+
+    const hashedPassword = await bcrypt.hash(payload.password, 10)
+
+    const createdUser = await prisma.user.create({
+      data: {
+        name: payload.name,
+        email: payload.email,
+        role: payload.role,
+        password: hashedPassword,
+      },
+      select: selectUserFields,
+    })
+
+    return NextResponse.json(
+      createApiResponse(createdUser, "Usuário criado com sucesso"),
+      { status: 201 },
     )
   } catch (error) {
     return handleApiError(error)
