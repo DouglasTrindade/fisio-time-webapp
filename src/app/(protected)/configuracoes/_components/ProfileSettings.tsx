@@ -24,6 +24,9 @@ export const ProfileSettings = () => {
       name: "",
       email: "",
       image: "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   })
 
@@ -33,19 +36,33 @@ export const ProfileSettings = () => {
         name: user.name ?? "",
         email: user.email ?? "",
         image: user.image ?? "",
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       })
     }
   }, [user, form])
 
   const handleSubmit = async (values: UserSettingsValues) => {
+    const hasPasswordChange = Boolean(values.newPassword?.trim())
     await updateUser.mutateAsync({
       id: "me",
       data: {
-        ...values,
+        name: values.name,
+        email: values.email,
         image: values.image?.trim() ? values.image : undefined,
+        password: hasPasswordChange ? values.newPassword : undefined,
+        currentPassword: hasPasswordChange ? values.currentPassword : undefined,
       },
     })
-    form.reset(values)
+    form.reset({
+      name: values.name,
+      email: values.email,
+      image: values.image ?? "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
   }
 
   return (
@@ -109,6 +126,50 @@ export const ProfileSettings = () => {
                   </FormItem>
                 )}
               />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="currentPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha atual</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Informe sua senha atual" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nova senha</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Crie uma nova senha" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Confirmar nova senha</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="Repita a nova senha" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={updateUser.isPending || !form.formState.isDirty}>

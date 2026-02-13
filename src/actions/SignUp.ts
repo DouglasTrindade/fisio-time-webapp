@@ -27,30 +27,32 @@ export const SignUpAction = async (values: SignUpSchema) => {
     let assignedRole: Role = Role.PROFESSIONAL;
     let inviteId: string | null = null;
 
-    if (data.inviteToken) {
-      const invite = await prisma.userInvite.findUnique({
-        where: { token: data.inviteToken },
-      });
-
-      if (!invite) {
-        return { error: "Convite inválido ou expirado" };
-      }
-
-      if (invite.acceptedAt) {
-        return { error: "Este convite já foi utilizado" };
-      }
-
-      if (invite.expiresAt < new Date()) {
-        return { error: "O convite expirou, solicite um novo" };
-      }
-
-      if (invite.email.toLowerCase() !== data.email.toLowerCase()) {
-        return { error: "E-mail não corresponde ao convite" };
-      }
-
-      assignedRole = invite.role;
-      inviteId = invite.id;
+    if (!data.inviteToken) {
+      return { error: "Convite obrigatório para criar a conta" };
     }
+
+    const invite = await prisma.userInvite.findUnique({
+      where: { token: data.inviteToken },
+    });
+
+    if (!invite) {
+      return { error: "Convite inválido ou expirado" };
+    }
+
+    if (invite.acceptedAt) {
+      return { error: "Este convite já foi utilizado" };
+    }
+
+    if (invite.expiresAt < new Date()) {
+      return { error: "O convite expirou, solicite um novo" };
+    }
+
+    if (invite.email.toLowerCase() !== data.email.toLowerCase()) {
+      return { error: "E-mail não corresponde ao convite" };
+    }
+
+    assignedRole = invite.role;
+    inviteId = invite.id;
 
     const createdUser = await prisma.user.create({
       data: {

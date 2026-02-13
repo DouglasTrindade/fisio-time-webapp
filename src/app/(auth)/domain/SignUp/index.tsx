@@ -19,6 +19,7 @@ export const SignUp = ({ inviteToken }: SignUpProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [tokenFromUrl, setTokenFromUrl] = useState(inviteToken ?? "");
+  const hasInvite = Boolean(tokenFromUrl || inviteToken);
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -68,12 +69,17 @@ export const SignUp = ({ inviteToken }: SignUpProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <input type="hidden" {...form.register("inviteToken")} />
+        {!hasInvite && (
+          <div className="rounded-lg border border-border/60 bg-black/20 p-4 text-sm text-white/90">
+            Este cadastro funciona somente com convite. Solicite um link ao administrador da conta.
+          </div>
+        )}
         <SignUpFields />
         {rootError && <FormMessage>{rootError}</FormMessage>}
         <Button
           type="submit"
           className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
-          disabled={isPending}
+          disabled={isPending || !hasInvite}
         >
           {isPending ? "Cadastrando..." : "Cadastrar"}
         </Button>

@@ -3,9 +3,7 @@
 import { useMemo, useState } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { UserPlus } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,7 +26,6 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
     "/users",
     { page: 1, limit: 50, sortBy: "name", sortOrder: "asc" },
   )
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
   const [deletingUser, setDeletingUser] = useState<UserProfile | null>(null)
 
@@ -56,11 +53,6 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
             <CardTitle>Membros ativos</CardTitle>
             <CardDescription>Visão geral de quem possui acesso à conta.</CardDescription>
           </div>
-
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Novo usuário
-          </Button>
         </CardHeader>
         <CardContent>
           {isLoadingMembers ? (
@@ -107,7 +99,6 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
         </CardContent>
       </Card>
 
-      <UserFormModal mode="create" open={isCreateOpen} onOpenChange={setIsCreateOpen} />
       <UserFormModal
         mode="edit"
         open={Boolean(editingUser)}
