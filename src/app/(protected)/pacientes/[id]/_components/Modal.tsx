@@ -229,29 +229,9 @@ export const HistoryAttendanceModal = ({
     }
   }
 
-  const lockedPatient: Patient = {
+  const lockedPatient = {
     id: patient.id,
     name: patient.name ?? "Paciente",
-    phone: patient.phone ?? "",
-    email: patient.email ?? null,
-    birthDate: patient.birthDate ? new Date(patient.birthDate) : null,
-    notes: patient.notes ?? null,
-    cpf: null,
-    rg: null,
-    maritalStatus: patient.maritalStatus ?? null,
-    gender: patient.gender ?? null,
-    profession: patient.profession ?? null,
-    companyName: null,
-    cep: null,
-    country: null,
-    state: null,
-    city: null,
-    street: null,
-    number: null,
-    neighborhood: null,
-    complement: null,
-    createdAt: new Date(patient.createdAt),
-    updatedAt: new Date(patient.createdAt),
   }
 
   if (attendanceId && (isLoadingAttendance || (!existingAttendance && !isAttendanceError))) {

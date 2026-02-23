@@ -112,7 +112,13 @@ export async function POST(
         insuranceIssuedAt: body.insuranceIssuedAt ?? null,
         insuranceRepasseType: body.insuranceRepasseType === "" ? null : body.insuranceRepasseType ?? null,
         insuranceRepasseValue: body.insuranceRepasseValue ?? null,
-        insurancePaymentDays: body.insurancePaymentDays ?? null,
+        insurancePaymentDays: (() => {
+          if (body.insurancePaymentDays === null || body.insurancePaymentDays === undefined) {
+            return null
+          }
+          const parsed = Number(body.insurancePaymentDays)
+          return Number.isNaN(parsed) ? null : parsed
+        })(),
         cpf: body.cpf === "" ? null : body.cpf ?? null,
         rg: body.rg === "" ? null : body.rg ?? null,
         maritalStatus: body.maritalStatus === "" ? null : body.maritalStatus ?? null,

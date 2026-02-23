@@ -87,7 +87,13 @@ export async function PUT(
         insuranceIssuedAt: body.insuranceIssuedAt ?? undefined,
         insuranceRepasseType: body.insuranceRepasseType === "" ? null : body.insuranceRepasseType ?? undefined,
         insuranceRepasseValue: body.insuranceRepasseValue ?? undefined,
-        insurancePaymentDays: body.insurancePaymentDays ?? undefined,
+        insurancePaymentDays: (() => {
+          if (body.insurancePaymentDays === null || body.insurancePaymentDays === undefined) {
+            return undefined
+          }
+          const parsed = Number(body.insurancePaymentDays)
+          return Number.isNaN(parsed) ? undefined : parsed
+        })(),
         cpf: body.cpf === "" ? null : body.cpf ?? undefined,
         rg: body.rg === "" ? null : body.rg ?? undefined,
         maritalStatus: body.maritalStatus === "" ? null : body.maritalStatus ?? undefined,
