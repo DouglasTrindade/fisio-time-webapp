@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import { apiRequest } from "../services/api";
 import type { RecordsResponse, ApiResponse } from "@/types/api";
+import { getApiErrorMessage } from "@/services/api/error";
 
 type UseRecordsOptions<T> = Partial<
   Omit<UseQueryOptions<RecordsResponse<T>, Error>, "queryKey" | "queryFn">
@@ -62,7 +63,8 @@ export const useCreateRecord = <TData = unknown, TVariables = unknown>(
       queryClient.invalidateQueries({ queryKey: [endpoint] });
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao criar");
+      console.error("Erro ao criar:", error);
+      toast.error(getApiErrorMessage(error, "Erro ao criar"));
     },
   });
 };

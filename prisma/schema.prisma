@@ -66,7 +66,14 @@ model Patient {
   complement     String?
   country        String?
   cpf            String?
+  financialPlan  String?         @map("financial_plan")
   gender         String?
+  insuranceName        String?   @map("insurance_name")
+  insuranceCardNumber  String?   @map("insurance_card_number")
+  insuranceIssuedAt    DateTime? @map("insurance_issued_at")
+  insuranceRepasseType String?   @map("insurance_repasse_type")
+  insuranceRepasseValue Decimal? @map("insurance_repasse_value")
+  insurancePaymentDays Int?      @map("insurance_payment_days")
   maritalStatus  String?         @map("marital_status")
   neighborhood   String?
   number         String?
