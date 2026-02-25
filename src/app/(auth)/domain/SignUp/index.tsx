@@ -7,7 +7,7 @@ import { SignUpFields } from "./Fields";
 import { Form, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SignUpAction } from "@/actions/SignUp";
 
@@ -17,7 +17,6 @@ interface SignUpProps {
 
 export const SignUp = ({ inviteToken }: SignUpProps) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [tokenFromUrl, setTokenFromUrl] = useState(inviteToken ?? "");
   const form = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
@@ -29,6 +28,8 @@ export const SignUp = ({ inviteToken }: SignUpProps) => {
       inviteToken: inviteToken ?? "",
     },
   });
+  const { isSubmitting } = form.formState
+
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -47,18 +48,17 @@ export const SignUp = ({ inviteToken }: SignUpProps) => {
       ...data,
       inviteToken: tokenFromUrl || data.inviteToken || "",
     };
-    startTransition(() => {
-      SignUpAction(payload).then((res) => {
-        if (res?.error) {
-          form.setError("root", { message: res.error });
-          toast.error(res.error);
-          return;
-        }
 
-        toast.success("Cadastro realizado com sucesso!");
-        form.reset();
-        router.push("/sign-in");
-      });
+    SignUpAction(payload).then((res) => {
+      if (res?.error) {
+        form.setError("root", { message: res.error });
+        toast.error(res.error);
+        return;
+      }
+
+      toast.success("Cadastro realizado com sucesso!");
+      form.reset();
+      router.push("/sign-in");
     });
   };
 
@@ -73,9 +73,9 @@ export const SignUp = ({ inviteToken }: SignUpProps) => {
         <Button
           type="submit"
           className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
-          disabled={isPending}
+          disabled={isSubmitting}
         >
-          {isPending ? "Cadastrando..." : "Cadastrar"}
+          {isSubmitting ? "Cadastrando..." : "Cadastrar"}
         </Button>
         <div className="flex justify-center font-semibold">
           <a href="/sign-in">Já possuo uma conta</a>
