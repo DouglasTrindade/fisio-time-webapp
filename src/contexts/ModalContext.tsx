@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { createContext, useContext, useState, ReactNode } from 'react'
-import { Dialog } from '@/components/ui/dialog'
-import { RecordType } from '@/types/index'
+import { createContext, useContext, useState, type ReactNode } from "react"
+import { Dialog } from "@/components/ui/dialog"
+import { RecordType } from "@/types/record"
 
 type ModalOptions<TRecord extends RecordType = RecordType> = {
   modal: React.ComponentType<any>
@@ -38,7 +38,7 @@ export function useModalContext<
     >
   )
   if (!context) {
-    throw new Error('useModalContext must be used within a ModalProvider')
+    throw new Error("useModalContext must be used within a ModalProvider")
   }
   return context
 }
