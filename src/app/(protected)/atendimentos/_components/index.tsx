@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Download, FileSpreadsheet } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { AttendanceListItem } from "./ListItem"
-import { AttendanceDialog } from "./Modal"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { AttendancesFilters } from "./Filters"
 import type { Attendance } from "@/types/attendance"
@@ -30,10 +29,6 @@ export const Attendances = () => {
     filters,
     openNew,
     openEdit,
-    isDialogOpen,
-    creatingType,
-    editingAttendance,
-    closeDialog,
     handleSearch,
     handlePageChange,
     handleSortChange,
@@ -157,14 +152,6 @@ export const Attendances = () => {
         />
       )}
 
-      <AttendanceDialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) closeDialog()
-        }}
-        type={creatingType}
-        attendance={editingAttendance}
-      />
     </div>
   )
 }

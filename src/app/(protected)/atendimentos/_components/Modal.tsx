@@ -15,7 +15,6 @@ import { useAttendancesContext } from "@/contexts/AttendancesContext"
 import { handleApiError } from "@/services/handleApiError"
 
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -30,10 +29,10 @@ import { cn } from "@/lib/utils"
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 
 interface AttendanceDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   type: AttendanceType
   attendance: Attendance | null
+  onHide?: () => void
+  onSave?: (record: Attendance | null) => void
 }
 
 const typeLabels = {
@@ -123,10 +122,10 @@ const getFinanceDefaults = (attendance?: Attendance | null) => {
 }
 
 export const AttendanceDialog = ({
-  open,
-  onOpenChange,
   type,
   attendance,
+  onHide,
+  onSave,
 }: AttendanceDialogProps) => {
   const [activeTab, setActiveTab] = useState<"clinical" | "finance">("clinical")
   const { data: session } = useSession()
@@ -173,10 +172,7 @@ export const AttendanceDialog = ({
   })
 
   useEffect(() => {
-    if (open) {
-      setActiveTab("clinical")
-    }
-    if (!open) return
+    setActiveTab("clinical")
 
     const normalizeAttachments = (
       attachments: AttendanceAttachment[] | null | undefined,
@@ -229,7 +225,7 @@ export const AttendanceDialog = ({
         ...getFinanceDefaults(),
       })
     }
-  }, [attendance, form, open])
+  }, [attendance, form])
 
   const isSubmitting = isCreating || isUpdating
   const dialogType = attendance ? normalizeDialogType(attendance.type) : normalizeDialogType(type)
@@ -284,87 +280,87 @@ export const AttendanceDialog = ({
     try {
       if (attendance) {
         await handleUpdate(attendance.id, payload)
+        onSave?.(attendance ?? null)
       } else {
         await handleCreate(creationPayload)
+        onSave?.(null)
       }
-      onOpenChange(false)
+      onHide?.()
     } catch (error) {
       handleApiError(error, attendance ? "Erro ao atualizar atendimento" : "Erro ao criar atendimento")
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="flex flex-col gap-1">
-            <span>{title}</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              {typeLabel}
-            </span>
-          </DialogTitle>
-        </DialogHeader>
+    <DialogContent className="sm:max-w-3xl">
+      <DialogHeader>
+        <DialogTitle className="flex flex-col gap-1">
+          <span>{title}</span>
+          <span className="text-sm font-normal text-muted-foreground">
+            {typeLabel}
+          </span>
+        </DialogTitle>
+      </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <div className="rounded-lg border bg-muted/30 p-1 text-sm font-medium text-muted-foreground">
-              <div className="grid grid-cols-2 gap-1">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("clinical")}
-                  className={cn(
-                    "rounded-md px-3 py-2 transition-colors",
-                    activeTab === "clinical"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  {isEvolution ? "Dados clínicos" : "Avaliação"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("finance")}
-                  className={cn(
-                    "rounded-md px-3 py-2 transition-colors",
-                    activeTab === "finance"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  Financeiro
-                </button>
-              </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <div className="rounded-lg border bg-muted/30 p-1 text-sm font-medium text-muted-foreground">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("clinical")}
+                className={cn(
+                  "rounded-md px-3 py-2 transition-colors",
+                  activeTab === "clinical"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "hover:bg-muted"
+                )}
+              >
+                {isEvolution ? "Dados clínicos" : "Avaliação"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("finance")}
+                className={cn(
+                  "rounded-md px-3 py-2 transition-colors",
+                  activeTab === "finance"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "hover:bg-muted"
+                )}
+              >
+                Financeiro
+              </button>
             </div>
+          </div>
 
-            {activeTab === "clinical" ? (
-              isEvolution ? (
-                <EvolutionFields
-                  form={form}
-                  patients={patients}
-                  isLoadingPatients={isLoadingPatients}
-                />
-              ) : (
-                <EvaluationFields
-                  form={form}
-                  patients={patients}
-                  isLoadingPatients={isLoadingPatients}
-                />
-              )
+          {activeTab === "clinical" ? (
+            isEvolution ? (
+              <EvolutionFields
+                form={form}
+                patients={patients}
+                isLoadingPatients={isLoadingPatients}
+              />
             ) : (
-              <FinanceFields form={form} />
-            )}
+              <EvaluationFields
+                form={form}
+                patients={patients}
+                isLoadingPatients={isLoadingPatients}
+              />
+            )
+          ) : (
+            <FinanceFields form={form} />
+          )}
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !professionalId}>
-                {isSubmitting ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={isSubmitting}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !professionalId}>
+              {isSubmitting ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </DialogContent>
   )
 }

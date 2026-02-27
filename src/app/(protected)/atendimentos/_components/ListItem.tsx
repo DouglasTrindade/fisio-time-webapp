@@ -15,17 +15,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { useAttendancesContext } from "@/contexts/AttendancesContext"
+import { useModalContext } from "@/contexts/ModalContext"
 import {
   formatAttendanceDate,
   formatAttendanceTime,
@@ -37,17 +35,54 @@ interface AttendanceListItemProps {
   onEdit: (attendance: Attendance) => void
 }
 
-export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemProps) => {
-  const { handleDelete, isDeleting } = useAttendancesContext()
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const router = useRouter()
+interface DeleteAttendanceDialogProps {
+  attendance: Attendance
+  onHide?: () => void
+}
+
+const DeleteAttendanceDialog = ({ attendance, onHide }: DeleteAttendanceDialogProps) => {
+  const { handleDelete } = useAttendancesContext()
   const hasTreatmentPlan = Boolean(attendance.treatmentPlan)
   const typeLabel = getAttendanceTypeLabel(attendance.type)
 
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const handleDeleteClick = async () => {
-    await handleDelete(attendance.id)
-    setIsConfirmOpen(false)
+    setIsDeleting(true)
+    try {
+      await handleDelete(attendance.id)
+      onHide?.()
+    } finally {
+      setIsDeleting(false)
+    }
   }
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Excluir atendimento</DialogTitle>
+        <DialogDescription>
+          {hasTreatmentPlan
+            ? `Esta ${typeLabel.toLowerCase()} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
+            : "Esta ação não pode ser desfeita. Deseja continuar?"}
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={isDeleting}>
+          Cancelar
+        </Button>
+        <Button type="button" variant="destructive" onClick={handleDeleteClick} disabled={isDeleting}>
+          {isDeleting ? "Excluindo..." : "Excluir"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  )
+}
+
+export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemProps) => {
+  const router = useRouter()
+  const typeLabel = getAttendanceTypeLabel(attendance.type)
+  const { openModal } = useModalContext()
 
   const navigateToDetails = () => {
     router.push(`/atendimentos/${attendance.id}`)
@@ -95,7 +130,12 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => setIsConfirmOpen(true)}
+                onClick={() =>
+                  openModal(
+                    { modal: DeleteAttendanceDialog },
+                    { attendance }
+                  )
+                }
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
@@ -104,28 +144,6 @@ export const AttendanceListItem = ({ attendance, onEdit }: AttendanceListItemPro
           </DropdownMenu>
         </TableCell>
       </TableRow>
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir atendimento</AlertDialogTitle>
-            <AlertDialogDescription>
-              {hasTreatmentPlan
-                ? `Esta ${typeLabel.toLowerCase()} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
-                : "Esta ação não pode ser desfeita. Deseja continuar?"}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

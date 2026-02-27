@@ -17,6 +17,7 @@ import { usePatientsContextOptional } from "@/contexts/PatientsContext";
 interface PatientsEditProps {
   patientId: string;
   onClose?: () => void;
+  onHide?: () => void;
   onSuccess?: () => void;
 }
 
@@ -55,7 +56,7 @@ const mapPatientToFormValues = (
   complement: patient?.complement ?? "",
 })
 
-export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProps) => {
+export const PatientsEdit = ({ patientId, onClose, onHide, onSuccess }: PatientsEditProps) => {
   const patientContext = usePatientsContextOptional()
   const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
     "/patients",
@@ -100,10 +101,8 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
   }, [patientId]);
 
   const closeModal = () => {
-    if (patientContext) {
-      patientContext.closeEdit()
-    }
     onClose?.()
+    onHide?.()
   }
 
   const onSubmit = async (values: PatientSchema) => {

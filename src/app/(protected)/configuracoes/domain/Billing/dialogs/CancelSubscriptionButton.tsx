@@ -1,22 +1,16 @@
 "use client"
 
-import { useState } from "react"
-import { Ban, Loader2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import type { ApiResponse } from "@/types/api"
 import { apiRequest } from "@/services/api"
 
@@ -24,10 +18,10 @@ import { billingKeys } from "../hooks/queries"
 
 interface Props {
   subscriptionId: string
+  onHide?: () => void
 }
 
-export const CancelSubscriptionButton = ({ subscriptionId }: Props) => {
-  const [open, setOpen] = useState(false)
+export const CancelSubscriptionButton = ({ subscriptionId, onHide }: Props) => {
   const queryClient = useQueryClient()
   const mutation = useMutation({
     mutationFn: () =>
@@ -37,8 +31,8 @@ export const CancelSubscriptionButton = ({ subscriptionId }: Props) => {
       }),
     onSuccess: (response) => {
       toast.success(response.message || "Cancelamento agendado")
-      setOpen(false)
       queryClient.invalidateQueries({ queryKey: billingKeys.summary() })
+      onHide?.()
     },
     onError: (error: Error) => {
       toast.error(error.message || "Não foi possível cancelar a assinatura")
@@ -46,38 +40,26 @@ export const CancelSubscriptionButton = ({ subscriptionId }: Props) => {
   })
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="gap-2 border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-        >
-          {mutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Ban className="h-4 w-4" />
-          )}
-          {mutation.isPending ? "Processando" : "Cancelar renovação"}
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Cancelar assinatura?</DialogTitle>
+        <DialogDescription>
+          A assinatura continuará ativa até o final do ciclo atual. Você pode reativá-la antes desse prazo.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={mutation.isPending}>
+          Voltar
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Cancelar assinatura?</AlertDialogTitle>
-          <AlertDialogDescription>
-            A assinatura continuará ativa até o final do ciclo atual. Você pode reativá-la antes desse prazo.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={mutation.isPending}>Voltar</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {mutation.isPending ? "Cancelando..." : "Confirmar"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? "Cancelando..." : "Confirmar"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
   )
 }

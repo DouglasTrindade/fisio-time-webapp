@@ -1,14 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { PencilLine } from "lucide-react"
+import { useEffect } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -21,10 +20,10 @@ import { editCardSchema, type EditCardFormValues } from "../schema"
 interface EditPaymentMethodDialogProps {
   method: BillingPaymentMethod
   onSuccess: () => void
+  onHide?: () => void
 }
 
-export const EditPaymentMethodDialog = ({ method, onSuccess }: EditPaymentMethodDialogProps) => {
-  const [open, setOpen] = useState(false)
+export const EditPaymentMethodDialog = ({ method, onSuccess, onHide }: EditPaymentMethodDialogProps) => {
   const mutation = useMutation({
     mutationFn: async (payload: { paymentMethodId: string; billingName?: string; setAsDefault?: boolean }) =>
       apiRequest<ApiResponse>("/billing/payment-methods/update", {
@@ -34,7 +33,7 @@ export const EditPaymentMethodDialog = ({ method, onSuccess }: EditPaymentMethod
     onSuccess: (response) => {
       toast.success(response.message || "Cartão atualizado")
       onSuccess()
-      setOpen(false)
+      onHide?.()
     },
     onError: (error) => {
       toast.error(error.message || "Não foi possível atualizar o cartão")
@@ -50,13 +49,11 @@ export const EditPaymentMethodDialog = ({ method, onSuccess }: EditPaymentMethod
   })
 
   useEffect(() => {
-    if (open) {
-      form.reset({
-        billingName: method.billingName ?? "",
-        setAsDefault: method.isDefault,
-      })
-    }
-  }, [form, method.billingName, method.isDefault, open])
+    form.reset({
+      billingName: method.billingName ?? "",
+      setAsDefault: method.isDefault,
+    })
+  }, [form, method.billingName, method.isDefault])
 
   const handleSubmit = (values: EditCardFormValues) => {
     const trimmedName = values.billingName?.trim() || ""
@@ -84,20 +81,13 @@ export const EditPaymentMethodDialog = ({ method, onSuccess }: EditPaymentMethod
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <PencilLine className="h-4 w-4" />
-          <span className="sr-only">Editar cartão</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Editar cartão</DialogTitle>
-          <DialogDescription>Atualize o titular ou defina este cartão como padrão.</DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Editar cartão</DialogTitle>
+        <DialogDescription>Atualize o titular ou defina este cartão como padrão.</DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="billingName"
@@ -134,17 +124,16 @@ export const EditPaymentMethodDialog = ({ method, onSuccess }: EditPaymentMethod
               </div>
             )}
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Salvando..." : "Salvar alterações"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onHide?.()}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Salvando..." : "Salvar alterações"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
   )
 }
