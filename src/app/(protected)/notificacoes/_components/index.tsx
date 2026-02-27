@@ -21,6 +21,7 @@ import {
 import { CheckCheck, Filter, LayoutList, Search, SendHorizontal } from "lucide-react"
 import { NotificationDialog } from "./Modal"
 import { SendNotificationDialog } from "./SendNotificationModal"
+import { useModalContext } from "@/contexts/ModalContext"
 import { useRecords } from "@/hooks/useRecords"
 import type { ApiResponse } from "@/types/api"
 import { apiRequest } from "@/services/api"
@@ -44,11 +45,9 @@ export const NotificationsPage = () => {
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<NotificationStatus | "all">("all")
   const [category, setCategory] = useState<NotificationCategory | "all">("all")
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [sendDialogOpen, setSendDialogOpen] = useState(false)
-  const [selected, setSelected] = useState<AppNotification | null>(null)
   const [showAllSent, setShowAllSent] = useState(false)
   const [notificationsState, setNotificationsState] = useState<AppNotification[]>([])
+  const { openModal } = useModalContext()
 
   const inboxQuery = useMemo(
     () => ({
@@ -132,8 +131,12 @@ export const NotificationsPage = () => {
   )
 
   const handleOpenDetails = (notification: AppNotification) => {
-    setSelected(notification)
-    setDialogOpen(true)
+    openModal(
+      {
+        modal: NotificationDialog,
+      },
+      { notification }
+    )
     void markNotificationAsRead(notification)
   }
 
@@ -204,7 +207,15 @@ export const NotificationsPage = () => {
             </SelectContent>
           </Select>
 
-          <Button className="shrink-0 gap-2" onClick={() => setSendDialogOpen(true)}>
+          <Button
+            className="shrink-0 gap-2"
+            onClick={() =>
+              openModal(
+                { modal: SendNotificationDialog },
+                { onSend: handleNotificationSent }
+              )
+            }
+          >
             <SendHorizontal className="h-4 w-4" />
             Enviar notificação
           </Button>
@@ -336,17 +347,6 @@ export const NotificationsPage = () => {
         )}
       </div>
 
-      <NotificationDialog
-        notification={selected}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
-
-      <SendNotificationDialog
-        open={sendDialogOpen}
-        onOpenChange={setSendDialogOpen}
-        onSend={handleNotificationSent}
-      />
     </section>
   )
 }

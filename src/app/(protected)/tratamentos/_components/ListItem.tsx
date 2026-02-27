@@ -10,17 +10,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { TreatmentPlan } from "@/types/treatment-plan";
+import { useModalContext } from "@/contexts/ModalContext";
 
 interface TreatmentPlanListItemProps {
   plan: TreatmentPlan;
@@ -28,6 +26,54 @@ interface TreatmentPlanListItemProps {
   onDelete: (id: string) => Promise<unknown>;
   isDeleting: boolean;
 }
+
+interface DeleteTreatmentPlanDialogProps {
+  plan: TreatmentPlan;
+  onDelete: (id: string) => Promise<unknown>;
+  onHide?: () => void;
+}
+
+const DeleteTreatmentPlanDialog = ({
+  plan,
+  onDelete,
+  onHide,
+}: DeleteTreatmentPlanDialogProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteClick = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(plan.id);
+      onHide?.();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Excluir plano de tratamento</DialogTitle>
+        <DialogDescription>
+          Esta ação é permanente. Tem certeza que deseja excluir o plano?
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={isDeleting}>
+          Cancelar
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={handleDeleteClick}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Excluindo..." : "Excluir"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
 
 const formatDate = (dateInput: string | Date) => {
   const date = new Date(dateInput);
@@ -57,12 +103,7 @@ export const TreatmentPlanListItem = ({
   onDelete,
   isDeleting,
 }: TreatmentPlanListItemProps) => {
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
-  const handleDeleteClick = async () => {
-    await onDelete(plan.id);
-    setIsConfirmOpen(false);
-  };
+  const { openModal } = useModalContext();
 
   const summary =
     plan.objectives || plan.conducts || plan.prognosis || plan.resource;
@@ -102,7 +143,12 @@ export const TreatmentPlanListItem = ({
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
-                onClick={() => setIsConfirmOpen(true)}
+                onClick={() =>
+                  openModal(
+                    { modal: DeleteTreatmentPlanDialog },
+                    { plan, onDelete }
+                  )
+                }
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir
@@ -111,29 +157,6 @@ export const TreatmentPlanListItem = ({
           </DropdownMenu>
         </TableCell>
       </TableRow>
-
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir plano de tratamento</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação é permanente. Tem certeza que deseja excluir o plano?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 };

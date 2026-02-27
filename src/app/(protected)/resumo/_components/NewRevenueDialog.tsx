@@ -8,12 +8,10 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -48,8 +46,11 @@ type NewRevenueValues = z.infer<typeof newRevenueSchema>
 
 const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
 
-export const NewRevenueDialog = () => {
-  const [open, setOpen] = useState(false)
+interface NewRevenueDialogProps {
+  onHide?: () => void
+}
+
+export const NewRevenueDialog = ({ onHide }: NewRevenueDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const form = useForm<NewRevenueValues>({
@@ -78,9 +79,9 @@ export const NewRevenueDialog = () => {
       toast.success("Receita cadastrada!", {
         description: `${values.description} - R$ ${values.amount}`,
       })
-      setOpen(false)
       form.reset()
       router.refresh()
+      onHide?.()
     } catch (error) {
       handleApiError(error, "Não foi possível salvar a receita")
     } finally {
@@ -89,15 +90,11 @@ export const NewRevenueDialog = () => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Nova receita</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Nova receita</DialogTitle>
-          <DialogDescription>Registre rapidamente uma receita de atendimento ou depósito.</DialogDescription>
-        </DialogHeader>
+    <DialogContent className="sm:max-w-2xl">
+      <DialogHeader>
+        <DialogTitle>Nova receita</DialogTitle>
+        <DialogDescription>Registre rapidamente uma receita de atendimento ou depósito.</DialogDescription>
+      </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
@@ -287,7 +284,6 @@ export const NewRevenueDialog = () => {
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   )
 }

@@ -11,8 +11,12 @@ import { AddressFields } from "./Fields/AddressFields";
 import { FinanceFields } from "./Fields/FinanceFields";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
-export const PatientsNew = () => {
-  const { handleCreate, isCreating, closeNew } = usePatientContext();
+interface PatientsNewProps {
+  onHide?: () => void;
+}
+
+export const PatientsNew = ({ onHide }: PatientsNewProps) => {
+  const { handleCreate, isCreating } = usePatientContext();
   const [step, setStep] = useState(0);
   const steps = ["Informações pessoais", "Endereço", "Financeiro"];
   const stepFieldMap: ReadonlyArray<FieldPath<PatientSchema>[]> = [
@@ -87,12 +91,12 @@ export const PatientsNew = () => {
 
     form.reset();
     setStep(0);
-    closeNew();
+    onHide?.();
   }
 
   const handleClose = () => {
     setStep(0);
-    closeNew();
+    onHide?.();
   };
 
   const validateStep = async (index: number) => {

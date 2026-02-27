@@ -8,7 +8,6 @@ import { format } from "date-fns"
 import { Mail } from "lucide-react"
 
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -64,14 +63,12 @@ const sendNotificationSchema = z
 export type SendNotificationValues = z.infer<typeof sendNotificationSchema>
 
 interface SendNotificationDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  onHide?: () => void
   onSend?: () => Promise<void> | void
 }
 
 export const SendNotificationDialog = ({
-  open,
-  onOpenChange,
+  onHide,
   onSend,
 }: SendNotificationDialogProps) => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -133,7 +130,7 @@ export const SendNotificationDialog = ({
       await onSend?.()
       form.reset()
       setSearchTerm("")
-      onOpenChange(false)
+      onHide?.()
     } catch (error) {
       console.error("Falha ao enviar notificação", error)
       toast.error("Não foi possível enviar a notificação")
@@ -143,7 +140,7 @@ export const SendNotificationDialog = ({
   }
 
   const handleClose = () => {
-    onOpenChange(false)
+    onHide?.()
     form.reset()
     setSearchTerm("")
     setSelectOpen(false)
@@ -154,14 +151,13 @@ export const SendNotificationDialog = ({
   const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => (!isOpen ? handleClose() : onOpenChange(isOpen))}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>Enviar notificação</DialogTitle>
-          <DialogDescription>
-            Envie uma mensagem para outro profissional da equipe.
-          </DialogDescription>
-        </DialogHeader>
+    <DialogContent className="sm:max-w-xl">
+      <DialogHeader>
+        <DialogTitle>Enviar notificação</DialogTitle>
+        <DialogDescription>
+          Envie uma mensagem para outro profissional da equipe.
+        </DialogDescription>
+      </DialogHeader>
 
         <Form {...form}>
           <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
@@ -339,7 +335,6 @@ export const SendNotificationDialog = ({
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   )
 }

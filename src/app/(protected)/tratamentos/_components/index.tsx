@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -33,6 +32,7 @@ import type { Patient } from "@/types/patient"
 import { TreatmentPlansFilters } from "./Filters"
 import { treatmentPlansCrudConfig } from "./config"
 import { Pagination } from "@/components/Pagination"
+import { useModalContext } from "@/contexts/ModalContext"
 
 interface TreatmentPlansProps {
   initialPatientId?: string
@@ -40,6 +40,86 @@ interface TreatmentPlansProps {
   initialPatientName?: string | null
   initialAttendanceLabel?: string | null
 }
+
+interface TreatmentPlanDialogProps {
+  editingPlanId?: string | null
+  patientOptions: Patient[]
+  isLoadingPatients: boolean
+  defaultPatientId?: string
+  defaultAttendanceId?: string
+  lockedPatientId?: string
+  lockedPatientName?: string | null
+  lockedAttendanceId?: string
+  lockedAttendanceLabel?: string
+  onHide?: () => void
+  onSuccess?: () => void
+  onCreate: (data: TreatmentPlanCreateInput) => Promise<TreatmentPlan>
+  onUpdate: (id: string, data: TreatmentPlanUpdateInput) => Promise<TreatmentPlan>
+  isCreating: boolean
+  isUpdating: boolean
+}
+
+const TreatmentPlanDialog = ({
+  editingPlanId,
+  patientOptions,
+  isLoadingPatients,
+  defaultPatientId,
+  defaultAttendanceId,
+  lockedPatientId,
+  lockedPatientName,
+  lockedAttendanceId,
+  lockedAttendanceLabel,
+  onHide,
+  onSuccess,
+  onCreate,
+  onUpdate,
+  isCreating,
+  isUpdating,
+}: TreatmentPlanDialogProps) => (
+  <DialogContent className="sm:max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>
+        {editingPlanId ? "Editar plano de tratamento" : "Novo plano de tratamento"}
+      </DialogTitle>
+    </DialogHeader>
+    {(() => {
+      const handleSuccess = () => {
+        onSuccess?.()
+        onHide?.()
+      }
+
+      return editingPlanId ? (
+        <TreatmentPlanEdit
+          planId={editingPlanId}
+          patients={patientOptions}
+          isLoadingPatients={isLoadingPatients}
+          onSuccess={handleSuccess}
+          onUpdate={onUpdate}
+          isUpdating={isUpdating}
+        />
+      ) : (
+        <TreatmentPlanNew
+          patients={patientOptions}
+          isLoadingPatients={isLoadingPatients}
+          defaultPatientId={defaultPatientId}
+          defaultAttendanceId={defaultAttendanceId}
+          lockedPatientId={lockedPatientId}
+          lockedPatientName={lockedPatientName}
+          lockedAttendanceId={lockedAttendanceId}
+          lockedAttendanceLabel={lockedAttendanceLabel}
+          onSuccess={handleSuccess}
+          onCreate={onCreate}
+          isCreating={isCreating}
+        />
+      )
+    })()}
+    <div className="sr-only">
+      <Button type="button" onClick={onHide}>
+        Fechar
+      </Button>
+    </div>
+  </DialogContent>
+)
 
 export const TreatmentPlans = ({
   initialPatientId,
@@ -82,24 +162,7 @@ export const TreatmentPlans = ({
     treatmentPlansCrudConfig.endpoint,
   )
   const deleteMutation = useDeleteRecord(treatmentPlansCrudConfig.endpoint)
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingPlanId, setEditingPlanId] = useState<string | null>(null)
-
-  const openNew = useCallback(() => {
-    setEditingPlanId(null)
-    setIsDialogOpen(true)
-  }, [])
-
-  const openEdit = useCallback((id: string) => {
-    setEditingPlanId(id)
-    setIsDialogOpen(true)
-  }, [])
-
-  const closeDialog = useCallback(() => {
-    setIsDialogOpen(false)
-    setEditingPlanId(null)
-  }, [])
+  const { openModal } = useModalContext()
 
   const handleSearch = useCallback((value: string) => {
     setFilters((previous) => ({
@@ -196,6 +259,57 @@ export const TreatmentPlans = ({
     ? records.find((plan) => plan.attendanceId === prefillContext.attendanceId)
     : undefined
 
+  const handleDialogClose = useCallback(() => {
+    if (prefillContext) {
+      setPrefillContext(null)
+    }
+  }, [prefillContext])
+
+  const patientFilterValue = (filters.patientId as string) ?? ""
+  const sortValue = `${filters.sortBy ?? "createdAt"}-${filters.sortOrder ?? "desc"}`
+  const totalPlans = pagination?.total ?? records.length
+  const searchValue = (filters.search as string) ?? ""
+  const defaultPatientForForm =
+    typeof filters.patientId === "string" && filters.patientId.length > 0
+      ? filters.patientId
+      : undefined
+
+  const openPlanDialog = useCallback(
+    (planId?: string | null) => {
+      openModal(
+        { modal: TreatmentPlanDialog },
+        {
+          editingPlanId: planId ?? null,
+          patientOptions,
+          isLoadingPatients,
+          defaultPatientId: prefillContext?.patientId ?? defaultPatientForForm,
+          defaultAttendanceId: prefillContext?.attendanceId,
+          lockedPatientId: prefillContext?.patientId,
+          lockedPatientName: prefillContext?.patientName ?? null,
+          lockedAttendanceId: prefillContext?.attendanceId,
+          lockedAttendanceLabel: prefillContext?.attendanceLabel ?? undefined,
+          onSuccess: handleDialogClose,
+          onCreate: handleCreate,
+          onUpdate: handleUpdate,
+          isCreating: createMutation.isPending,
+          isUpdating: updateMutation.isPending,
+        }
+      )
+    },
+    [
+      openModal,
+      patientOptions,
+      isLoadingPatients,
+      prefillContext,
+      defaultPatientForForm,
+      handleDialogClose,
+      handleCreate,
+      handleUpdate,
+      createMutation.isPending,
+      updateMutation.isPending,
+    ],
+  )
+
   useEffect(() => {
     if (
       !prefillContext ||
@@ -208,28 +322,12 @@ export const TreatmentPlans = ({
     }
 
     if (targetedPlan) {
-      openEdit(targetedPlan.id)
+      openPlanDialog(targetedPlan.id)
     } else {
-      openNew()
+      openPlanDialog(null)
     }
     openedAttendanceRef.current = prefillContext.attendanceId
-  }, [isFetching, isLoading, openEdit, openNew, prefillContext, targetedPlan])
-
-  const handleDialogClose = useCallback(() => {
-    closeDialog()
-    if (prefillContext) {
-      setPrefillContext(null)
-    }
-  }, [closeDialog, prefillContext])
-
-  const patientFilterValue = (filters.patientId as string) ?? ""
-  const sortValue = `${filters.sortBy ?? "createdAt"}-${filters.sortOrder ?? "desc"}`
-  const totalPlans = pagination?.total ?? records.length
-  const searchValue = (filters.search as string) ?? ""
-  const defaultPatientForForm =
-    typeof filters.patientId === "string" && filters.patientId.length > 0
-      ? filters.patientId
-      : undefined
+  }, [isFetching, isLoading, openPlanDialog, prefillContext, targetedPlan])
 
   const patientSelectOptions = useMemo(
     () =>
@@ -250,7 +348,7 @@ export const TreatmentPlans = ({
             {totalPlans === 1 ? "" : "s"}
           </p>
         </div>
-        <Button onClick={openNew}>
+        <Button onClick={() => openPlanDialog(null)}>
           <Plus className="mr-2 h-4 w-4" />
           Novo plano
         </Button>
@@ -311,7 +409,7 @@ export const TreatmentPlans = ({
                 <TreatmentPlanListItem
                   key={plan.id}
                   plan={plan}
-                  onEdit={openEdit}
+                  onEdit={(id) => openPlanDialog(id)}
                   onDelete={handleDelete}
                   isDeleting={deleteMutation.isPending}
                 />
@@ -329,46 +427,6 @@ export const TreatmentPlans = ({
         />
       )}
 
-      <Dialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            handleDialogClose()
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {editingPlanId ? "Editar plano de tratamento" : "Novo plano de tratamento"}
-            </DialogTitle>
-          </DialogHeader>
-          {editingPlanId ? (
-            <TreatmentPlanEdit
-              planId={editingPlanId}
-              patients={patientOptions}
-              isLoadingPatients={isLoadingPatients}
-              onSuccess={handleDialogClose}
-              onUpdate={handleUpdate}
-              isUpdating={updateMutation.isPending}
-            />
-          ) : (
-            <TreatmentPlanNew
-              patients={patientOptions}
-              isLoadingPatients={isLoadingPatients}
-              defaultPatientId={prefillContext?.patientId ?? defaultPatientForForm}
-              defaultAttendanceId={prefillContext?.attendanceId}
-              lockedPatientId={prefillContext?.patientId}
-              lockedPatientName={prefillContext?.patientName}
-              lockedAttendanceId={prefillContext?.attendanceId}
-              lockedAttendanceLabel={prefillContext?.attendanceLabel ?? undefined}
-              onSuccess={handleDialogClose}
-              onCreate={handleCreate}
-              isCreating={createMutation.isPending}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

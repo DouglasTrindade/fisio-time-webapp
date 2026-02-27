@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { cn } from "@/lib/utils"
 import type { SubscriptionPlan } from "@/types/billing"
 import { CheckoutDialog } from "./_components/CheckoutDialog"
+import { useModalContext } from "@/contexts/ModalContext"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -118,13 +119,11 @@ const plans: SubscriptionPlan[] = [
 
 export default function UpgradePage() {
   const [cycle, setCycle] = useState<(typeof billingCycles)[number]>(billingCycles[0])
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null)
-  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const { openModal } = useModalContext()
 
   const cycleOptions = useMemo(() => billingCycles, [])
   const handleSelectPlan = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan)
-    setCheckoutOpen(true)
+    openModal({ modal: CheckoutDialog }, { plan })
   }
 
   return (
@@ -243,7 +242,6 @@ export default function UpgradePage() {
           Precisa de algo personalizado? <span className="font-medium text-foreground">Fale com nosso time comercial</span> e montamos um plano com volume de mensagens, unidades adicionais ou integrações específicas.
         </p>
       </div>
-      <CheckoutDialog plan={selectedPlan} open={checkoutOpen} onOpenChange={setCheckoutOpen} />
     </section>
   )
 }

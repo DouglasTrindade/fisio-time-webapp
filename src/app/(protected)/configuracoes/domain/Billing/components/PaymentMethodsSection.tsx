@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ShieldCheck, Loader2 } from "lucide-react"
+import { ShieldCheck, Loader2, PencilLine, Trash2 } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -17,6 +17,7 @@ import { AddCardDialog } from "../dialogs/AddCardDialog"
 import { EditPaymentMethodDialog } from "../dialogs/EditPaymentMethodDialog"
 import { RemovePaymentMethodButton } from "../dialogs/RemovePaymentMethodButton"
 import { ErrorState } from "./ErrorState"
+import { useModalContext } from "@/contexts/ModalContext"
 
 interface PaymentMethodsSectionProps {
   methods?: BillingPaymentMethod[]
@@ -31,6 +32,7 @@ export const PaymentMethodsSection = ({
 }: PaymentMethodsSectionProps) => {
   const queryClient = useQueryClient()
   const [pendingMethod, setPendingMethod] = useState<string | null>(null)
+  const { openModal } = useModalContext()
 
   const invalidateBillingData = () => {
     queryClient.invalidateQueries({ queryKey: billingKeys.paymentMethods() })
@@ -105,12 +107,34 @@ export const PaymentMethodsSection = ({
                     Definir como padrão
                   </Button>
                 ) : null}
-                <EditPaymentMethodDialog method={method} onSuccess={invalidateBillingData} />
-                <RemovePaymentMethodButton
-                  method={method}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    openModal(
+                      { modal: EditPaymentMethodDialog },
+                      { method, onSuccess: invalidateBillingData }
+                    )
+                  }
+                >
+                  <PencilLine className="h-4 w-4" />
+                  <span className="sr-only">Editar cartão</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   disabled={cards.length === 1}
-                  onSuccess={invalidateBillingData}
-                />
+                  className="text-destructive hover:text-destructive"
+                  onClick={() =>
+                    openModal(
+                      { modal: RemovePaymentMethodButton },
+                      { method, disabled: cards.length === 1, onSuccess: invalidateBillingData }
+                    )
+                  }
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Remover cartão</span>
+                </Button>
               </div>
             </div>
           ))
@@ -119,7 +143,15 @@ export const PaymentMethodsSection = ({
             Nenhum cartão cadastrado. Utilize o fluxo de upgrade para adicionar um novo método.
           </p>
         )}
-        <AddCardDialog onSuccess={invalidateBillingData} />
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() =>
+            openModal({ modal: AddCardDialog }, { onSuccess: invalidateBillingData })
+          }
+        >
+          + Adicionar novo cartão
+        </Button>
       </CardContent>
     </Card>
   )

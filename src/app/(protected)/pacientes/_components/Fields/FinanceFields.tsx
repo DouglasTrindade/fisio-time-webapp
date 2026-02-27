@@ -6,7 +6,6 @@ import { Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -17,6 +16,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema"
+import { useModalContext } from "@/contexts/ModalContext"
 
 interface FinanceFieldsProps {
   form: UseFormReturn<PatientSchema>
@@ -41,13 +41,8 @@ export const FinanceFields = ({ form }: FinanceFieldsProps) => {
   const repasseDays = form.watch("insurancePaymentDays")
   const insuranceName = form.watch("insuranceName")
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [dialogStep, setDialogStep] = useState(0)
-  const [dialogName, setDialogName] = useState("")
-  const [dialogRepasseType, setDialogRepasseType] = useState<"percentage" | "amount">("amount")
-  const [dialogRepasseValue, setDialogRepasseValue] = useState("")
-  const [dialogPaymentDays, setDialogPaymentDays] = useState("")
   const [insuranceOptions, setInsuranceOptions] = useState<string[]>([])
+  const { openModal } = useModalContext()
 
   useEffect(() => {
     if (plan !== "insurance") {
@@ -76,31 +71,32 @@ export const FinanceFields = ({ form }: FinanceFieldsProps) => {
   }, [repasseType, repasseValue, repasseDays])
 
   const openDialog = () => {
-    setDialogName(form.getValues("insuranceName") || "")
-    setDialogRepasseType((form.getValues("insuranceRepasseType") as "percentage" | "amount") || "amount")
-    setDialogRepasseValue(form.getValues("insuranceRepasseValue") || "")
-    setDialogPaymentDays(form.getValues("insurancePaymentDays") || "")
-    setDialogStep(0)
-    setIsDialogOpen(true)
-  }
-
-  const handleNext = () => {
-    if (!dialogName.trim()) return
-    setDialogStep(1)
-  }
-
-  const handleConfirm = () => {
-    const normalizedName = dialogName.trim()
-    if (!normalizedName) return
-    form.setValue("insuranceName", normalizedName, { shouldDirty: true })
-    setInsuranceOptions((previous) => {
-      if (previous.includes(normalizedName)) return previous
-      return [...previous, normalizedName]
-    })
-    form.setValue("insuranceRepasseType", dialogRepasseType, { shouldDirty: true })
-    form.setValue("insuranceRepasseValue", dialogRepasseValue, { shouldDirty: true })
-    form.setValue("insurancePaymentDays", dialogPaymentDays, { shouldDirty: true })
-    setIsDialogOpen(false)
+    openModal(
+      { modal: InsuranceDialog },
+      {
+        defaultName: form.getValues("insuranceName") || "",
+        defaultRepasseType: (form.getValues("insuranceRepasseType") as "percentage" | "amount") || "amount",
+        defaultRepasseValue: form.getValues("insuranceRepasseValue") || "",
+        defaultPaymentDays: form.getValues("insurancePaymentDays") || "",
+        onConfirm: (values: {
+          name: string
+          repasseType: "percentage" | "amount"
+          repasseValue: string
+          paymentDays: string
+        }) => {
+          const normalizedName = values.name.trim()
+          if (!normalizedName) return
+          form.setValue("insuranceName", normalizedName, { shouldDirty: true })
+          setInsuranceOptions((previous) => {
+            if (previous.includes(normalizedName)) return previous
+            return [...previous, normalizedName]
+          })
+          form.setValue("insuranceRepasseType", values.repasseType, { shouldDirty: true })
+          form.setValue("insuranceRepasseValue", values.repasseValue, { shouldDirty: true })
+          form.setValue("insurancePaymentDays", values.paymentDays, { shouldDirty: true })
+        },
+      }
+    )
   }
 
   return (
@@ -211,98 +207,143 @@ export const FinanceFields = ({ form }: FinanceFieldsProps) => {
         </div>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Adicionar convênio</DialogTitle>
-            <DialogDescription>
-              {dialogStep === 0 ? "Informe o nome do convênio." : "Defina as regras de repasse."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex items-center gap-3">
-            <div className={`h-2 flex-1 rounded-full ${dialogStep >= 0 ? "bg-primary" : "bg-muted"}`} />
-            <div className={`h-2 flex-1 rounded-full ${dialogStep >= 1 ? "bg-primary" : "bg-muted"}`} />
-          </div>
-
-          {dialogStep === 0 ? (
-            <div className="space-y-4 pt-2">
-              <FormItem>
-                <FormLabel>Nome do convênio</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Ex: Unimed"
-                    value={dialogName}
-                    onChange={(event) => setDialogName(event.target.value)}
-                  />
-                </FormControl>
-              </FormItem>
-            </div>
-          ) : (
-            <div className="grid gap-4 pt-2 sm:grid-cols-2">
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Repasse pago pelo convênio em</FormLabel>
-                <Select
-                  value={dialogRepasseType}
-                  onValueChange={(value) => setDialogRepasseType(value as "percentage" | "amount")}
-                >
-                  <FormControl className="w-full">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {repasseOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-
-              <FormItem>
-                <FormLabel>Valor</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder={dialogRepasseType === "percentage" ? "%" : "R$ 0,00"}
-                    value={dialogRepasseValue}
-                    onChange={(event) => setDialogRepasseValue(event.target.value)}
-                  />
-                </FormControl>
-              </FormItem>
-
-              <FormItem>
-                <FormLabel>Dias previstos para recebimento</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={dialogPaymentDays}
-                    onChange={(event) => setDialogPaymentDays(event.target.value)}
-                  />
-                </FormControl>
-              </FormItem>
-            </div>
-          )}
-
-          <DialogFooter className="pt-4">
-            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancelar
-            </Button>
-            {dialogStep === 0 ? (
-              <Button type="button" onClick={handleNext} disabled={!dialogName.trim()}>
-                Próximo
-              </Button>
-            ) : (
-              <Button type="button" onClick={handleConfirm}>
-                Concluir
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
+  )
+}
+
+interface InsuranceDialogProps {
+  defaultName: string
+  defaultRepasseType: "percentage" | "amount"
+  defaultRepasseValue: string
+  defaultPaymentDays: string
+  onConfirm: (values: {
+    name: string
+    repasseType: "percentage" | "amount"
+    repasseValue: string
+    paymentDays: string
+  }) => void
+  onHide?: () => void
+}
+
+const InsuranceDialog = ({
+  defaultName,
+  defaultRepasseType,
+  defaultRepasseValue,
+  defaultPaymentDays,
+  onConfirm,
+  onHide,
+}: InsuranceDialogProps) => {
+  const [dialogStep, setDialogStep] = useState(0)
+  const [dialogName, setDialogName] = useState(defaultName)
+  const [dialogRepasseType, setDialogRepasseType] = useState<"percentage" | "amount">(defaultRepasseType)
+  const [dialogRepasseValue, setDialogRepasseValue] = useState(defaultRepasseValue)
+  const [dialogPaymentDays, setDialogPaymentDays] = useState(defaultPaymentDays)
+
+  const handleNext = () => {
+    if (!dialogName.trim()) return
+    setDialogStep(1)
+  }
+
+  const handleConfirm = () => {
+    onConfirm({
+      name: dialogName,
+      repasseType: dialogRepasseType,
+      repasseValue: dialogRepasseValue,
+      paymentDays: dialogPaymentDays,
+    })
+    onHide?.()
+  }
+
+  return (
+    <DialogContent className="sm:max-w-lg">
+      <DialogHeader>
+        <DialogTitle>Adicionar convênio</DialogTitle>
+        <DialogDescription>
+          {dialogStep === 0 ? "Informe o nome do convênio." : "Defina as regras de repasse."}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="flex items-center gap-3">
+        <div className={`h-2 flex-1 rounded-full ${dialogStep >= 0 ? "bg-primary" : "bg-muted"}`} />
+        <div className={`h-2 flex-1 rounded-full ${dialogStep >= 1 ? "bg-primary" : "bg-muted"}`} />
+      </div>
+
+      {dialogStep === 0 ? (
+        <div className="space-y-4 pt-2">
+          <FormItem>
+            <FormLabel>Nome do convênio</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Ex: Unimed"
+                value={dialogName}
+                onChange={(event) => setDialogName(event.target.value)}
+              />
+            </FormControl>
+          </FormItem>
+        </div>
+      ) : (
+        <div className="grid gap-4 pt-2 sm:grid-cols-2">
+          <FormItem className="sm:col-span-2">
+            <FormLabel>Repasse pago pelo convênio em</FormLabel>
+            <Select
+              value={dialogRepasseType}
+              onValueChange={(value) => setDialogRepasseType(value as "percentage" | "amount")}
+            >
+              <FormControl className="w-full">
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {repasseOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormItem>
+
+          <FormItem>
+            <FormLabel>Valor</FormLabel>
+            <FormControl>
+              <Input
+                placeholder={dialogRepasseType === "percentage" ? "%" : "R$ 0,00"}
+                value={dialogRepasseValue}
+                onChange={(event) => setDialogRepasseValue(event.target.value)}
+              />
+            </FormControl>
+          </FormItem>
+
+          <FormItem>
+            <FormLabel>Dias previstos para recebimento</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min="0"
+                placeholder="0"
+                value={dialogPaymentDays}
+                onChange={(event) => setDialogPaymentDays(event.target.value)}
+              />
+            </FormControl>
+          </FormItem>
+        </div>
+      )}
+
+      <DialogFooter className="pt-4">
+        <Button type="button" variant="outline" onClick={() => onHide?.()}>
+          Cancelar
+        </Button>
+        {dialogStep === 0 ? (
+          <Button type="button" onClick={handleNext} disabled={!dialogName.trim()}>
+            Próximo
+          </Button>
+        ) : (
+          <Button type="button" onClick={handleConfirm}>
+            Concluir
+          </Button>
+        )}
+      </DialogFooter>
+    </DialogContent>
   )
 }

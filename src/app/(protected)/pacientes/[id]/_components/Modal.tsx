@@ -44,8 +44,7 @@ const combineDateAndTime = (date: string, time: string) => {
 interface HistoryAttendanceDialogProps {
   type: PrismaAttendanceType
   patient: PatientSummary
-  open: boolean
-  onClose: () => void
+  onHide?: () => void
   onSuccess?: () => void
   attendanceId?: string
 }
@@ -53,8 +52,7 @@ interface HistoryAttendanceDialogProps {
 export const HistoryAttendanceModal = ({
   type,
   patient,
-  open,
-  onClose,
+  onHide,
   onSuccess,
   attendanceId,
 }: HistoryAttendanceDialogProps) => {
@@ -89,7 +87,7 @@ export const HistoryAttendanceModal = ({
   })
 
   useEffect(() => {
-    if (!open || attendanceId) return
+    if (attendanceId) return
     const currentDefaults = getDefaultDateParts()
     form.reset({
       patientId: patient.id,
@@ -113,20 +111,20 @@ export const HistoryAttendanceModal = ({
       financePaid: false,
       financePaidAt: "",
     })
-  }, [attendanceId, form, open, patient.id, type])
+  }, [attendanceId, form, patient.id, type])
 
   const {
     data: existingAttendance,
     isLoading: isLoadingAttendance,
     isError: isAttendanceError,
   } = useRecord<Attendance>("/attendances", attendanceId, {
-    enabled: open && !!attendanceId,
+    enabled: !!attendanceId,
     staleTime: 0,
     retry: 1,
   })
 
   useEffect(() => {
-    if (!open || !existingAttendance) return
+    if (!existingAttendance) return
 
     const date = new Date(existingAttendance.date)
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -158,13 +156,13 @@ export const HistoryAttendanceModal = ({
         ? existingAttendance.financePaidAt.slice(0, 10)
         : "",
     })
-  }, [existingAttendance, form, open])
+  }, [existingAttendance, form])
 
   useEffect(() => {
     if (!isAttendanceError || !attendanceId) return
     toast.error("Não foi possível carregar o atendimento")
-    onClose()
-  }, [attendanceId, isAttendanceError, onClose])
+    onHide?.()
+  }, [attendanceId, isAttendanceError, onHide])
 
   const currentType =
     existingAttendance?.type === PrismaAttendanceType.EVOLUTION
@@ -222,7 +220,7 @@ export const HistoryAttendanceModal = ({
             : "Evolução registrada com sucesso",
       )
       onSuccess?.()
-      onClose()
+      onHide?.()
     } catch (error) {
       console.error(error)
       toast.error("Erro ao salvar atendimento")
@@ -262,7 +260,7 @@ export const HistoryAttendanceModal = ({
         )}
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={() => onHide?.()}>
             Cancelar
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>

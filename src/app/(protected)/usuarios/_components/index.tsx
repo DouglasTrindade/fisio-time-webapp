@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { UserPlus } from "lucide-react"
@@ -17,6 +17,7 @@ import { roleLabels } from "./InviteManagement/utils"
 import { ListItem } from "./ListItem"
 import { UserFormModal } from "./UserFormModal"
 import { DeleteUserDialog } from "./DeleteUserDialog"
+import { useModalContext } from "@/contexts/ModalContext"
 
 interface UserProps {
   currentRole?: AppRole
@@ -28,9 +29,36 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
     "/users",
     { page: 1, limit: 50, sortBy: "name", sortOrder: "asc" },
   )
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
-  const [deletingUser, setDeletingUser] = useState<UserProfile | null>(null)
+  const { openModal } = useModalContext<UserProfile, { user: UserProfile; disabled?: boolean }>()
+  const { openModal: openUserModal } = useModalContext<UserProfile, { mode: "create" | "edit"; user?: UserProfile | null }>()
+
+  const handleDeleteModal = (user: UserProfile, disabled?: boolean) => {
+    openModal(
+      {
+        modal: DeleteUserDialog,
+      },
+      { user, disabled }
+    )
+  }
+
+  const handleCreateUser = () => {
+    openUserModal(
+      {
+        modal: UserFormModal,
+      },
+      { mode: "create" }
+    )
+  }
+
+  const handleEditUser = (user: UserProfile) => {
+    openUserModal(
+      {
+        modal: UserFormModal,
+      },
+      { mode: "edit", user }
+    )
+  }
+
 
   const canManageUsers = currentRole === "ADMIN" || currentRole === "PROFESSIONAL"
   const canCreateUser = currentRole === "ADMIN"
@@ -58,7 +86,7 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
             <CardDescription>Visão geral de quem possui acesso à conta.</CardDescription>
           </div>
           {canCreateUser ? (
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <Button onClick={handleCreateUser}>
               <UserPlus className="mr-2 h-4 w-4" />
               Criar usuário
             </Button>
@@ -96,8 +124,8 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
                           ? format(new Date(member.createdAt), "dd/MM/yyyy", { locale: ptBR })
                           : "—"
                       }
-                      onEdit={() => setEditingUser(member)}
-                      onDelete={() => setDeletingUser(member)}
+                      onEdit={() => handleEditUser(member)}
+                      onDelete={() => handleDeleteModal(member, member.id === currentUserId)}
                       disableDelete={member.id === currentUserId}
                     />
                   ))
@@ -107,26 +135,6 @@ export const Users = ({ currentRole, currentUserId }: UserProps) => {
           )}
         </CardContent>
       </Card>
-
-      {canCreateUser ? (
-        <UserFormModal mode="create" open={isCreateOpen} onOpenChange={setIsCreateOpen} />
-      ) : null}
-      <UserFormModal
-        mode="edit"
-        open={Boolean(editingUser)}
-        onOpenChange={(state) => {
-          if (!state) setEditingUser(null)
-        }}
-        user={editingUser ?? undefined}
-      />
-      <DeleteUserDialog
-        user={deletingUser}
-        open={Boolean(deletingUser)}
-        onOpenChange={(state) => {
-          if (!state) setDeletingUser(null)
-        }}
-        disabled={deletingUser?.id === currentUserId}
-      />
     </div>
   )
 }
