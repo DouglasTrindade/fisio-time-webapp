@@ -5,12 +5,15 @@ import { BellRing } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { apiRequest } from "@/services/api"
 import type { ApiResponse } from "@/types/api"
 import { toast } from "sonner"
 import { getApiErrorMessage } from "@/services/api/error"
+import { cn } from "@/lib/utils"
 
 export const NotificationsSettings = () => {
   const [preference, setPreference] = useState("all")
@@ -91,45 +94,94 @@ export const NotificationsSettings = () => {
       <CardContent className="space-y-6">
         <div>
           <p className="text-sm font-medium">Notifique-me sobre...</p>
-          <RadioGroup value={preference} onValueChange={setPreference} className="mt-3 space-y-3">
-            {[{ value: "all", title: "Todas as novas mensagens" }, { value: "direct", title: "Mensagens diretas e menções" }, { value: "none", title: "Nada" }].map((option) => (
-              <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-xl border border-border/70 p-3">
-                <RadioGroupItem value={option.value} />
-                <span className="text-sm font-medium">{option.title}</span>
-              </label>
-            ))}
-          </RadioGroup>
+          {isLoading ? (
+            <div className="mt-3 space-y-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <RadioGroup
+              value={preference}
+              onValueChange={setPreference}
+              className={cn("mt-3 space-y-3", isSaving && "pointer-events-none opacity-60")}
+            >
+              {[
+                { value: "all", title: "Todas as novas mensagens" },
+                { value: "direct", title: "Mensagens diretas e menções" },
+                { value: "none", title: "Nada" },
+              ].map((option) => {
+                const inputId = `notification-preference-${option.value}`
+                return (
+                  <div key={option.value} className="flex items-center gap-3 rounded-xl border border-border/70 p-3">
+                    <RadioGroupItem value={option.value} id={inputId} disabled={isSaving} />
+                    <Label htmlFor={inputId} className="cursor-pointer text-sm font-medium">
+                      {option.title}
+                    </Label>
+                  </div>
+                )
+              })}
+            </RadioGroup>
+          )}
         </div>
 
         <div className="space-y-3">
-          {[
-            { key: "communication", title: "E-mails de comunicação", description: "Atividades importantes da conta." },
-            { key: "marketing", title: "E-mails de marketing", description: "Novidades sobre produtos e planos." },
-            { key: "social", title: "E-mails sociais", description: "Convites, menções e solicitações." },
-            { key: "security", title: "E-mails de segurança", description: "Alertas de login e dispositivos." },
-          ].map((item) => (
-            <div key={item.key} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border/70 p-4">
-              <div>
-                <p className="font-medium">{item.title}</p>
-                <p className="text-xs text-muted-foreground">{item.description}</p>
-              </div>
-              <Switch
-                checked={emailPreferences[item.key as keyof typeof emailPreferences]}
-                onCheckedChange={(checked) =>
-                  setEmailPreferences((prev) => ({
-                    ...prev,
-                    [item.key]: checked,
-                  }))
-                }
-              />
-            </div>
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-20 w-full" />
+              ))
+            : [
+                {
+                  key: "communication",
+                  title: "E-mails de comunicação",
+                  description: "Atividades importantes da conta.",
+                },
+                {
+                  key: "marketing",
+                  title: "E-mails de marketing",
+                  description: "Novidades sobre produtos e planos.",
+                },
+                {
+                  key: "social",
+                  title: "E-mails sociais",
+                  description: "Convites, menções e solicitações.",
+                },
+                {
+                  key: "security",
+                  title: "E-mails de segurança",
+                  description: "Alertas de login e dispositivos.",
+                },
+              ].map((item) => {
+                const inputId = `notification-email-${item.key}`
+                return (
+                  <div
+                    key={item.key}
+                    className={cn(
+                      "flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border/70 p-4",
+                      isSaving && "pointer-events-none opacity-60",
+                    )}
+                  >
+                    <div>
+                      <Label htmlFor={inputId} className="font-medium">
+                        {item.title}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
+                    </div>
+                    <Switch
+                      id={inputId}
+                      checked={emailPreferences[item.key as keyof typeof emailPreferences]}
+                      onCheckedChange={(checked) =>
+                        setEmailPreferences((prev) => ({
+                          ...prev,
+                          [item.key]: checked,
+                        }))
+                      }
+                      disabled={isSaving}
+                    />
+                  </div>
+                )
+              })}
         </div>
-
-        <label className="flex items-start gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" className="mt-1 h-4 w-4 rounded border-border bg-background" />
-          Usar configurações diferentes para meus dispositivos móveis.
-        </label>
 
         <div className="flex justify-end">
           <Button onClick={handleSave} disabled={isLoading || isSaving}>
