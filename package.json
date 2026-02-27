@@ -13,6 +13,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
+    "seed:admin": "tsx prisma/seeds/seed-admin.ts",
     "setup": "npm run db:generate && npm run db:migrate",
     "postinstall": "prisma generate && patch-package"
   },

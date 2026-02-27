@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, useTransition, type ReactNode } from "react"
 import { Dialog } from "@/components/ui/dialog"
 import { RecordType } from "@/types/record"
 
@@ -67,8 +67,6 @@ export const ModalProvider = <
   const closeModal = () => {
     options?.onHide?.()
     setOpen(false)
-    setOptions(null)
-    setContextProps({} as TCtxProps)
   }
 
   return (
@@ -84,7 +82,10 @@ export const ModalProvider = <
       <Dialog
         open={open}
         onOpenChange={isOpen => {
-          if (!isOpen) closeModal()
+          if (!isOpen) {
+            setOptions(null)
+            setContextProps({} as TCtxProps)
+          }
         }}
       >
         {options?.modal && (

@@ -1,12 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BellRing } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
+import { apiRequest } from "@/services/api"
+import type { ApiResponse } from "@/types/api"
+import { toast } from "sonner"
+import { getApiErrorMessage } from "@/services/api/error"
 
 export const NotificationsSettings = () => {
   const [preference, setPreference] = useState("all")
@@ -16,6 +20,62 @@ export const NotificationsSettings = () => {
     social: true,
     security: false,
   })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setIsLoading(true)
+        const response = await apiRequest<ApiResponse<{
+          preference: "all" | "direct" | "none"
+          emailCommunication: boolean
+          emailMarketing: boolean
+          emailSocial: boolean
+          emailSecurity: boolean
+        }>>("/notification-settings")
+        const data = response.data
+        if (data) {
+          setPreference(data.preference)
+          setEmailPreferences({
+            communication: data.emailCommunication,
+            marketing: data.emailMarketing,
+            social: data.emailSocial,
+            security: data.emailSecurity,
+          })
+        }
+      } catch (error) {
+        console.error(error)
+        toast.error(getApiErrorMessage(error, "Não foi possível carregar as configurações"))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void fetchSettings()
+  }, [])
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true)
+      await apiRequest<ApiResponse<unknown>>("/notification-settings", {
+        method: "PUT",
+        data: {
+          preference,
+          emailCommunication: emailPreferences.communication,
+          emailMarketing: emailPreferences.marketing,
+          emailSocial: emailPreferences.social,
+          emailSecurity: emailPreferences.security,
+        },
+      })
+      toast.success("Configurações atualizadas")
+    } catch (error) {
+      console.error(error)
+      toast.error(getApiErrorMessage(error, "Não foi possível salvar as configurações"))
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <Card className="border-border/70 bg-card/85 shadow-lg">
@@ -72,7 +132,9 @@ export const NotificationsSettings = () => {
         </label>
 
         <div className="flex justify-end">
-          <Button>Atualizar notificações</Button>
+          <Button onClick={handleSave} disabled={isLoading || isSaving}>
+            {isSaving ? "Salvando..." : "Atualizar notificações"}
+          </Button>
         </div>
       </CardContent>
     </Card>
