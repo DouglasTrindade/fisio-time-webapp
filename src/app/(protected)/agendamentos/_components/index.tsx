@@ -18,6 +18,10 @@ import { useRecords } from "@/hooks/useRecords";
 import { toast } from "sonner";
 import type { UserProfile } from "@/types/user";
 import { DEFAULT_APPOINTMENT_DURATION_MINUTES } from "./constants";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertTriangle } from "lucide-react";
 
 const APPOINTMENT_COLOR_BY_STATUS: Record<Status, TAppointment> = {
   [Status.CONFIRMED]: "green",
@@ -34,6 +38,10 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
   const { data: session } = useSession();
   const {
     records: appointmentRecords,
+    isLoading,
+    isError,
+    error,
+    refetch,
     selectedDate,
     handleDateSelect,
     openNew,
@@ -140,6 +148,25 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     });
   }, []);
 
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col gap-3 p-6">
+          <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            Não foi possível carregar os agendamentos.
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {error?.message ?? "Tente novamente em instantes."}
+          </p>
+          <div>
+            <Button onClick={() => refetch()}>Tentar novamente</Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <CalendarProvider
       appointments={calendarAppointments}
@@ -147,7 +174,17 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
       onCreateAppointment={handleCreateAppointment}
       onAppointmentEdit={handleAppointmentEdit}
     >
-      <ClientContainer view={currentView} onViewChange={handleViewChange} />
+      {isLoading && appointmentRecords.length === 0 ? (
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-8 w-2/5" />
+            <Skeleton className="h-4 w-3/5" />
+            <Skeleton className="h-[120px] w-full" />
+          </CardContent>
+        </Card>
+      ) : (
+        <ClientContainer view={currentView} onViewChange={handleViewChange} />
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         <ChangeBadgeVariantInput />
         {/* integration with public appointments */}

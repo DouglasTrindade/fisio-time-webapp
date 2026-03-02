@@ -5,12 +5,24 @@ import { Calendar, Clock, Text, User } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { appDateLocale } from "@/lib/date-locale";
 import { useRecord } from "@/hooks/useRecord";
 import type { Appointment } from "@/types/appointment";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 import { useModalContext } from "@/contexts/ModalContext";
+import { handleApiError } from "@/services/handleApiError";
 
 import type { IAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 
@@ -25,7 +37,7 @@ interface AppointmentDetailsContentProps {
 }
 
 function AppointmentDetailsContent({ appointment, onHide }: AppointmentDetailsContentProps) {
-  const { records: appointmentRecords, openEdit } = useAppointmentsContext();
+  const { records: appointmentRecords, openEdit, handleDelete, isDeleting } = useAppointmentsContext();
 
   const { data: appointmentDetails } = useRecord<Appointment>("/appointments", appointment.id, {
     enabled: true,
@@ -55,6 +67,15 @@ function AppointmentDetailsContent({ appointment, onHide }: AppointmentDetailsCo
       openEdit(target);
     }
     onHide?.();
+  };
+
+  const handleDeleteAppointment = async () => {
+    try {
+      await handleDelete(appointment.id);
+      onHide?.();
+    } catch (error) {
+      handleApiError(error, "Erro ao excluir agendamento");
+    }
   };
 
   return (
@@ -98,9 +119,32 @@ function AppointmentDetailsContent({ appointment, onHide }: AppointmentDetailsCo
       </div>
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={handleEdit}>
-          Editar
-        </Button>
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="outline" disabled={isDeleting}>
+                Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir agendamento</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir este agendamento? Essa ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAppointment} disabled={isDeleting}>
+                  {isDeleting ? "Excluindo..." : "Sim, excluir"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button type="button" onClick={handleEdit}>
+            Editar
+          </Button>
+        </div>
       </DialogFooter>
     </DialogContent>
   );

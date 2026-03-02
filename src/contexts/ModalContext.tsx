@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useTransition, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react"
 import { Dialog } from "@/components/ui/dialog"
 import { RecordType } from "@/types/record"
 
@@ -53,21 +53,20 @@ export const ModalProvider = <
   const [options, setOptions] = useState<ModalOptions<TRecord> | null>(null)
   const [contextProps, setContextProps] = useState<TCtxProps>({} as TCtxProps)
 
-  const openModal = (
-    modalOptions: ModalOptions<TRecord>,
-    ctxProps: TCtxProps = {} as TCtxProps
-  ) => {
-    if (modalOptions?.dontReplaceIfOpen && open) return
+  const openModal = useCallback(
+    (modalOptions: ModalOptions<TRecord>, ctxProps: TCtxProps = {} as TCtxProps) => {
+      if (modalOptions?.dontReplaceIfOpen && open) return
+      setOptions(modalOptions)
+      setContextProps(ctxProps)
+      setOpen(true)
+    },
+    []
+  )
 
-    setOptions(modalOptions)
-    setContextProps(ctxProps)
-    setOpen(true)
-  }
-
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     options?.onHide?.()
     setOpen(false)
-  }
+  }, [])
 
   return (
     <ModalContext.Provider
@@ -81,10 +80,11 @@ export const ModalProvider = <
       {children}
       <Dialog
         open={open}
-        onOpenChange={isOpen => {
+        onOpenChange={(isOpen) => {
           if (!isOpen) {
             setOptions(null)
             setContextProps({} as TCtxProps)
+            setOpen(false)
           }
         }}
       >

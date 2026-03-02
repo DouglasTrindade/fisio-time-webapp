@@ -10,8 +10,13 @@ const isCalendarView = (value: string | undefined): value is TCalendarView => {
   return !!value && VIEWS.includes(value as TCalendarView);
 };
 
-const CalendarPage = ({ searchParams }: { searchParams?: { view?: string } }) => {
-  const rawView = searchParams?.view;
+const CalendarPage = async ({
+  searchParams,
+}: {
+  searchParams?: Promise<{ view?: string }>
+}) => {
+  const resolvedParams = await searchParams
+  const rawView = resolvedParams?.view
   const view: TCalendarView = isCalendarView(rawView) ? rawView : "month";
 
   return (
