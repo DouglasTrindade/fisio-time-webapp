@@ -21,6 +21,9 @@ export default defineConfig({
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
+    extraHTTPHeaders: {
+      "x-playwright": "1",
+    },
   },
   webServer: {
     command: "npm run dev",

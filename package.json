@@ -16,9 +16,9 @@
     "seed:admin": "tsx prisma/seeds/seed-admin.ts",
     "setup": "npm run db:generate && npm run db:migrate",
     "postinstall": "prisma generate && patch-package",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
+    "test:e2e": "PLAYWRIGHT=1 playwright test",
+    "test:e2e:ui": "PLAYWRIGHT=1 playwright test --ui",
+    "test:e2e:headed": "PLAYWRIGHT=1 playwright test --headed",
     "test:e2e:report": "playwright show-report"
   },
   "prisma": {
