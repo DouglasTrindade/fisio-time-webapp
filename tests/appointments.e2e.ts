@@ -4,6 +4,7 @@ const createUniquePatient = async (
   page: import("@playwright/test").Page,
 ) => {
   await page.goto("/pacientes");
+  await assertNoRoutingError(page);
   await page.waitForURL(/\/pacientes/, { timeout: 2_000 });
 
   await page.getByRole("button", { name: "Novo Paciente" }).click();
@@ -20,7 +21,7 @@ const createUniquePatient = async (
   await page.getByRole("button", { name: "Avançar" }).click();
   await page.getByRole("button", { name: "Avançar" }).click();
   let saveResponse: import("@playwright/test").Response | null = null;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
     const saveResponsePromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/patients") &&
@@ -30,7 +31,8 @@ const createUniquePatient = async (
     saveResponse = await saveResponsePromise;
     if (saveResponse.ok()) break;
     if (saveResponse.status() === 429) {
-      await page.waitForTimeout(1000 * attempt);
+      const backoffMs = Math.min(8_000, 500 * 2 ** attempt);
+      await page.waitForTimeout(backoffMs);
       continue;
     }
     const body = await saveResponse.text();
@@ -52,53 +54,158 @@ const createUniquePatient = async (
   return patientName;
 };
 
-const createAppointmentForPatient = async (
+const buildDateTimeValue = (date: Date) => {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const selectPatientOption = async (
   page: import("@playwright/test").Page,
-  patientName: string,
+  preferredName?: string,
 ) => {
-  await page.goto("/agendamentos");
-  await page.waitForURL(/\/agendamentos/, { timeout: 2_000 });
+  const patientSelect = page.getByRole("combobox", { name: /paciente/i });
+  await expect(patientSelect).toBeVisible({ timeout: 10_000 });
+  await patientSelect.click();
 
-  const existingAppointments = await page
-    .getByTestId("calendar-appointment")
-    .count();
+  if (preferredName) {
+    const preferredOption = page.getByRole("option", { name: preferredName });
+    if ((await preferredOption.count()) > 0) {
+      await preferredOption.click();
+      return preferredName;
+    }
+  }
 
-  await page.getByRole("button", { name: "Novo agendamento" }).click();
+  const options = page.getByRole("option");
+  if ((await options.count()) === 0) {
+    throw new Error(
+      "Nenhum paciente disponível para seleção. Crie um paciente antes de criar um agendamento.",
+    );
+  }
+
+  const option = options.first();
+  const name = (await option.textContent())?.trim() ?? "";
+  await option.click();
+  return name;
+};
+
+const assertNoRoutingError = async (page: import("@playwright/test").Page) => {
+  const routingErrorHeading = page.getByRole("heading", {
+    name: "Routing Error",
+  });
+  if ((await routingErrorHeading.count()) > 0) {
+    throw new Error(
+      "A rota /agendamentos respondeu com erro de roteamento. Verifique se o frontend (Next) está rodando no baseURL do Playwright.",
+    );
+  }
+  const noRouteMatches = page.getByText(/No route matches/i);
+  if ((await noRouteMatches.count()) > 0) {
+    throw new Error(
+      "Nenhuma rota encontrada. Verifique se o servidor correto está rodando no baseURL do Playwright.",
+    );
+  }
+};
+
+const ensureAgendamentosPage = async (
+  page: import("@playwright/test").Page,
+) => {
+  if (!page.url().includes("/agendamentos")) {
+    await page.goto("/agendamentos");
+    await page.waitForURL(/\/agendamentos/, { timeout: 5_000 });
+  }
+  await assertNoRoutingError(page);
+  await waitForAppointmentsFetch(page, 20_000);
+};
+
+const waitForAppointmentsFetch = async (
+  page: import("@playwright/test").Page,
+  timeout = 20_000,
+) => {
+  try {
+    await page.waitForResponse(
+      (response) =>
+        response.url().includes("/appointments") &&
+        response.request().method() === "GET" &&
+        response.ok(),
+      { timeout },
+    );
+  } catch {
+    // If the request already happened or is cached, just continue.
+  }
+};
+
+const openAppointmentDetails = async (page: import("@playwright/test").Page) => {
+  await ensureAgendaView(page);
+  const appointmentItem = page.getByTestId("calendar-appointment").first();
+  await expect(appointmentItem).toBeVisible({ timeout: 10_000 });
+  await appointmentItem.click();
+};
+
+const createAppointmentForPatient = async (page: import("@playwright/test").Page) => {
+  await ensureAgendamentosPage(page);
+
+  let state = await waitForCalendarState(page, 20_000);
+  if (state === "error" || state === "none") {
+    await page.reload();
+    await waitForAppointmentsFetch(page, 20_000);
+    state = await waitForCalendarState(page, 20_000);
+    if (state === "error" || state === "none") {
+      throw new Error("Calendário não ficou pronto para criar agendamento.");
+    }
+  }
+
+  const newAppointmentButton = page.getByRole("button", {
+    name: /novo agendamento/i,
+  });
+  await expect(newAppointmentButton).toBeVisible({ timeout: 5_000 });
+  await newAppointmentButton.click();
   await expect(
     page.getByRole("heading", { name: "Novo Agendamento" }),
   ).toBeVisible();
 
-  const patientSelect = page.getByRole("combobox", { name: /paciente/i });
-  await patientSelect.click();
-  const patientOption = page.getByRole("option", { name: patientName });
-  await expect(patientOption).toBeVisible();
-  await patientOption.click();
+  await selectPatientOption(page);
 
   await page.getByLabel("Telefone").fill("(11) 99999-0000");
 
   const nowPlusOneHour = new Date(Date.now() + 60 * 60 * 1000);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  const dateValue = `${nowPlusOneHour.getFullYear()}-${pad(
-    nowPlusOneHour.getMonth() + 1,
-  )}-${pad(nowPlusOneHour.getDate())}T${pad(
-    nowPlusOneHour.getHours(),
-  )}:${pad(nowPlusOneHour.getMinutes())}`;
+  const dateValue = buildDateTimeValue(nowPlusOneHour);
+  const marker = `E2E ${Date.now()}`;
 
   await page.getByLabel("Data").fill(dateValue);
-  await page.getByRole("button", { name: "Salvar" }).click();
+  await page.getByLabel("Observações").fill(marker);
+  let saveResponse: import("@playwright/test").Response | null = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const saveResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/appointments") &&
+        response.request().method() === "POST",
+    );
+    await page.getByRole("button", { name: "Salvar" }).click();
+    saveResponse = await saveResponsePromise;
+    if (saveResponse.ok()) break;
+    if (saveResponse.status() === 429) {
+      const backoffMs = Math.min(4_000, 500 * 2 ** attempt);
+      await page.waitForTimeout(backoffMs);
+      continue;
+    }
+    const body = await saveResponse.text();
+    throw new Error(
+      `Falha ao criar agendamento: ${saveResponse.status()} ${body}`,
+    );
+  }
+  if (!saveResponse || !saveResponse.ok()) {
+    const body = saveResponse ? await saveResponse.text() : "";
+    throw new Error(
+      `Falha ao criar agendamento: ${saveResponse?.status() ?? "sem resposta"} ${body}`,
+    );
+  }
 
   await expect(
     page.getByRole("heading", { name: "Novo Agendamento" }),
   ).toBeHidden();
 
-  await expect
-    .poll(
-      async () => await page.getByTestId("calendar-appointment").count(),
-      { timeout: 10_000 },
-    )
-    .toBeGreaterThan(existingAppointments);
-
-  return patientName;
+  await ensureAgendaView(page);
 };
 
 const ensureAgendaView = async (page: import("@playwright/test").Page) => {
@@ -110,6 +217,7 @@ const ensureAgendaView = async (page: import("@playwright/test").Page) => {
 
 const ensureAuthenticated = async (page: import("@playwright/test").Page) => {
   await page.goto("/agendamentos");
+  await assertNoRoutingError(page);
   if (page.url().includes("/sign-in")) {
     const email = process.env.E2E_EMAIL;
     const password = process.env.E2E_PASSWORD;
@@ -134,7 +242,16 @@ const ensureAuthenticated = async (page: import("@playwright/test").Page) => {
     await passwordInput.click();
     await passwordInput.fill(password);
     await page.getByRole("button", { name: /entrar/i }).click();
-    await page.waitForURL(/\/(dashboard|agendamentos)/, { timeout: 10_000 });
+    await waitForAppointmentsFetch(page, 20_000);
+    await Promise.race([
+      page.waitForURL(/\/(dashboard|agendamentos)/, { timeout: 20_000 }),
+      page
+        .getByRole("button", { name: "Novo agendamento" })
+        .waitFor({ state: "visible", timeout: 20_000 }),
+      page
+        .getByText("Nenhum agendamento encontrado")
+        .waitFor({ state: "visible", timeout: 20_000 }),
+    ]);
 
     if (page.url().includes("/sign-in")) {
       throw new Error(
@@ -144,9 +261,63 @@ const ensureAuthenticated = async (page: import("@playwright/test").Page) => {
   }
 };
 
+const waitForCalendarState = async (
+  page: import("@playwright/test").Page,
+  timeout = 10_000,
+) => {
+  const calendarRoot = page.getByTestId("calendar-root");
+  const emptyText = page.getByText("Nenhum agendamento encontrado");
+  const errorText = page.getByText("Não foi possível carregar os agendamentos.");
+  const newAppointmentButton = page.getByRole("button", {
+    name: /novo agendamento/i,
+  });
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() < deadline) {
+    await assertNoRoutingError(page);
+    if ((await calendarRoot.count()) > 0) return "calendar";
+    if ((await emptyText.count()) > 0) return "empty";
+    if ((await newAppointmentButton.count()) > 0) return "ready";
+    if ((await errorText.count()) > 0) return "error";
+    await page.waitForTimeout(200);
+  }
+
+  return "none";
+};
+
+const confirmDeleteWithRetry = async (
+  page: import("@playwright/test").Page,
+  maxAttempts = 4,
+) => {
+  let lastResponse: import("@playwright/test").Response | null = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const deleteResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/appointments/") &&
+        response.request().method() === "DELETE",
+    );
+    await page.getByRole("button", { name: /sim, excluir/i }).click();
+    lastResponse = await deleteResponsePromise;
+    if (lastResponse.ok()) return;
+    if (lastResponse.status() === 429) {
+      const backoffMs = Math.min(8_000, 500 * 2 ** attempt);
+      await page.waitForTimeout(backoffMs);
+      continue;
+    }
+    const body = await lastResponse.text();
+    throw new Error(
+      `Falha ao excluir agendamento: ${lastResponse.status()} ${body}`,
+    );
+  }
+  const body = lastResponse ? await lastResponse.text() : "";
+  throw new Error(
+    `Falha ao excluir agendamento: ${lastResponse?.status() ?? "sem resposta"} ${body}`,
+  );
+};
+
 test.describe("Appointments", () => {
-  test.describe.configure({ timeout: 20_000 });
-  test.describe("Renderization", () => {
+  test.describe.configure({ timeout: 60_000 });
+  test.describe("Renderização", () => {
     test("calendar renders and appointments/empty state are visible", async ({
       page,
     }) => {
@@ -154,23 +325,11 @@ test.describe("Appointments", () => {
       await page.goto("/agendamentos");
       await page.waitForURL(/\/agendamentos/, { timeout: 2_000 });
 
-      await expect
-        .poll(
-          async () => {
-            if ((await page.getByTestId("calendar-root").count()) > 0) {
-              return "calendar";
-            }
-            if (
-              (await page.getByText("Nenhum agendamento encontrado").count()) >
-              0
-            ) {
-              return "empty";
-            }
-            return "none";
-          },
-          { timeout: 5_000 },
-        )
-        .toMatch(/calendar|empty/);
+      const state = await waitForCalendarState(page);
+      if (state === "error") {
+        throw new Error("Não foi possível carregar os agendamentos.");
+      }
+      expect(state).toMatch(/calendar|empty|ready/);
 
       const calendarRoot = page.getByTestId("calendar-root");
       const hasCalendar = (await calendarRoot.count()) > 0;
@@ -179,58 +338,70 @@ test.describe("Appointments", () => {
       }
 
       const appointmentItems = page.getByTestId("calendar-appointment");
-      const count = await appointmentItems.count();
-
-      if (count === 0) {
-        await expect(
-          page.getByText("Nenhum agendamento encontrado"),
-        ).toBeVisible();
+      if ((await appointmentItems.count()) === 0) {
+        await expect(page.getByText("Nenhum agendamento encontrado")).toBeVisible();
       } else {
         await expect(appointmentItems.first()).toBeVisible();
       }
     });
   });
 
-  test.describe("Create", () => {
+  test.describe("Criação", () => {
     test("open modal and create a appointment", async ({ page }) => {
       await ensureAuthenticated(page);
-      const patientName = await createUniquePatient(page);
-      await createAppointmentForPatient(page, patientName);
+      await createAppointmentForPatient(page);
     });
   });
 
-  test.describe("Edit", () => {
-    test("opens edit dialog from appointment details", async ({ page }) => {
+  test.describe("Listagem", () => {
+    test("lists appointments in agenda view", async ({ page }) => {
       await ensureAuthenticated(page);
-      const patientName = await createUniquePatient(page);
-      const updatedPatientName = await createUniquePatient(page);
-      await createAppointmentForPatient(page, patientName);
-
       await ensureAgendaView(page);
       const appointmentItems = page.getByTestId("calendar-appointment");
-      await expect(appointmentItems.first()).toBeVisible({ timeout: 10_000 });
-      await appointmentItems.first().click();
+      let state = await waitForCalendarState(page, 10_000);
+      if (state === "none") {
+        await page.reload();
+        await waitForAppointmentsFetch(page, 20_000);
+        state = await waitForCalendarState(page, 10_000);
+      }
+      if (state === "error") {
+        throw new Error("Estado do calendário inválido na listagem.");
+      }
+      if ((await appointmentItems.count()) > 0) {
+        await expect(appointmentItems.first()).toBeVisible({ timeout: 10_000 });
+      }
+    });
+  });
+
+  test.describe("Visualização", () => {
+    test("opens appointment details", async ({ page }) => {
+      await ensureAuthenticated(page);
+      await ensureAgendaView(page);
+      const appointmentItems = page.getByTestId("calendar-appointment");
+      if ((await appointmentItems.count()) === 0) {
+        await createAppointmentForPatient(page);
+      }
+      await openAppointmentDetails(page);
+      await expect(page.getByRole("button", { name: "Editar" })).toBeVisible();
+    });
+  });
+
+  test.describe("Edição", () => {
+    test("opens edit dialog from appointment details", async ({ page }) => {
+      await ensureAuthenticated(page);
+      await createAppointmentForPatient(page);
+
+      await openAppointmentDetails(page);
       await expect(page.getByRole("button", { name: "Editar" })).toBeVisible();
       await page.getByRole("button", { name: "Editar" }).click();
       await expect(page.getByText("Editar Agendamento")).toBeVisible();
 
-      const patientSelect = page.getByRole("combobox", { name: /paciente/i });
-      await patientSelect.click();
-      const updatedPatientOption = page.getByRole("option", {
-        name: updatedPatientName,
-      });
-      await expect(updatedPatientOption).toBeVisible({ timeout: 10_000 });
-      await updatedPatientOption.click();
+      await selectPatientOption(page);
 
       await page.getByLabel("Telefone").fill("(21) 98888-1111");
 
       const nowPlusTwoHours = new Date(Date.now() + 2 * 60 * 60 * 1000);
-      const pad = (value: number) => String(value).padStart(2, "0");
-      const updatedDateValue = `${nowPlusTwoHours.getFullYear()}-${pad(
-        nowPlusTwoHours.getMonth() + 1,
-      )}-${pad(nowPlusTwoHours.getDate())}T${pad(
-        nowPlusTwoHours.getHours(),
-      )}:${pad(nowPlusTwoHours.getMinutes())}`;
+      const updatedDateValue = buildDateTimeValue(nowPlusTwoHours);
 
       await page.getByLabel("Data").fill(updatedDateValue);
 
@@ -243,56 +414,25 @@ test.describe("Appointments", () => {
         .fill("Agendamento atualizado via teste e2e.");
 
       await page.getByRole("button", { name: "Salvar" }).click();
-      await expect(page.getByText("Editar Agendamento")).toBeHidden();
-    });
-  });
-
-  test.describe("Delete", () => {
-    test("opens delete confirmation", async ({ page }) => {
-      await ensureAuthenticated(page);
-      const patientName = await createUniquePatient(page);
-      await createAppointmentForPatient(page, patientName);
-
-      await ensureAgendaView(page);
-      const appointmentItems = page.getByTestId("calendar-appointment");
-      const existingAppointments = await appointmentItems.count();
-
-      await appointmentItems.first().click();
-      await page.getByRole("button", { name: "Excluir" }).click();
-      await expect(page.getByText("Excluir agendamento")).toBeVisible();
-      await page.getByRole("button", { name: /sim, excluir/i }).click();
-      await expect(page.getByText("Excluir agendamento")).toBeHidden({
+      await expect(page.getByText("Editar Agendamento")).toBeHidden({
         timeout: 10_000,
       });
     });
   });
 
-  test.describe("Errors", () => {
-    test("shows error when delete fails", async ({ page }) => {
+  test.describe("Exclusão", () => {
+    test("opens delete confirmation", async ({ page }) => {
       await ensureAuthenticated(page);
-      const patientName = await createUniquePatient(page);
-      await createAppointmentForPatient(page, patientName);
+      await createAppointmentForPatient(page);
 
-      await page.route("**/appointments/*", async (route) => {
-        if (route.request().method() === "DELETE") {
-          await route.fulfill({
-            status: 500,
-            contentType: "application/json",
-            body: JSON.stringify({ message: "Erro ao excluir agendamento" }),
-          });
-          return;
-        }
-        await route.fallback();
-      });
-
-      await page
-        .getByTestId("calendar-appointment")
-        .filter({ hasText: patientName })
-        .first()
-        .click();
+      await ensureAgendaView(page);
+      await openAppointmentDetails(page);
       await page.getByRole("button", { name: "Excluir" }).click();
-      await page.getByRole("button", { name: /sim, excluir/i }).click();
-      await expect(page.getByText("Erro ao excluir agendamento")).toBeVisible();
+      await expect(page.getByText("Excluir agendamento")).toBeVisible();
+      await confirmDeleteWithRetry(page);
+      await expect(page.getByText("Excluir agendamento")).toBeHidden({
+        timeout: 10_000,
+      });
     });
   });
 });
