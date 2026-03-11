@@ -27,7 +27,7 @@ export const EditPaymentMethodDialog = ({ method, onSuccess, onHide }: EditPayme
   const mutation = useMutation({
     mutationFn: async (payload: { paymentMethodId: string; billingName?: string; setAsDefault?: boolean }) =>
       apiRequest<ApiResponse>("/billing/payment-methods/update", {
-        method: "PATCH",
+        method: "PUT",
         data: payload,
       }),
     onSuccess: (response) => {

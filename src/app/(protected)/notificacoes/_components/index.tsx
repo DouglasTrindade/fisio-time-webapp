@@ -114,7 +114,7 @@ export const NotificationsPage = () => {
 
       try {
         await apiRequest<ApiResponse<AppNotification>>(`/notifications/${notification.id}`, {
-          method: "PATCH",
+          method: "PUT",
         })
         await refetchNotifications()
       } catch (error) {

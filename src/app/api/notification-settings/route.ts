@@ -57,9 +57,13 @@ export async function GET(): Promise<NextResponse<ApiResponse<NotificationSettin
       },
     })
 
+    const responseData = notificationSettingsSchema.parse(
+      settings ?? defaultSettings,
+    )
+
     return NextResponse.json(
       createApiResponse(
-        settings ?? defaultSettings,
+        responseData,
         "Configurações de notificações carregadas",
       ),
     )
@@ -117,9 +121,11 @@ export async function PUT(
       },
     })
 
+    const responseData = notificationSettingsSchema.parse(settings)
+
     return NextResponse.json(
       createApiResponse(
-        settings,
+        responseData,
         "Configurações de notificações atualizadas",
       ),
     )

@@ -192,21 +192,9 @@ export async function POST(
       )
     }
 
-    const category = NotificationCategory.MESSAGE
-    const allowEmailByCategory = (settings: typeof recipientSettings | null) => {
-      if (!settings) return true
-      switch (category) {
-        case NotificationCategory.MESSAGE:
-          return settings.emailSocial
-        case NotificationCategory.SYSTEM:
-          return settings.emailSecurity
-        case NotificationCategory.FINANCE:
-        case NotificationCategory.ATTENDANCE:
-          return settings.emailCommunication
-        default:
-          return settings.emailCommunication
-      }
-    }
+    const category: NotificationCategory = NotificationCategory.MESSAGE
+    const allowEmailByCategory = (settings: typeof recipientSettings | null) =>
+      !settings || settings.emailSocial
 
     const includeEmail = Boolean(data.includeEmail) && allowEmailByCategory(recipientSettings)
 
