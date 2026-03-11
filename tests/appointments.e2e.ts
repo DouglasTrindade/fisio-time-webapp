@@ -130,8 +130,15 @@ const waitForAppointmentsFetch = async (
         response.ok(),
       { timeout },
     );
-  } catch {
-    // If the request already happened or is cached, just continue.
+  } catch (error) {
+    const hasAppointmentsEntry = await page.evaluate(() =>
+      performance
+        .getEntriesByType("resource")
+        .some((entry) => entry.name.includes("/appointments")),
+    );
+    if (!hasAppointmentsEntry) {
+      throw error;
+    }
   }
 };
 
