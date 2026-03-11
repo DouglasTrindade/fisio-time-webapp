@@ -7,6 +7,7 @@ import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/c
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ApiResponse } from "@/types/api"
 import type { BillingPaymentMethod, SubscriptionPlan } from "@/types/billing"
+import type { BillingCycle } from "../../page"
 import { apiRequest } from "@/services/api"
 import { StripeElementsProvider } from "@/components/stripe/elements"
 
@@ -14,10 +15,11 @@ import { CheckoutForm } from "./components/CheckoutForm"
 
 interface CheckoutDialogProps {
   plan: SubscriptionPlan | null
+  cycle: BillingCycle
   onHide?: () => void
 }
 
-export const CheckoutDialog = ({ plan, onHide }: CheckoutDialogProps) => {
+export const CheckoutDialog = ({ plan, cycle, onHide }: CheckoutDialogProps) => {
   const router = useRouter()
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -105,6 +107,7 @@ export const CheckoutDialog = ({ plan, onHide }: CheckoutDialogProps) => {
           <StripeElementsProvider options={{ clientSecret: clientSecret! }}>
             <CheckoutForm
               plan={plan}
+              cycle={cycle}
               clientSecret={clientSecret!}
               savedCards={savedCards ?? []}
               savedCardsLoading={isLoadingCards}

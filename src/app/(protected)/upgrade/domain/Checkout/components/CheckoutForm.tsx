@@ -17,6 +17,7 @@ import type { BillingPaymentMethod } from "@/types/billing"
 import type { SubscriptionPlan } from "@/types/billing"
 import type { ApiResponse } from "@/types/api"
 import { apiRequest } from "@/services/api"
+import type { BillingCycle } from "../../../page"
 
 import { checkoutSchema, type CheckoutFormValues } from "../schema"
 
@@ -30,6 +31,7 @@ type SubscribeResponse = {
 
 interface CheckoutFormProps {
   plan: SubscriptionPlan
+  cycle: BillingCycle
   clientSecret: string
   savedCards: BillingPaymentMethod[]
   savedCardsLoading: boolean
@@ -44,6 +46,7 @@ const currency = new Intl.NumberFormat("pt-BR", {
 
 export const CheckoutForm = ({
   plan,
+  cycle,
   clientSecret,
   savedCards,
   savedCardsLoading,
@@ -132,14 +135,18 @@ export const CheckoutForm = ({
         }
       }
 
-      const response = await apiRequest<ApiResponse<SubscribeResponse>>("/billing/checkout/subscribe", {
-        method: "POST",
-        data: {
-          planId: plan.id,
-          paymentMethodId,
-          coupon: values.coupon?.trim() || undefined,
+      const response = await apiRequest<ApiResponse<SubscribeResponse>>(
+        "/billing/checkout/subscribe",
+        {
+          method: "POST",
+          data: {
+            planId: plan.id,
+            billingCycle: cycle.slug,
+            paymentMethodId,
+            coupon: values.coupon?.trim() || undefined,
+          },
         },
-      })
+      )
 
       if (!response.success || !response.data) {
         throw new Error(response.error || "Falha ao criar assinatura")
@@ -316,8 +323,8 @@ export const CheckoutForm = ({
             <p className="text-sm font-medium text-muted-foreground">Resumo</p>
             <p className="text-lg font-semibold">{plan.name}</p>
             <p className="text-2xl font-bold">
-              {currency.format(plan.price)}
-              <span className="text-sm font-normal text-muted-foreground">/mês</span>
+              {currency.format(plan.price * cycle.multiplier)}
+              <span className="text-sm font-normal text-muted-foreground">{cycle.caption}</span>
             </p>
           </div>
           <ul className="mt-4 space-y-2 text-sm text-muted-foreground">

@@ -23,21 +23,9 @@ const billingCycles = [
     multiplier: 1,
     caption: "/mês · cobrança mensal",
   },
-  {
-    slug: "semiannual",
-    label: "Semestral",
-    helper: "Economize 10%",
-    multiplier: 0.9,
-    caption: "/mês · faturado a cada 6 meses",
-  },
-  {
-    slug: "annual",
-    label: "Anual",
-    helper: "2 meses grátis",
-    multiplier: 0.83,
-    caption: "/mês · faturado anualmente",
-  },
 ] as const
+
+export type BillingCycle = (typeof billingCycles)[number]
 
 const plans: SubscriptionPlan[] = [
   {
@@ -118,12 +106,12 @@ const plans: SubscriptionPlan[] = [
 ] as const
 
 export default function UpgradePage() {
-  const [cycle, setCycle] = useState<(typeof billingCycles)[number]>(billingCycles[0])
+  const [cycle, setCycle] = useState<BillingCycle>(billingCycles[0])
   const { openModal } = useModalContext()
 
   const cycleOptions = useMemo(() => billingCycles, [])
   const handleSelectPlan = (plan: SubscriptionPlan) => {
-    openModal({ modal: CheckoutDialog }, { plan })
+    openModal({ modal: CheckoutDialog }, { plan, cycle })
   }
 
   return (
