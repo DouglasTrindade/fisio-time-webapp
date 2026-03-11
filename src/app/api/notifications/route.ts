@@ -174,6 +174,30 @@ export async function POST(
       })
     }
 
+    const recipientSettings = await prisma.notificationSettings.findUnique({
+      where: { userId: data.recipientId },
+      select: {
+        preference: true,
+        emailCommunication: true,
+        emailMarketing: true,
+        emailSocial: true,
+        emailSecurity: true,
+      },
+    })
+
+    if (recipientSettings?.preference === "none") {
+      return NextResponse.json(
+        createApiError("O destinatário não aceita notificações."),
+        { status: 400 },
+      )
+    }
+
+    const category: NotificationCategory = NotificationCategory.MESSAGE
+    const allowEmailByCategory = (settings: typeof recipientSettings | null) =>
+      !settings || settings.emailSocial
+
+    const includeEmail = Boolean(data.includeEmail) && allowEmailByCategory(recipientSettings)
+
     const notification = await prisma.notification.create({
       data: {
         title:
@@ -181,8 +205,9 @@ export async function POST(
           `Mensagem de ${session.user.name ?? "Profissional"}`,
         message: data.message.trim(),
         channel: "Mensagens",
+        category,
         highlight: false,
-        includeEmail: data.includeEmail ?? false,
+        includeEmail,
         scheduledFor: scheduledDate,
         sentAt: scheduledDate ?? new Date(),
         recipientId: data.recipientId,

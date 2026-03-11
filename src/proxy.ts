@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { isRateLimited } from "@/lib/rate-limit";
 import type { AppRole } from "@/types/user";
+import { env } from "process";
 
 const publicRoutes = ["/sign-in", "/sign-up"];
 const protectedRoutes = [
@@ -27,15 +28,18 @@ const routePermissions: Array<{ pattern: RegExp; roles: AppRole[] }> = [
   { pattern: /^\/relatorios(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
   { pattern: /^\/usuarios(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
   { pattern: /^\/colaboradores(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
-  { pattern: /^\/configuracoes(\/|$)/, roles: ["ADMIN", "ASSISTANT", "PROFESSIONAL"] },
+  {
+    pattern: /^\/configuracoes(\/|$)/,
+    roles: ["ADMIN", "ASSISTANT", "PROFESSIONAL"],
+  },
   { pattern: /^\/notas-fiscais(\/|$)/, roles: ["ADMIN", "PROFESSIONAL"] },
 ];
 
 const hasRoleAccess = (role: AppRole | undefined, allowed: AppRole[]) => {
-  if (!allowed.length) return true
-  if (!role) return false
-  return allowed.includes(role)
-}
+  if (!allowed.length) return true;
+  if (!role) return false;
+  return allowed.includes(role);
+};
 
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX = 60;
@@ -46,7 +50,7 @@ export default auth((req) => {
 
   const isApiRoute = pathname.startsWith("/api");
   const isProtectedApiRoute = protectedApiRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (isApiRoute) {
@@ -56,7 +60,10 @@ export default auth((req) => {
     const ip =
       request.ip ?? forwardedFor ?? req.headers.get("x-real-ip") ?? "unknown";
 
-    if (isRateLimited(`api:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW)) {
+    if (
+      isRateLimited(`api:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW) &&
+      process.env.PLAYWRIGHT === "1"
+    ) {
       return new NextResponse("Too many requests", { status: 429 });
     }
   }
@@ -68,15 +75,15 @@ export default auth((req) => {
         error: "Não autorizado",
         message: "Acesso negado",
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (isProtectedRoute && !isLoggedIn) {
@@ -87,17 +94,19 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  const restrictedRule = routePermissions.find((rule) => rule.pattern.test(pathname))
+  const restrictedRule = routePermissions.find((rule) =>
+    rule.pattern.test(pathname),
+  );
   if (restrictedRule) {
-    const role = req.auth?.user?.role as AppRole | undefined
+    const role = req.auth?.user?.role as AppRole | undefined;
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/sign-in", req.url))
+      return NextResponse.redirect(new URL("/sign-in", req.url));
     }
     if (!hasRoleAccess(role, restrictedRule.roles)) {
-      const deniedUrl = req.nextUrl.clone()
-      deniedUrl.pathname = "/acesso-negado"
-      deniedUrl.search = ""
-      return NextResponse.redirect(deniedUrl)
+      const deniedUrl = req.nextUrl.clone();
+      deniedUrl.pathname = "/acesso-negado";
+      deniedUrl.search = "";
+      return NextResponse.redirect(deniedUrl);
     }
   }
 

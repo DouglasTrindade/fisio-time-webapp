@@ -67,7 +67,13 @@ export function AgendaAppointmentCard({ appointment, appointmentCurrentDay, appo
 
   return (
     <AppointmentDetailsDialog appointment={appointment}>
-      <div role="button" tabIndex={0} className={agendaAppointmentCardClasses} onKeyDown={handleKeyDown}>
+      <div
+        role="button"
+        tabIndex={0}
+        data-testid="calendar-appointment"
+        className={agendaAppointmentCardClasses}
+        onKeyDown={handleKeyDown}
+      >
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5">
             {["mixed", "dot"].includes(badgeVariant) && (

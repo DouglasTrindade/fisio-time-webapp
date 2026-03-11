@@ -39,7 +39,7 @@ export function createCrudContext<
       }))
     }, [initialFilters])
 
-    const { records, pagination, isLoading, isFetching, refetch } = useRecords<TRecord>(
+    const { records, pagination, isLoading, isFetching, isError, error, refetch } = useRecords<TRecord>(
       config.endpoint,
       filters
     )
@@ -54,6 +54,8 @@ export function createCrudContext<
         pagination,
         isLoading,
         isFetching,
+        isError,
+        error: error ?? null,
         filters,
         setFilters,
         refetch,
@@ -70,6 +72,8 @@ export function createCrudContext<
         pagination,
         isLoading,
         isFetching,
+        isError,
+        error,
         filters,
         setFilters,
         refetch,

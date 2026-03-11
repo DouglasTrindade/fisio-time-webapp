@@ -175,7 +175,7 @@ const AddCardForm = ({
 
       if (values.setAsDefault) {
         await apiRequest<ApiResponse>("/billing/payment-methods", {
-          method: "PATCH",
+          method: "PUT",
           data: { paymentMethodId },
         })
       }

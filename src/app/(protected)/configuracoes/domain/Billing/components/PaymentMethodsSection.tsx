@@ -43,7 +43,7 @@ export const PaymentMethodsSection = ({
     mutationFn: async (paymentMethodId: string) => {
       setPendingMethod(paymentMethodId)
       return apiRequest<ApiResponse>("/billing/payment-methods", {
-        method: "PATCH",
+        method: "PUT",
         data: { paymentMethodId },
       })
     },

@@ -28,10 +28,26 @@ model User {
   sessions      Session[]
   sentNotifications     Notification[] @relation("NotificationSender")
   receivedNotifications Notification[] @relation("NotificationRecipient")
+  notificationSettings  NotificationSettings?
   invitesCreated UserInvite[] @relation("InviteCreator")
   inviteAccepted UserInvite[] @relation("InviteAccepted")
 
   @@map("users")
+}
+
+model NotificationSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique @map("user_id")
+  preference         String   @default("all")
+  emailCommunication Boolean  @default(true) @map("email_communication")
+  emailMarketing     Boolean  @default(false) @map("email_marketing")
+  emailSocial        Boolean  @default(true) @map("email_social")
+  emailSecurity      Boolean  @default(false) @map("email_security")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
 }
 
 model UserInvite {
