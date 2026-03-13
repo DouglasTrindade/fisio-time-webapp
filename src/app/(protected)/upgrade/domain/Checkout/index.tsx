@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -12,6 +13,7 @@ import { apiRequest } from "@/services/api"
 import { StripeElementsProvider } from "@/components/stripe/elements"
 
 import { CheckoutForm } from "./components/CheckoutForm"
+import { billingKeys } from "@/app/(protected)/configuracoes/domain/Billing/hooks/queries"
 
 interface CheckoutDialogProps {
   plan: SubscriptionPlan | null
@@ -21,6 +23,7 @@ interface CheckoutDialogProps {
 
 export const CheckoutDialog = ({ plan, cycle, onHide }: CheckoutDialogProps) => {
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoadingSecret, setLoadingSecret] = useState(false)
@@ -81,9 +84,15 @@ export const CheckoutDialog = ({ plan, cycle, onHide }: CheckoutDialogProps) => 
     void fetchSavedCards()
   }, [plan])
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: billingKeys.summary() }),
+      queryClient.invalidateQueries({ queryKey: billingKeys.invoices() }),
+      queryClient.invalidateQueries({ queryKey: billingKeys.paymentMethods() }),
+    ])
     onHide?.()
     router.push("/configuracoes/cobranca")
+    router.refresh()
   }
 
   const canRenderForm = plan && clientSecret && !isLoadingSecret && !secretError
