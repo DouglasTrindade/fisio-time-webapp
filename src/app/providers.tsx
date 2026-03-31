@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner"
 import { useState } from "react"
+import { ModalProvider } from "@/contexts/ModalContext"
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(
@@ -30,8 +31,10 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
     >
       <SessionProvider>
         <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster position="top-right" />
+          <ModalProvider>
+            {children}
+            <Toaster position="top-right" />
+          </ModalProvider>
         </QueryClientProvider>
       </SessionProvider>
     </ThemeProvider>

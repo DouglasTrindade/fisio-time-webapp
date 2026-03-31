@@ -8,14 +8,20 @@ import { Button } from "@/components/ui/button";
 import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema";
 import { PersonalFields } from "./Fields/PersonalFields";
 import { AddressFields } from "./Fields/AddressFields";
+import { FinanceFields } from "./Fields/FinanceFields";
 import { usePatientContext } from "@/contexts/PatientsContext";
 
-export const PatientsNew = () => {
-  const { handleCreate, isCreating, closeNew } = usePatientContext();
+interface PatientsNewProps {
+  onHide?: () => void;
+}
+
+export const PatientsNew = ({ onHide }: PatientsNewProps) => {
+  const { handleCreate, isCreating } = usePatientContext();
   const [step, setStep] = useState(0);
-  const steps = ["Informações pessoais", "Endereço"];
+  const steps = ["Informações pessoais", "Endereço", "Financeiro"];
   const stepFieldMap: ReadonlyArray<FieldPath<PatientSchema>[]> = [
     ["name", "phone"],
+    [],
     [],
   ];
 
@@ -23,17 +29,24 @@ export const PatientsNew = () => {
     resolver: zodResolver(patientSchema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      notes: "",
-      birthDate: null,
-      cpf: "",
-      rg: "",
-      maritalStatus: "",
-      gender: "",
-      profession: "",
+      defaultValues: {
+        name: "",
+        phone: "",
+        email: "",
+        notes: "",
+        birthDate: null,
+        financialPlan: "",
+        insuranceName: "",
+        insuranceCardNumber: "",
+        insuranceIssuedAt: null,
+        insuranceRepasseType: "",
+        insuranceRepasseValue: "",
+        insurancePaymentDays: "",
+        cpf: "",
+        rg: "",
+        maritalStatus: "",
+        gender: "",
+        profession: "",
       companyName: "",
       cep: "",
       country: "",
@@ -53,6 +66,13 @@ export const PatientsNew = () => {
       email: data.email || undefined,
       birthDate: data.birthDate,
       notes: data.notes || undefined,
+      financialPlan: data.financialPlan || undefined,
+      insuranceName: data.insuranceName || undefined,
+      insuranceCardNumber: data.insuranceCardNumber || undefined,
+      insuranceIssuedAt: data.insuranceIssuedAt || undefined,
+      insuranceRepasseType: data.insuranceRepasseType || undefined,
+      insuranceRepasseValue: data.insuranceRepasseValue || undefined,
+      insurancePaymentDays: data.insurancePaymentDays || undefined,
       cpf: data.cpf || undefined,
       rg: data.rg || undefined,
       maritalStatus: data.maritalStatus || undefined,
@@ -71,12 +91,12 @@ export const PatientsNew = () => {
 
     form.reset();
     setStep(0);
-    closeNew();
+    onHide?.();
   }
 
   const handleClose = () => {
     setStep(0);
-    closeNew();
+    onHide?.();
   };
 
   const validateStep = async (index: number) => {
@@ -139,11 +159,9 @@ export const PatientsNew = () => {
           ))}
         </div>
 
-        {step === 0 ? (
-          <PersonalFields form={form} />
-        ) : (
-          <AddressFields form={form} />
-        )}
+        {step === 0 && <PersonalFields form={form} />}
+        {step === 1 && <AddressFields form={form} />}
+        {step === 2 && <FinanceFields form={form} />}
 
         <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">

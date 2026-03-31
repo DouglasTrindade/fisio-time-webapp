@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev --turbopack",
+    "dev": "prisma generate && PLAYWRIGHT=1 next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,8 +13,13 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
+    "seed:admin": "tsx prisma/seeds/seed-admin.ts",
     "setup": "npm run db:generate && npm run db:migrate",
-    "postinstall": "prisma generate && patch-package"
+    "postinstall": "prisma generate && patch-package",
+    "test:e2e": "PLAYWRIGHT=1 playwright test",
+    "test:e2e:ui": "PLAYWRIGHT=1 playwright test --ui",
+    "test:e2e:headed": "PLAYWRIGHT=1 playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -62,6 +67,7 @@
     "next": "^16.0.7",
     "next-auth": "^5.0.0-beta.28",
     "next-themes": "^0.4.6",
+    "playwright": "^1.58.2",
     "prisma": "^7.2.0",
     "qs": "^6.14.0",
     "radix-ui": "^1.4.3",
@@ -77,6 +83,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^3.0.0",

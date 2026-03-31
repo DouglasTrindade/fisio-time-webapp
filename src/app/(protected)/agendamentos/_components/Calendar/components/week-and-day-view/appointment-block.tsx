@@ -69,7 +69,14 @@ export function AppointmentBlock({ appointment, className }: IProps) {
   return (
     <DraggableAppointment appointment={appointment}>
       <AppointmentDetailsDialog appointment={appointment}>
-        <div role="button" tabIndex={0} className={calendarWeekAppointmentCardClasses} style={{ height: `${heightInPixels}px` }} onKeyDown={handleKeyDown}>
+        <div
+          role="button"
+          tabIndex={0}
+          data-testid="calendar-appointment"
+          className={calendarWeekAppointmentCardClasses}
+          style={{ height: `${heightInPixels}px` }}
+          onKeyDown={handleKeyDown}
+        >
           <div className="flex items-center gap-1.5 truncate">
             {["mixed", "dot"].includes(badgeVariant) && (
               <svg width="8" height="8" viewBox="0 0 8 8" className="appointment-dot shrink-0">

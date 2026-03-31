@@ -19,6 +19,8 @@ export interface CrudContextValue<TRecord, TCreate, TUpdate, TFilters> {
   pagination?: CrudPagination
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
+  error: Error | null
   filters: TFilters
   setFilters: Dispatch<SetStateAction<TFilters>>
   refetch: () => void

@@ -97,7 +97,13 @@ export function MonthAppointmentBadge({ appointment, cellDate, appointmentCurren
   return (
     <DraggableAppointment appointment={appointment}>
       <AppointmentDetailsDialog appointment={appointment}>
-        <div role="button" tabIndex={0} className={appointmentBadgeClasses} onKeyDown={handleKeyDown}>
+        <div
+          role="button"
+          tabIndex={0}
+          data-testid="calendar-appointment"
+          className={appointmentBadgeClasses}
+          onKeyDown={handleKeyDown}
+        >
           <div className="flex items-center gap-1.5 truncate">
             {!["middle", "last"].includes(position) && ["mixed", "dot"].includes(badgeVariant) && (
               <svg width="8" height="8" viewBox="0 0 8 8" className="appointment-dot shrink-0">
