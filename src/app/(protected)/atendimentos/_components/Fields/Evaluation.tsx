@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 interface EvaluationFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
-  patients: Patient[]
+  patients: Array<Pick<Patient, "id" | "name">>
   isLoadingPatients: boolean
   lockedPatient?: Pick<Patient, "id" | "name">
 }

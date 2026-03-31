@@ -91,7 +91,7 @@ export function ClientContainer({ view, onViewChange }: IProps) {
   }, [filteredAppointments]);
 
   return (
-    <div className="overflow-hidden rounded-xl border">
+    <div className="overflow-hidden rounded-xl border" data-testid="calendar-root">
       <CalendarHeader view={view} appointments={filteredAppointments} onViewChange={onViewChange} />
 
       <DndProviderWrapper>

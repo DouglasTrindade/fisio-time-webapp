@@ -11,6 +11,8 @@ import { FinanceTransaction } from "./FinanceResumePage"
 import { NewRevenueDialog } from "./NewRevenueDialog"
 import { NewExpenseDialog } from "./NewExpenseDialog"
 import { Pagination } from "@/components/Pagination"
+import { Button } from "@/components/ui/button"
+import { useModalContext } from "@/contexts/ModalContext"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -28,6 +30,7 @@ export const TransactionsCard = ({
   generalBalance,
   className,
 }: TransactionsCardProps) => {
+  const { openModal } = useModalContext()
   const PAGE_SIZE = 8
   const [page, setPage] = useState(1)
 
@@ -68,8 +71,12 @@ export const TransactionsCard = ({
           </CardDescription>
         </div>
         <div className="flex flex-wrap gap-2">
-          <NewExpenseDialog />
-          <NewRevenueDialog />
+          <Button variant="outline" onClick={() => openModal({ modal: NewExpenseDialog })}>
+            Nova despesa
+          </Button>
+          <Button onClick={() => openModal({ modal: NewRevenueDialog })}>
+            Nova receita
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-x-auto">

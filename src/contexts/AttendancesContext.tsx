@@ -6,6 +6,8 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
+  useRef,
 } from "react"
 import type { ReactNode } from "react"
 import type {
@@ -18,17 +20,23 @@ import type {
 import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { attendancesCrudConfig } from "@/app/(protected)/atendimentos/_components/config"
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
+import { ModalProvider, useModalContext } from "@/contexts/ModalContext"
+import { AttendanceDialog } from "@/app/(protected)/atendimentos/_components/Modal"
 
 interface AttendancesUiContextValue {
-  isDialogOpen: boolean
   creatingType: AttendanceType
   editingAttendance: Attendance | null
   openNew: (type: AttendanceType) => void
   openEdit: (attendance: Attendance) => void
-  closeDialog: () => void
   handleSearch: (value: string) => void
   handlePageChange: (page: number) => void
   handleSortChange: (value: string) => void
+  clearDialogState: () => void
+  dialogState: {
+    type: AttendanceType
+    attendance: Attendance | null
+    key: number
+  } | null
 }
 
 const { CrudProvider, useCrud } = createCrudContext<
@@ -54,7 +62,9 @@ const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
   const [dialogState, setDialogState] = useState<{
     type: AttendanceType
     attendance: Attendance | null
+    key: number
   } | null>(null)
+  const dialogKeyRef = useRef(0)
 
   const handleSearch = useCallback(
     (value: string) => {
@@ -83,51 +93,82 @@ const AttendancesUiProvider = ({ children }: { children: ReactNode }) => {
     [setFilters],
   )
 
-  const openNew = useCallback(
-    (type: AttendanceType) =>
-      setDialogState({ type: normalizeAttendanceType(type), attendance: null }),
-    [],
-  )
+  const openNew = useCallback((type: AttendanceType) => {
+    const normalized = normalizeAttendanceType(type)
+    dialogKeyRef.current += 1
+    setDialogState({
+      type: normalized,
+      attendance: null,
+      key: dialogKeyRef.current,
+    })
+  }, [])
 
-  const openEdit = useCallback(
-    (attendance: Attendance) =>
-      setDialogState({
-        type: normalizeAttendanceType(attendance.type),
-        attendance,
-      }),
-    [],
-  )
+  const openEdit = useCallback((attendance: Attendance) => {
+    const normalized = normalizeAttendanceType(attendance.type)
+    dialogKeyRef.current += 1
+    setDialogState({
+      type: normalized,
+      attendance,
+      key: dialogKeyRef.current,
+    })
+  }, [])
 
-  const closeDialog = useCallback(() => setDialogState(null), [])
+  const clearDialogState = useCallback(() => {
+    setDialogState(null)
+  }, [])
 
   const value = useMemo(
     () => ({
-      isDialogOpen: !!dialogState,
       creatingType: dialogState?.type ?? PrismaAttendanceType.EVALUATION,
       editingAttendance: dialogState?.attendance ?? null,
       openNew,
       openEdit,
-      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,
+      dialogState,
+      clearDialogState,
     }),
     [
       dialogState,
       openNew,
       openEdit,
-      closeDialog,
       handleSearch,
       handlePageChange,
       handleSortChange,
-    ]
+      clearDialogState,
+    ],
   )
 
   return (
     <AttendancesUiContext.Provider value={value}>
-      {children}
+      <ModalProvider>
+        {children}
+        <AttendancesModalBridge />
+      </ModalProvider>
     </AttendancesUiContext.Provider>
   )
+}
+
+const AttendancesModalBridge = () => {
+  const ui = useContext(AttendancesUiContext)
+  const { openModal } = useModalContext<
+    Record<string, unknown>,
+    { type: AttendanceType; attendance: Attendance | null }
+  >()
+
+  useEffect(() => {
+    if (!ui?.dialogState) return
+    openModal(
+      { modal: AttendanceDialog, dontReplaceIfOpen: true, onHide: ui.clearDialogState },
+      {
+        type: ui.dialogState.type,
+        attendance: ui.dialogState.attendance,
+      },
+    )
+  }, [openModal, ui?.dialogState?.key])
+
+  return null
 }
 
 export const AttendancesProvider = ({ children }: { children: ReactNode }) => (

@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import { apiRequest } from "../services/api";
 import type { ApiResponse } from "@/types/api";
+import { getApiErrorMessage } from "@/services/api/error";
 
 type UseRecordOptions<T> = Partial<
   Omit<UseQueryOptions<T, Error>, "queryKey" | "queryFn">
@@ -56,7 +57,8 @@ export const useUpdateRecord = <TData = unknown, TVariables = unknown>(
       queryClient.invalidateQueries({ queryKey: [endpoint, variables.id] });
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao atualizar");
+      console.error("Erro ao atualizar:", error);
+      toast.error(getApiErrorMessage(error, "Erro ao atualizar"));
     },
   });
 };
@@ -72,7 +74,8 @@ export const useDeleteRecord = (endpoint: string) => {
       queryClient.invalidateQueries({ queryKey: [endpoint] });
     },
     onError: (error) => {
-      toast.error(error.message || "Erro ao excluir");
+      console.error("Erro ao excluir:", error);
+      toast.error(getApiErrorMessage(error, "Erro ao excluir"));
     },
   });
 };

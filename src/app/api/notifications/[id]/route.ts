@@ -14,7 +14,7 @@ type RouteContext = {
   params: Promise<{ id: string }>
 }
 
-export async function PATCH(_request: NextRequest, context: RouteContext) {
+export async function PUT(_request: NextRequest, context: RouteContext) {
   try {
     const session = await auth()
     if (!session?.user?.id) {

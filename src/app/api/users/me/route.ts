@@ -9,12 +9,23 @@ import {
 } from "@/lib/api/utils";
 import type { ApiResponse } from "@/lib/api/types";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
-const updateUserSchema = z.object({
-  name: z.string().min(2, "Informe seu nome completo"),
-  email: z.string().email("Informe um e-mail válido"),
-  image: z.string().url("Informe uma URL válida").optional().or(z.literal("")),
-});
+const updateUserSchema = z
+  .object({
+    name: z.string().min(2, "Informe seu nome completo"),
+    email: z.string().email("Informe um e-mail válido"),
+    image: z.string().url("Informe uma URL válida").optional().or(z.literal("")),
+    currentPassword: z.string().min(1, "Informe a senha atual").optional(),
+    newPassword: z.string().min(8, "A nova senha precisa ter ao menos 8 caracteres").optional(),
+  })
+  .refine((data) => {
+    if (!data.newPassword) return true;
+    return Boolean(data.currentPassword);
+  }, {
+    message: "Informe a senha atual para alterar a senha",
+    path: ["currentPassword"],
+  });
 
 const selectUserFields = {
   id: true,
@@ -68,12 +79,38 @@ export async function PUT(
 
     const data = await validateJsonBody(request, updateUserSchema);
 
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, password: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(createApiError("Usuário não encontrado"), {
+        status: 404,
+      });
+    }
+
+    if (data.newPassword) {
+      if (!user.password) {
+        return NextResponse.json(createApiError("Senha atual não configurada"), {
+          status: 400,
+        });
+      }
+      const isValid = await bcrypt.compare(data.currentPassword ?? "", user.password);
+      if (!isValid) {
+        return NextResponse.json(createApiError("Senha atual inválida"), {
+          status: 400,
+        });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
       data: {
         name: data.name,
         email: data.email,
         image: data.image ? data.image : null,
+        password: data.newPassword ? await bcrypt.hash(data.newPassword, 10) : undefined,
       },
       select: selectUserFields,
     });

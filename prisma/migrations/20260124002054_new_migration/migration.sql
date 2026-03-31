@@ -15,29 +15,43 @@ DECLARE
     WHEN to_regclass('public."Attendance"') IS NOT NULL THEN 'Attendance'
     ELSE NULL
   END;
-  column_exists boolean;
+  transaction_table text := CASE
+    WHEN to_regclass('public.transactions') IS NOT NULL THEN 'transactions'
+    WHEN to_regclass('public."Transaction"') IS NOT NULL THEN 'Transaction'
+    ELSE NULL
+  END;
 BEGIN
-  IF attendance_table IS NULL THEN
-    RETURN;
-  END IF;
-
-  SELECT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = attendance_table
-      AND column_name = 'finance_payment_method'
-  ) INTO column_exists;
-
-  IF column_exists THEN
+  IF attendance_table IS NOT NULL
+     AND EXISTS (
+       SELECT 1
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = attendance_table
+         AND column_name = 'finance_payment_method'
+     )
+  THEN
     EXECUTE format(
       'ALTER TABLE public.%I ALTER COLUMN "finance_payment_method" TYPE "PaymentMethod_new" USING ("finance_payment_method"::text::"PaymentMethod_new")',
       attendance_table
     );
   END IF;
+
+  IF transaction_table IS NOT NULL
+     AND EXISTS (
+       SELECT 1
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = transaction_table
+         AND column_name = 'payment_method'
+     )
+  THEN
+    EXECUTE format(
+      'ALTER TABLE public.%I ALTER COLUMN "payment_method" TYPE "PaymentMethod_new" USING ("payment_method"::text::"PaymentMethod_new")',
+      transaction_table
+    );
+  END IF;
 END $$;
 
-ALTER TABLE "transactions" ALTER COLUMN "payment_method" TYPE "PaymentMethod_new" USING ("payment_method"::text::"PaymentMethod_new");
 ALTER TYPE "PaymentMethod" RENAME TO "PaymentMethod_old";
 ALTER TYPE "PaymentMethod_new" RENAME TO "PaymentMethod";
 DROP TYPE "public"."PaymentMethod_old";

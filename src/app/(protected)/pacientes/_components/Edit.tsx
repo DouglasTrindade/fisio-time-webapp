@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { patientSchema, type PatientSchema } from "@/app/(protected)/pacientes/_components/Fields/schema";
 import { PersonalFields } from "./Fields/PersonalFields";
 import { AddressFields } from "./Fields/AddressFields";
+import { FinanceFields } from "./Fields/FinanceFields";
 import { useRecord } from "@/hooks/useRecord";
 import type { PatientApiData } from "@/types/patient";
 import { usePatientsContextOptional } from "@/contexts/PatientsContext";
@@ -16,6 +17,7 @@ import { usePatientsContextOptional } from "@/contexts/PatientsContext";
 interface PatientsEditProps {
   patientId: string;
   onClose?: () => void;
+  onHide?: () => void;
   onSuccess?: () => void;
 }
 
@@ -35,6 +37,15 @@ const mapPatientToFormValues = (
   gender: (patient?.gender ?? "") as PatientSchema["gender"],
   profession: patient?.profession ?? "",
   companyName: patient?.companyName ?? "",
+  financialPlan: (patient?.financialPlan ?? "") as PatientSchema["financialPlan"],
+  insuranceName: patient?.insuranceName ?? "",
+  insuranceCardNumber: patient?.insuranceCardNumber ?? "",
+  insuranceIssuedAt: patient?.insuranceIssuedAt
+    ? new Date(patient.insuranceIssuedAt).toISOString().split("T")[0]
+    : null,
+  insuranceRepasseType: (patient?.insuranceRepasseType ?? "") as PatientSchema["insuranceRepasseType"],
+  insuranceRepasseValue: patient?.insuranceRepasseValue != null ? String(patient.insuranceRepasseValue) : "",
+  insurancePaymentDays: patient?.insurancePaymentDays != null ? String(patient.insurancePaymentDays) : "",
   cep: patient?.cep ?? "",
   country: patient?.country ?? "",
   state: patient?.state ?? "",
@@ -45,7 +56,7 @@ const mapPatientToFormValues = (
   complement: patient?.complement ?? "",
 })
 
-export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProps) => {
+export const PatientsEdit = ({ patientId, onClose, onHide, onSuccess }: PatientsEditProps) => {
   const patientContext = usePatientsContextOptional()
   const { data: patient, isLoading, isFetching } = useRecord<PatientApiData>(
     "/patients",
@@ -60,9 +71,10 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
   const [isStandaloneUpdating, setIsStandaloneUpdating] = useState(false)
   const [step, setStep] = useState(0);
   const [isFormReady, setIsFormReady] = useState(false);
-  const steps = ["Informações pessoais", "Endereço"];
+  const steps = ["Informações pessoais", "Endereço", "Financeiro"];
   const stepFieldMap: ReadonlyArray<FieldPath<PatientSchema>[]> = [
     ["name", "phone"],
+    [],
     [],
   ];
   const isUpdating = patientContext?.isUpdating ?? isStandaloneUpdating;
@@ -89,10 +101,8 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
   }, [patientId]);
 
   const closeModal = () => {
-    if (patientContext) {
-      patientContext.closeEdit()
-    }
     onClose?.()
+    onHide?.()
   }
 
   const onSubmit = async (values: PatientSchema) => {
@@ -198,11 +208,9 @@ export const PatientsEdit = ({ patientId, onClose, onSuccess }: PatientsEditProp
           ))}
         </div>
 
-        {step === 0 ? (
-          <PersonalFields form={form} />
-        ) : (
-          <AddressFields form={form} />
-        )}
+        {step === 0 && <PersonalFields form={form} />}
+        {step === 1 && <AddressFields form={form} />}
+        {step === 2 && <FinanceFields form={form} />}
 
         <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">

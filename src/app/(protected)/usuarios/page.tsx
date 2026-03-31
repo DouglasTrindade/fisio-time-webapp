@@ -14,7 +14,7 @@ export default async function UsersPage() {
         </p>
       </div>
 
-      <Users currentRole={session?.user?.role} />
+      <Users currentRole={session?.user?.role} currentUserId={session?.user?.id} />
     </section>
   )
 }

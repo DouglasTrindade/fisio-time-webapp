@@ -16,6 +16,7 @@ import { NotificationCard } from "./Card"
 import { NotificationDialog } from "./Modal"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { useModalContext } from "@/contexts/ModalContext"
 
 interface NotificationsDropdownProps {
   notifications: AppNotification[]
@@ -25,8 +26,7 @@ export const NotificationsDropdown = ({
   notifications,
 }: NotificationsDropdownProps) => {
   const [open, setOpen] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selected, setSelected] = useState<AppNotification | null>(null)
+  const { openModal } = useModalContext()
 
   const unreadCount = useMemo(
     () => notifications.filter((notification) => notification.status === "unread").length,
@@ -34,8 +34,10 @@ export const NotificationsDropdown = ({
   )
 
   const handleSelect = (notification: AppNotification) => {
-    setSelected(notification)
-    setDialogOpen(true)
+    openModal(
+      { modal: NotificationDialog },
+      { notification }
+    )
     setOpen(false)
   }
 
@@ -119,11 +121,6 @@ export const NotificationsDropdown = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <NotificationDialog
-        notification={selected}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
     </>
   )
 }

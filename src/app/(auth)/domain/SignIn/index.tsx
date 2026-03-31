@@ -8,12 +8,10 @@ import { toast } from "sonner";
 import { SignInFields } from "./Fields";
 import { signInSchema, SignInSchema } from "./Schema";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
 import { SignInAction } from "@/actions/SignIn";
 
 export const SignIn = () => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -21,21 +19,21 @@ export const SignIn = () => {
       password: "",
     },
   });
+  const { isSubmitting } = form.formState
 
   const onSubmit = async (data: SignInSchema) => {
     form.clearErrors("root");
-    startTransition(async () => {
-      const result = await SignInAction(data);
 
-      if (result?.error) {
-        form.setError("root", { message: result.error });
-        toast.error(result.error);
-        return;
-      }
+    const result = await SignInAction(data);
 
-      toast.success("Login realizado com sucesso!");
-      router.push("/dashboard");
-    });
+    if (result?.error) {
+      form.setError("root", { message: result.error });
+      toast.error(result.error);
+      return;
+    }
+
+    toast.success("Login realizado com sucesso!");
+    router.push("/dashboard");
   };
 
   const rootError = form.formState.errors.root?.message;
@@ -47,10 +45,10 @@ export const SignIn = () => {
         {rootError && <FormMessage>{rootError}</FormMessage>}
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isSubmitting}
           className="w-full bg-[linear-gradient(135deg,_#E19F4A,_#BA4065,_#412A54)]"
         >
-          {isPending ? "Entrando..." : "Entrar"}
+          {isSubmitting ? "Entrando..." : "Entrar"}
         </Button>
         <div className="flex justify-center font-semibold">
           <span className="me-2">Não tem uma conta?</span>
