@@ -13,7 +13,6 @@ import { ChangeWorkingHoursInput } from "@/app/(protected)/agendamentos/_compone
 import type { IAppointment, IUser } from "@/app/(protected)/agendamentos/_components/Calendar/interfaces";
 import type { TCalendarView, TAppointment } from "@/app/(protected)/agendamentos/_components/Calendar/types";
 
-import { AppointmentsModal } from "./Modal";
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 import { useRecords } from "@/hooks/useRecords";
 import { toast } from "sonner";
@@ -35,13 +34,10 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
   const { data: session } = useSession();
   const {
     records: appointmentRecords,
-    isDialogOpen,
-    editingAppointment,
     selectedDate,
     handleDateSelect,
     openNew,
     openEdit,
-    closeDialog,
   } = useAppointmentsContext();
 
   const { records: usersResponse } = useRecords<UserProfile>("/users", {
@@ -132,20 +128,6 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
     [appointmentRecords, handleDateSelect, openEdit],
   );
 
-  const modalInitialDate = useMemo(() => {
-    if (editingAppointment) {
-      return editingAppointment.date;
-    }
-
-    if (selectedDate) {
-      const templateDate = new Date(selectedDate);
-      templateDate.setHours(9, 0, 0, 0);
-      return templateDate.toISOString();
-    }
-
-    return undefined;
-  }, [editingAppointment, selectedDate]);
-
   const [currentView, setCurrentView] = useState<TCalendarView>(view);
 
   useEffect(() => {
@@ -172,12 +154,6 @@ export const CalendarPageClient = ({ view }: CalendarPageClientProps) => {
         {/* <ChangeVisibleHoursInput /> */}
         {/* <ChangeWorkingHoursInput /> */}
       </div>
-      <AppointmentsModal
-        open={isDialogOpen}
-        onClose={closeDialog}
-        initialDate={modalInitialDate}
-        appointment={editingAppointment}
-      />
     </CalendarProvider>
   );
 };

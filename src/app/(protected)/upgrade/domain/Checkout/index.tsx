@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ApiResponse } from "@/types/api"
 import type { BillingPaymentMethod, SubscriptionPlan } from "@/types/billing"
@@ -14,11 +14,10 @@ import { CheckoutForm } from "./components/CheckoutForm"
 
 interface CheckoutDialogProps {
   plan: SubscriptionPlan | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  onHide?: () => void
 }
 
-export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps) => {
+export const CheckoutDialog = ({ plan, onHide }: CheckoutDialogProps) => {
   const router = useRouter()
 
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -30,7 +29,7 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
 
   useEffect(() => {
     const fetchSecret = async () => {
-      if (!open || !plan) {
+      if (!plan) {
         setClientSecret(null)
         setSavedCards(null)
         return
@@ -56,14 +55,11 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
     }
 
     void fetchSecret()
-  }, [open, plan])
+  }, [plan])
 
   useEffect(() => {
     const fetchSavedCards = async () => {
-      if (!open) {
-        setSavedCards(null)
-        return
-      }
+      if (!plan) return
       setLoadingCards(true)
       setCardsError(null)
       try {
@@ -81,22 +77,21 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
     }
 
     void fetchSavedCards()
-  }, [open])
+  }, [plan])
 
   const handleSuccess = () => {
-    onOpenChange(false)
+    onHide?.()
     router.push("/configuracoes/cobranca")
   }
 
   const canRenderForm = plan && clientSecret && !isLoadingSecret && !secretError
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Checkout</DialogTitle>
-          <DialogDescription>Preencha os dados para concluir a assinatura.</DialogDescription>
-        </DialogHeader>
+    <DialogContent className="max-w-3xl">
+      <DialogHeader>
+        <DialogTitle>Checkout</DialogTitle>
+        <DialogDescription>Preencha os dados para concluir a assinatura.</DialogDescription>
+      </DialogHeader>
 
         {!plan ? null : !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? (
           <p className="text-sm text-muted-foreground">
@@ -118,7 +113,6 @@ export const CheckoutDialog = ({ plan, open, onOpenChange }: CheckoutDialogProps
             />
           </StripeElementsProvider>
         ) : null}
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   )
 }

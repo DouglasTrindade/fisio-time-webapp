@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getBillingStatusConfig } from "@/lib/billing/status"
 import { cn } from "@/lib/utils"
 import type { BillingSummary } from "@/types/billing"
+import { useModalContext } from "@/contexts/ModalContext"
 
 import { currencyFormatter, formatBillingDate } from "../utils"
 import { CancelSubscriptionButton } from "../dialogs/CancelSubscriptionButton"
@@ -20,6 +21,7 @@ interface SummaryCardProps {
 
 export const SummaryCard = ({ summary, isLoading }: SummaryCardProps) => {
   const config = getBillingStatusConfig(summary?.status)
+  const { openModal } = useModalContext()
 
   return (
     <Card className="border-border/70 bg-card/85 shadow-lg">
@@ -67,7 +69,18 @@ export const SummaryCard = ({ summary, isLoading }: SummaryCardProps) => {
             {summary.cancelAtPeriodEnd ? (
               <ResumeSubscriptionButton subscriptionId={summary.subscriptionId} />
             ) : (
-              <CancelSubscriptionButton subscriptionId={summary.subscriptionId} />
+              <Button
+                variant="outline"
+                className="gap-2 border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() =>
+                  openModal(
+                    { modal: CancelSubscriptionButton },
+                    { subscriptionId: summary.subscriptionId }
+                  )
+                }
+              >
+                Cancelar renovação
+              </Button>
             )}
             <Button asChild variant="outline">
               <Link href="/upgrade">Alterar plano</Link>

@@ -4,7 +4,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import type { ReactNode } from "react"
@@ -13,17 +15,22 @@ import type { AppointmentPayload } from "@/app/(protected)/agendamentos/_compone
 import { createCrudContext } from "@/contexts/crud/createCrudContext"
 import { appointmentsCrudConfig } from "@/app/(protected)/agendamentos/_components/config"
 import { useRecords } from "@/hooks/useRecords"
+import { ModalProvider, useModalContext } from "@/contexts/ModalContext"
+import { AppointmentsModal } from "@/app/(protected)/agendamentos/_components/Modal"
 
 interface AppointmentsUiContextValue {
   calendarAppointments: Appointment[]
   isCalendarLoading: boolean
   selectedDate: Date | null
-  isDialogOpen: boolean
-  editingAppointment: Appointment | null
   handleDateSelect: (date: Date) => void
   openNew: (date?: Date | null) => void
   openEdit: (appointment: Appointment) => void
-  closeDialog: () => void
+  clearDialogState: () => void
+  dialogState: {
+    appointment: Appointment | null
+    initialDate?: string
+    key: number
+  } | null
 }
 
 const { CrudProvider, useCrud } = createCrudContext<
@@ -52,32 +59,46 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
     isLoading: isCalendarLoading,
   } = useRecords<Appointment>(appointmentsCrudConfig.endpoint, calendarQuery)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [dialogState, setDialogState] = useState<{
+    appointment: Appointment | null
+    initialDate?: string
+    key: number
+  } | null>(null)
+  const dialogKeyRef = useRef(0)
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date)
-    setEditingAppointment(null)
-    setIsDialogOpen(false)
   }, [])
 
-  const openNew = useCallback((date?: Date | null) => {
-    if (date) {
-      setSelectedDate(date)
-    }
-    setEditingAppointment(null)
-    setIsDialogOpen(true)
-  }, [])
+  const openNew = useCallback(
+    (date?: Date | null) => {
+      const nextDate = date ?? selectedDate
+      if (nextDate) {
+        setSelectedDate(nextDate)
+      }
+      dialogKeyRef.current += 1
+      setDialogState({
+        appointment: null,
+        initialDate: nextDate ? nextDate.toISOString() : undefined,
+        key: dialogKeyRef.current,
+      })
+    },
+    [selectedDate],
+  )
 
   const openEdit = useCallback((appointment: Appointment) => {
-    setEditingAppointment(appointment)
-    setSelectedDate(new Date(appointment.date))
-    setIsDialogOpen(true)
+    const date = new Date(appointment.date)
+    setSelectedDate(date)
+    dialogKeyRef.current += 1
+    setDialogState({
+      appointment,
+      initialDate: appointment.date,
+      key: dialogKeyRef.current,
+    })
   }, [])
 
-  const closeDialog = useCallback(() => {
-    setIsDialogOpen(false)
-    setEditingAppointment(null)
+  const clearDialogState = useCallback(() => {
+    setDialogState(null)
   }, [])
 
   const value = useMemo(
@@ -85,31 +106,53 @@ const AppointmentsUiProvider = ({ children }: { children: ReactNode }) => {
       calendarAppointments,
       isCalendarLoading,
       selectedDate,
-      isDialogOpen,
-      editingAppointment,
+      dialogState,
       handleDateSelect,
       openNew,
       openEdit,
-      closeDialog,
+      clearDialogState,
     }),
     [
       calendarAppointments,
       isCalendarLoading,
       selectedDate,
-      isDialogOpen,
-      editingAppointment,
+      dialogState,
       handleDateSelect,
       openNew,
       openEdit,
-      closeDialog,
-    ]
+      clearDialogState,
+    ],
   )
 
   return (
     <AppointmentsUiContext.Provider value={value}>
-      {children}
+      <ModalProvider>
+        {children}
+        <AppointmentsModalBridge />
+      </ModalProvider>
     </AppointmentsUiContext.Provider>
   )
+}
+
+const AppointmentsModalBridge = () => {
+  const ui = useContext(AppointmentsUiContext)
+  const { openModal } = useModalContext<
+    Record<string, unknown>,
+    { appointment?: Appointment | null; initialDate?: string }
+  >()
+
+  useEffect(() => {
+    if (!ui?.dialogState) return
+    openModal(
+      { modal: AppointmentsModal, dontReplaceIfOpen: true, onHide: ui.clearDialogState },
+      {
+        appointment: ui.dialogState.appointment,
+        initialDate: ui.dialogState.initialDate,
+      },
+    )
+  }, [openModal, ui?.dialogState?.key])
+
+  return null
 }
 
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => (

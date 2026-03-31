@@ -26,3 +26,7 @@ export const canManagePatients = (role?: AppRole | null) =>
   hasAssistantAccess(role)
 
 export const canDeletePatients = (role?: AppRole | null) => hasFullAccess(role)
+
+export const canManageUsers = (role?: AppRole | null) => hasFullAccess(role)
+
+export const canCreateUsers = (role?: AppRole | null) => role === ADMIN
