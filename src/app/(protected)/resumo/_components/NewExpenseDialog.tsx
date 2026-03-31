@@ -9,12 +9,10 @@ import { toast } from "sonner"
 import { Plus } from "lucide-react"
 
 import {
-  Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -52,8 +50,11 @@ const defaultCategories = ["Infraestrutura", "Operacional", "Marketing"]
 const categoriesStorageKey = "finance-expense-categories"
 const RequiredMark = () => <span className="ml-1 text-destructive">*</span>
 
-export const NewExpenseDialog = () => {
-  const [open, setOpen] = useState(false)
+interface NewExpenseDialogProps {
+  onHide?: () => void
+}
+
+export const NewExpenseDialog = ({ onHide }: NewExpenseDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [categories, setCategories] = useState(defaultCategories)
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false)
@@ -121,9 +122,9 @@ export const NewExpenseDialog = () => {
       toast.success("Despesa cadastrada!", {
         description: `${values.description} - R$ ${values.amount}`,
       })
-      setOpen(false)
       form.reset()
       router.refresh()
+      onHide?.()
     } catch (error) {
       handleApiError(error, "Não foi possível salvar a despesa")
     } finally {
@@ -132,15 +133,11 @@ export const NewExpenseDialog = () => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Nova despesa</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Nova despesa</DialogTitle>
-          <DialogDescription>Registre gastos operacionais e acompanhe o impacto financeiro.</DialogDescription>
-        </DialogHeader>
+    <DialogContent className="sm:max-w-2xl">
+      <DialogHeader>
+        <DialogTitle>Nova despesa</DialogTitle>
+        <DialogDescription>Registre gastos operacionais e acompanhe o impacto financeiro.</DialogDescription>
+      </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
@@ -354,7 +351,6 @@ export const NewExpenseDialog = () => {
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   )
 }

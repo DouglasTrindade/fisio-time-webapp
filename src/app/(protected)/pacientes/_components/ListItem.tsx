@@ -10,17 +10,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useModalContext } from "@/contexts/ModalContext";
 import type { Patient } from "@/types/patient";
 import { usePatientContext } from "@/contexts/PatientsContext";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
@@ -31,11 +28,55 @@ interface PatientListItemProps {
   onEdit: (id: string) => void;
 }
 
-export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+interface DeletePatientDialogProps {
+  patient: Patient;
+  onHide?: () => void;
+}
+
+const DeletePatientDialog = ({ patient, onHide }: DeletePatientDialogProps) => {
   const { handleDelete, isDeleting } = usePatientContext();
+  const { canDeletePatients } = useRolePermissions();
+
+  const handleDeleteClick = async () => {
+    if (!canDeletePatients) {
+      toast.error("Você não tem permissão para excluir pacientes.");
+      onHide?.();
+      return;
+    }
+    await handleDelete(patient.id);
+    onHide?.();
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogDescription>
+          Tem certeza que deseja excluir o paciente{" "}
+          <strong>{patient.name}</strong>? Esta ação não pode ser desfeita.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={isDeleting}>
+          Cancelar
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={handleDeleteClick}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Excluindo..." : "Excluir"}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
   const router = useRouter();
   const { canManagePatients, canDeletePatients } = useRolePermissions();
+  const { openModal } = useModalContext();
 
   const ensureCanManage = () => {
     if (!canManagePatients) {
@@ -55,17 +96,7 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
       toast.error("Você não tem permissão para excluir pacientes.");
       return;
     }
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteClick = async () => {
-    if (!canDeletePatients) {
-      toast.error("Você não tem permissão para excluir pacientes.");
-      setShowDeleteDialog(false);
-      return;
-    }
-    await handleDelete(patient.id);
-    setShowDeleteDialog(false);
+    openModal({ modal: DeletePatientDialog }, { patient });
   };
 
   const formatDate = (date: Date | string | null) => {
@@ -119,29 +150,6 @@ export const PatientListItem = ({ patient, onEdit }: PatientListItemProps) => {
         </TableCell>
       </TableRow>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o paciente{" "}
-              <strong>{patient.name}</strong>? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

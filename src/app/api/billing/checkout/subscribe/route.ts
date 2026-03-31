@@ -18,14 +18,45 @@ import { createApiError, createApiResponse, handleApiError, validateJsonBody } f
 
 const subscribeSchema = z.object({
   planId: z.enum(["professional", "team", "clinic"]),
+  billingCycle: z.enum(["monthly", "semiannual", "annual"]).default("monthly"),
   paymentMethodId: z.string().min(1, "Informe o método de pagamento"),
   coupon: z.string().optional(),
 })
 
-const planPriceMap: Record<string, string | undefined> = {
-  professional: process.env.STRIPE_PRICE_ID_PROFESSIONAL,
-  team: process.env.STRIPE_PRICE_ID_TEAM,
-  clinic: process.env.STRIPE_PRICE_ID_CLINIC,
+const planPriceMap: Record<string, Record<string, string | undefined>> = {
+  professional: {
+    monthly:
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL_MONTHLY ??
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL,
+    semiannual:
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL_SEMIANNUAL ??
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL,
+    annual:
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL_ANNUAL ??
+      process.env.STRIPE_PRICE_ID_PROFESSIONAL,
+  },
+  team: {
+    monthly:
+      process.env.STRIPE_PRICE_ID_TEAM_MONTHLY ??
+      process.env.STRIPE_PRICE_ID_TEAM,
+    semiannual:
+      process.env.STRIPE_PRICE_ID_TEAM_SEMIANNUAL ??
+      process.env.STRIPE_PRICE_ID_TEAM,
+    annual:
+      process.env.STRIPE_PRICE_ID_TEAM_ANNUAL ??
+      process.env.STRIPE_PRICE_ID_TEAM,
+  },
+  clinic: {
+    monthly:
+      process.env.STRIPE_PRICE_ID_CLINIC_MONTHLY ??
+      process.env.STRIPE_PRICE_ID_CLINIC,
+    semiannual:
+      process.env.STRIPE_PRICE_ID_CLINIC_SEMIANNUAL ??
+      process.env.STRIPE_PRICE_ID_CLINIC,
+    annual:
+      process.env.STRIPE_PRICE_ID_CLINIC_ANNUAL ??
+      process.env.STRIPE_PRICE_ID_CLINIC,
+  },
 }
 
 export async function POST(request: NextRequest) {
@@ -35,8 +66,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(createApiError("Não autorizado"), { status: 403 })
     }
 
-    const { planId, paymentMethodId, coupon } = await validateJsonBody(request, subscribeSchema)
-    const priceId = planPriceMap[planId]
+    const { planId, billingCycle, paymentMethodId, coupon } = await validateJsonBody(
+      request,
+      subscribeSchema,
+    )
+    const cycle = billingCycle ?? "monthly"
+    const priceId = planPriceMap[planId]?.[cycle]
 
     if (!priceId) {
       return NextResponse.json(

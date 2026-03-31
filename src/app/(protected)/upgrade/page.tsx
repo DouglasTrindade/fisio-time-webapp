@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { cn } from "@/lib/utils"
 import type { SubscriptionPlan } from "@/types/billing"
 import { CheckoutDialog } from "./_components/CheckoutDialog"
+import { useModalContext } from "@/contexts/ModalContext"
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -22,34 +23,22 @@ const billingCycles = [
     multiplier: 1,
     caption: "/mês · cobrança mensal",
   },
-  {
-    slug: "semiannual",
-    label: "Semestral",
-    helper: "Economize 10%",
-    multiplier: 0.9,
-    caption: "/mês · faturado a cada 6 meses",
-  },
-  {
-    slug: "annual",
-    label: "Anual",
-    helper: "2 meses grátis",
-    multiplier: 0.83,
-    caption: "/mês · faturado anualmente",
-  },
 ] as const
+
+export type BillingCycle = (typeof billingCycles)[number]
 
 const plans: SubscriptionPlan[] = [
   {
     id: "professional",
     name: "Profissional",
     description: "Perfeito para quem atende sozinho ou em home care.",
-    price: 129,
+    price: 99.90,
     badge: "Comece certo",
     highlight: false,
     limits: [
-      "1.000 pacientes ativos",
-      "1.200 atendimentos/agendamentos por mês",
-      "1 profissional + 2 usuários administrativos",
+      "500 pacientes ativos",
+      "750 atendimentos/agendamentos por mês",
+      "1 profissional + 1 usuários administrativos",
       "1 unidade física",
     ],
     features: [
@@ -68,13 +57,13 @@ const plans: SubscriptionPlan[] = [
     id: "team",
     name: "Equipe",
     description: "Mais fôlego para equipes multidisciplinares.",
-    price: 219,
+    price: 129.90,
     badge: "Mais utilizado",
     highlight: true,
     limits: [
-      "5.000 pacientes ativos",
-      "5.000 atendimentos/agendamentos por mês",
-      "Até 6 profissionais + usuários administrativos ilimitados",
+      "1.000 pacientes ativos",
+      "1.250 atendimentos/agendamentos por mês",
+      "Até 3 profissionais + usuários administrativos ilimitados",
       "Até 3 unidades físicas",
     ],
     features: [
@@ -93,13 +82,13 @@ const plans: SubscriptionPlan[] = [
     id: "clinic",
     name: "Clínica",
     description: "Para redes e clínicas com alto volume.",
-    price: 449,
+    price: 169.90,
     badge: "Escala",
     highlight: false,
     limits: [
-      "15.000 pacientes ativos",
-      "15.000 atendimentos/agendamentos por mês",
-      "Até 20 profissionais + administrativos ilimitados",
+      "5.000 pacientes ativos",
+      "1.450 atendimentos/agendamentos por mês",
+      "Até 15 profissionais + administrativos ilimitados",
       "Unidades ilimitadas sob a mesma operação",
     ],
     features: [
@@ -117,14 +106,12 @@ const plans: SubscriptionPlan[] = [
 ] as const
 
 export default function UpgradePage() {
-  const [cycle, setCycle] = useState<(typeof billingCycles)[number]>(billingCycles[0])
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null)
-  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [cycle, setCycle] = useState<BillingCycle>(billingCycles[0])
+  const { openModal } = useModalContext()
 
   const cycleOptions = useMemo(() => billingCycles, [])
   const handleSelectPlan = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan)
-    setCheckoutOpen(true)
+    openModal({ modal: CheckoutDialog }, { plan, cycle })
   }
 
   return (
@@ -243,7 +230,6 @@ export default function UpgradePage() {
           Precisa de algo personalizado? <span className="font-medium text-foreground">Fale com nosso time comercial</span> e montamos um plano com volume de mensagens, unidades adicionais ou integrações específicas.
         </p>
       </div>
-      <CheckoutDialog plan={selectedPlan} open={checkoutOpen} onOpenChange={setCheckoutOpen} />
     </section>
   )
 }

@@ -4,21 +4,10 @@ import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { AboutPatient } from "./AboutPatient"
 import { TimelineCard } from "./TimelineCard"
 import { Filters } from "./Filters"
@@ -28,6 +17,8 @@ import { AttendanceType as PrismaAttendanceType } from "@prisma/client"
 import { apiRequest } from "@/services/api"
 import type { ApiResponse } from "@/types/api"
 import { toast } from "sonner"
+import { useModalContext } from "@/contexts/ModalContext"
+import { Button } from "@/components/ui/button"
 import type {
   HistoryEntry,
   HistoryFilters,
@@ -50,14 +41,114 @@ const defaultFilters: HistoryFilters = {
   },
 }
 
+interface PatientEditDialogProps {
+  patientId: string
+  onHide?: () => void
+  onSuccess?: () => void
+}
+
+const PatientEditDialog = ({ patientId, onHide, onSuccess }: PatientEditDialogProps) => (
+  <DialogContent className="sm:max-w-3xl">
+    <DialogHeader>
+      <DialogTitle>Editar paciente</DialogTitle>
+    </DialogHeader>
+    <PatientsEdit
+      patientId={patientId}
+      onHide={onHide}
+      onSuccess={onSuccess}
+    />
+  </DialogContent>
+)
+
+interface HistoryAttendanceDialogProps {
+  type: PrismaAttendanceType
+  patient: PatientSummary
+  attendanceId?: string
+  onHide?: () => void
+  onSuccess?: () => void
+}
+
+const HistoryAttendanceDialog = ({
+  type,
+  patient,
+  attendanceId,
+  onHide,
+  onSuccess,
+}: HistoryAttendanceDialogProps) => (
+  <DialogContent className="sm:max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>
+        {attendanceId
+          ? type === PrismaAttendanceType.EVOLUTION
+            ? "Editar evolução"
+            : "Editar avaliação"
+          : type === PrismaAttendanceType.EVOLUTION
+            ? "Registrar evolução"
+            : "Registrar avaliação"}
+      </DialogTitle>
+    </DialogHeader>
+    <HistoryAttendanceModal
+      type={type}
+      patient={patient}
+      attendanceId={attendanceId}
+      onHide={onHide}
+      onSuccess={onSuccess}
+    />
+  </DialogContent>
+)
+
+interface DeleteAttendanceDialogProps {
+  entry: HistoryEntry
+  onHide?: () => void
+  onSuccess?: () => void
+}
+
+const DeleteAttendanceDialog = ({ entry, onHide, onSuccess }: DeleteAttendanceDialogProps) => {
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await apiRequest<ApiResponse<null>>(`/attendances/${entry.id}`, {
+        method: "DELETE",
+      })
+      toast.success("Atendimento excluído com sucesso")
+      onSuccess?.()
+      onHide?.()
+    } catch (error) {
+      console.error(error)
+      toast.error("Erro ao excluir atendimento")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Excluir atendimento</DialogTitle>
+      </DialogHeader>
+      <p className="text-sm text-muted-foreground">
+        {entry.hasTreatmentPlan
+          ? `Esta ${entry.type === "evaluation" ? "avaliação" : "evolução"} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
+          : "Tem certeza que deseja excluir este registro? Essa ação não pode ser desfeita."}
+      </p>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={() => onHide?.()} disabled={isDeleting}>
+          Cancelar
+        </Button>
+        <Button type="button" variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+          {isDeleting ? "Excluindo..." : "Excluir"}
+        </Button>
+      </div>
+    </DialogContent>
+  )
+}
+
 export const PatientShow = ({ patient, entries, professionals }: PatientHistoryViewProps) => {
   const router = useRouter()
   const [filters, setFilters] = useState<HistoryFilters>(defaultFilters)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [newAttendanceType, setNewAttendanceType] = useState<PrismaAttendanceType | null>(null)
-  const [attendanceToEdit, setAttendanceToEdit] = useState<HistoryEntry | null>(null)
-  const [attendanceToDelete, setAttendanceToDelete] = useState<HistoryEntry | null>(null)
-  const [isDeletingAttendance, setIsDeletingAttendance] = useState(false)
+  const { openModal } = useModalContext()
 
   const filteredEntries = useMemo(() => {
     return entries.filter((entry) => {
@@ -111,9 +202,32 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
           <aside className="lg:w-2/5">
             <AboutPatient
               patient={patient}
-              onEdit={() => setIsEditOpen(true)}
-              onCreateEvaluation={() => setNewAttendanceType(PrismaAttendanceType.EVALUATION)}
-              onCreateEvolution={() => setNewAttendanceType(PrismaAttendanceType.EVOLUTION)}
+              onEdit={() =>
+                openModal(
+                  { modal: PatientEditDialog },
+                  { patientId: patient.id, onSuccess: () => router.refresh() }
+                )
+              }
+              onCreateEvaluation={() =>
+                openModal(
+                  { modal: HistoryAttendanceDialog },
+                  {
+                    type: PrismaAttendanceType.EVALUATION,
+                    patient,
+                    onSuccess: () => router.refresh(),
+                  }
+                )
+              }
+              onCreateEvolution={() =>
+                openModal(
+                  { modal: HistoryAttendanceDialog },
+                  {
+                    type: PrismaAttendanceType.EVOLUTION,
+                    patient,
+                    onSuccess: () => router.refresh(),
+                  }
+                )
+              }
             />
           </aside>
 
@@ -144,8 +258,26 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
                       isFirst={index === 0}
                       isLast={index === filteredEntries.length - 1}
                       onNavigate={() => router.push(`/atendimentos/${entry.id}`)}
-                      onEdit={(item) => setAttendanceToEdit(item)}
-                      onDelete={(item) => setAttendanceToDelete(item)}
+                      onEdit={(item) =>
+                        openModal(
+                          { modal: HistoryAttendanceDialog },
+                          {
+                            type:
+                              item.type === "evolution"
+                                ? PrismaAttendanceType.EVOLUTION
+                                : PrismaAttendanceType.EVALUATION,
+                            patient,
+                            attendanceId: item.id,
+                            onSuccess: () => router.refresh(),
+                          }
+                        )
+                      }
+                      onDelete={(item) =>
+                        openModal(
+                          { modal: DeleteAttendanceDialog },
+                          { entry: item, onSuccess: () => router.refresh() }
+                        )
+                      }
                       onOpenTreatmentPlan={handleOpenTreatmentPlan}
                     />
                   ))}
@@ -155,126 +287,6 @@ export const PatientShow = ({ patient, entries, professionals }: PatientHistoryV
           </section>
         </div>
       </div>
-
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Editar paciente</DialogTitle>
-          </DialogHeader>
-          <PatientsEdit
-            patientId={patient.id}
-            onClose={() => setIsEditOpen(false)}
-            onSuccess={() => {
-              router.refresh()
-            }}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={attendanceToEdit !== null}
-        onOpenChange={(open) => {
-          if (!open) setAttendanceToEdit(null)
-        }}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {attendanceToEdit?.type === "evolution"
-                ? "Editar evolução"
-                : "Editar avaliação"}
-            </DialogTitle>
-          </DialogHeader>
-          {attendanceToEdit && (
-            <HistoryAttendanceModal
-              type={
-                attendanceToEdit.type === "evolution"
-                  ? PrismaAttendanceType.EVOLUTION
-                  : PrismaAttendanceType.EVALUATION
-              }
-              patient={patient}
-              open={attendanceToEdit !== null}
-              attendanceId={attendanceToEdit.id}
-              onClose={() => setAttendanceToEdit(null)}
-              onSuccess={() => {
-                router.refresh()
-                setAttendanceToEdit(null)
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog
-        open={attendanceToDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setAttendanceToDelete(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir atendimento</AlertDialogTitle>
-            <AlertDialogDescription>
-              {attendanceToDelete?.hasTreatmentPlan
-                ? `Esta ${attendanceToDelete.type === "evaluation" ? "avaliação" : "evolução"} tem um plano de tratamento vinculado. Tem certeza que deseja excluir?`
-                : "Tem certeza que deseja excluir este registro? Essa ação não pode ser desfeita."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingAttendance}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (!attendanceToDelete) return
-                setIsDeletingAttendance(true)
-                try {
-                  await apiRequest<ApiResponse<null>>(
-                    `/attendances/${attendanceToDelete.id}`,
-                    { method: "DELETE" },
-                  )
-                  toast.success("Atendimento excluído com sucesso")
-                  setAttendanceToDelete(null)
-                  router.refresh()
-                } catch (error) {
-                  console.error(error)
-                  toast.error("Erro ao excluir atendimento")
-                } finally {
-                  setIsDeletingAttendance(false)
-                }
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeletingAttendance}
-            >
-              {isDeletingAttendance ? "Excluindo..." : "Excluir"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog
-        open={newAttendanceType !== null}
-        onOpenChange={(open) => {
-          if (!open) setNewAttendanceType(null)
-        }}
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {newAttendanceType === PrismaAttendanceType.EVOLUTION
-                ? "Registrar evolução"
-                : "Registrar avaliação"}
-            </DialogTitle>
-          </DialogHeader>
-          {newAttendanceType && (
-            <HistoryAttendanceModal
-              type={newAttendanceType}
-              patient={patient}
-              open={newAttendanceType !== null}
-              onClose={() => setNewAttendanceType(null)}
-              onSuccess={() => router.refresh()}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

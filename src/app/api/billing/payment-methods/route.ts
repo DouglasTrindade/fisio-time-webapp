@@ -64,7 +64,7 @@ export async function GET() {
   }
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user || !canManageSettings(session.user.role)) {

@@ -16,7 +16,7 @@ const appointmentFormSchema = appointmentSchema.extend({
 
 import { useAppointmentsContext } from "@/contexts/AppointmentsContext";
 
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Form } from "@/components/ui/form";
 import { Fields } from "./Fields";
@@ -25,9 +25,14 @@ import type { Appointment, ApiResponse } from "@/types/appointment";
 import { handleApiError } from "@/services/handleApiError";
 import { useRecord } from "@/hooks/useRecord";
 
-interface AppointmentsModalProps { open: boolean; onClose: () => void; initialDate?: string; appointment?: Appointment | null }
+interface AppointmentsModalProps {
+  initialDate?: string
+  appointment?: Appointment | null
+  onHide?: () => void
+  onSave?: (record: Appointment | null) => void
+}
 
-export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: AppointmentsModalProps) => {
+export const AppointmentsModal = ({ initialDate, appointment, onHide, onSave }: AppointmentsModalProps) => {
     const { data: session } = useSession();
 
     const form = useForm<AppointmentForm>({
@@ -99,8 +104,8 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
             notes: null,
             professionalId: professionalId,
         });
-        onClose();
-    }, [form, onClose, initialDate, professionalId]);
+        onHide?.();
+    }, [form, onHide, initialDate, professionalId]);
 
     const onSubmit: SubmitHandler<AppointmentForm> = async (values) => {
         const basePayload: AppointmentPayload = {
@@ -113,10 +118,10 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
         try {
             if (appointment?.id) {
                 const resp = await handleUpdate(appointment.id, basePayload) as ApiResponse<Appointment>;
-                toast.success(resp?.message || "Agendamento atualizado!");
+                onSave?.(resp?.data ?? appointment ?? null);
             } else {
                 const response = await handleCreate(basePayload) as ApiResponse<Appointment>;
-                toast.success(response?.message || "Agendamento criado com sucesso!");
+                onSave?.(response?.data ?? null);
             }
             form.reset({
                 name: "",
@@ -127,7 +132,7 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
                 notes: null,
                 professionalId: values.professionalId,
             });
-            onClose?.();
+            onHide?.();
         } catch (e) {
             handleApiError(e, appointment?.id ? "Erro ao atualizar agendamento" : "Erro ao criar agendamento");
         }
@@ -152,23 +157,21 @@ export const AppointmentsModal = ({ open, onClose, initialDate, appointment }: A
     }, [form.formState.errors, getErrorMessage]);
 
     return (
-        <Dialog open={open && !!session?.user?.id} onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{appointment ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-                        <Fields form={form} />
-                        <DialogFooter className="flex gap-2 pt-2">
-                            <Button type="button" variant="outline" onClick={handleClose} disabled={isCreating || isUpdating || isLoadingAppointment}>Cancelar</Button>
-                            <Button type="submit" disabled={isCreating || isUpdating || isLoadingAppointment}>
-                                {(isCreating || isUpdating) ? "Salvando..." : "Salvar"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
-            </DialogContent>
-        </Dialog>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>{appointment ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
+            </DialogHeader>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+                    <Fields form={form} />
+                    <DialogFooter className="flex gap-2 pt-2">
+                        <Button type="button" variant="outline" onClick={handleClose} disabled={isCreating || isUpdating || isLoadingAppointment}>Cancelar</Button>
+                        <Button type="submit" disabled={isCreating || isUpdating || isLoadingAppointment}>
+                            {(isCreating || isUpdating) ? "Salvando..." : "Salvar"}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </Form>
+        </DialogContent>
     )
 }

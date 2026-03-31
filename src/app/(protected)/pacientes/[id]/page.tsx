@@ -24,6 +24,13 @@ const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
       maritalStatus: true,
       profession: true,
       notes: true,
+      financialPlan: true,
+      insuranceName: true,
+      insuranceCardNumber: true,
+      insuranceIssuedAt: true,
+      insuranceRepasseType: true,
+      insuranceRepasseValue: true,
+      insurancePaymentDays: true,
       createdAt: true,
     },
   });
@@ -112,6 +119,15 @@ const PatientHistoryPage = async ({ params }: HistoryPageProps) => {
         maritalStatus: patient.maritalStatus,
         profession: patient.profession,
         notes: patient.notes,
+        financialPlan: patient.financialPlan,
+        insuranceName: patient.insuranceName,
+        insuranceCardNumber: patient.insuranceCardNumber,
+        insuranceIssuedAt: patient.insuranceIssuedAt?.toISOString() ?? null,
+        insuranceRepasseType: patient.insuranceRepasseType,
+        insuranceRepasseValue: patient.insuranceRepasseValue
+          ? Number(patient.insuranceRepasseValue)
+          : null,
+        insurancePaymentDays: patient.insurancePaymentDays,
         createdAt: patient.createdAt.toISOString(),
       }}
       entries={entries}
