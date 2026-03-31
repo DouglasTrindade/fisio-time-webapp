@@ -19,6 +19,42 @@ export const createPatientSchema = z.object({
     return new Date(val);
   }).nullable().optional(),
   notes: z.string().optional().or(z.literal("")),
+  financialPlan: z.enum(["per_session", "monthly", "insurance", "exempt"]).optional().or(z.literal("")),
+  insuranceName: z.string().optional().or(z.literal("")),
+  insuranceCardNumber: z.string().optional().or(z.literal("")),
+  insuranceIssuedAt: z.union([
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD"),
+    z.string().datetime(),
+    z.date(),
+    z.null(),
+    z.literal("")
+  ]).transform(val => {
+    if (!val || val === "") return null;
+    if (val instanceof Date) return val;
+    if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      return new Date(val + "T12:00:00.000Z");
+    }
+    return new Date(val);
+  }).nullable().optional(),
+  insuranceRepasseType: z.enum(["percentage", "amount"]).optional().or(z.literal("")),
+  insuranceRepasseValue: z
+    .union([z.number(), z.string(), z.null(), z.literal("")])
+    .transform((val) => {
+      if (val === "" || val === null || typeof val === "undefined") return null;
+      const parsed = Number(val);
+      return Number.isNaN(parsed) ? null : parsed;
+    })
+    .nullable()
+    .optional(),
+  insurancePaymentDays: z
+    .union([z.number(), z.string(), z.null(), z.literal("")])
+    .transform((val) => {
+      if (val === "" || val === null || typeof val === "undefined") return null;
+      const parsed = Number(val);
+      return Number.isNaN(parsed) ? null : parsed;
+    })
+    .nullable()
+    .optional(),
   cpf: z.string().optional().or(z.literal("")),
   rg: z.string().optional().or(z.literal("")),
   maritalStatus: z.enum(["solteiro", "casado", "viuva", "divorciado", "separado"]).optional().or(z.literal("")),

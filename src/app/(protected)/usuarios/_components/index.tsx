@@ -1,9 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { UserPlus } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -13,18 +15,25 @@ import type { AppRole, UserProfile } from "@/types/user"
 import { InviteManagement } from "./InviteManagement"
 import { roleLabels } from "./InviteManagement/utils"
 import { ListItem } from "./ListItem"
+import { UserFormModal } from "./UserFormModal"
+import { DeleteUserDialog } from "./DeleteUserDialog"
 
 interface UserProps {
   currentRole?: AppRole
+  currentUserId?: string
 }
 
-export const Users = ({ currentRole }: UserProps) => {
+export const Users = ({ currentRole, currentUserId }: UserProps) => {
   const { records: members, isLoading: isLoadingMembers } = useRecords<UserProfile>(
     "/users",
     { page: 1, limit: 50, sortBy: "name", sortOrder: "asc" },
   )
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
+  const [deletingUser, setDeletingUser] = useState<UserProfile | null>(null)
 
   const canManageUsers = currentRole === "ADMIN" || currentRole === "PROFESSIONAL"
+  const canCreateUser = currentRole === "ADMIN"
   const sortedMembers = useMemo(() => members, [members])
 
   if (!canManageUsers) {
@@ -43,9 +52,17 @@ export const Users = ({ currentRole }: UserProps) => {
       <InviteManagement />
 
       <Card className="border-border/70 bg-card/85 shadow-lg">
-        <CardHeader>
-          <CardTitle>Membros ativos</CardTitle>
-          <CardDescription>Visão geral de quem possui acesso à conta.</CardDescription>
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle>Membros ativos</CardTitle>
+            <CardDescription>Visão geral de quem possui acesso à conta.</CardDescription>
+          </div>
+          {canCreateUser ? (
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Criar usuário
+            </Button>
+          ) : null}
         </CardHeader>
         <CardContent>
           {isLoadingMembers ? (
@@ -58,12 +75,13 @@ export const Users = ({ currentRole }: UserProps) => {
                   <TableHead>E-mail</TableHead>
                   <TableHead>Função</TableHead>
                   <TableHead>Entrada</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedMembers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">
+                    <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
                       Nenhum membro encontrado.
                     </TableCell>
                   </TableRow>
@@ -78,6 +96,9 @@ export const Users = ({ currentRole }: UserProps) => {
                           ? format(new Date(member.createdAt), "dd/MM/yyyy", { locale: ptBR })
                           : "—"
                       }
+                      onEdit={() => setEditingUser(member)}
+                      onDelete={() => setDeletingUser(member)}
+                      disableDelete={member.id === currentUserId}
                     />
                   ))
                 )}
@@ -86,6 +107,26 @@ export const Users = ({ currentRole }: UserProps) => {
           )}
         </CardContent>
       </Card>
+
+      {canCreateUser ? (
+        <UserFormModal mode="create" open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+      ) : null}
+      <UserFormModal
+        mode="edit"
+        open={Boolean(editingUser)}
+        onOpenChange={(state) => {
+          if (!state) setEditingUser(null)
+        }}
+        user={editingUser ?? undefined}
+      />
+      <DeleteUserDialog
+        user={deletingUser}
+        open={Boolean(deletingUser)}
+        onOpenChange={(state) => {
+          if (!state) setDeletingUser(null)
+        }}
+        disabled={deletingUser?.id === currentUserId}
+      />
     </div>
   )
 }

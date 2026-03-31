@@ -25,7 +25,7 @@ import { Loader2, Paperclip, Search, X } from "lucide-react"
 
 interface EvolutionFieldsProps {
   form: UseFormReturn<AttendanceFormSchema>
-  patients: Patient[]
+  patients: Array<Pick<Patient, "id" | "name">>
   isLoadingPatients: boolean
   lockedPatient?: Pick<Patient, "id" | "name">
 }

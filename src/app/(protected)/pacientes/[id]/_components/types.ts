@@ -8,6 +8,13 @@ export type PatientSummary = {
   maritalStatus?: string | null;
   profession?: string | null;
   notes?: string | null;
+  financialPlan?: string | null;
+  insuranceName?: string | null;
+  insuranceCardNumber?: string | null;
+  insuranceIssuedAt?: string | null;
+  insuranceRepasseType?: string | null;
+  insuranceRepasseValue?: number | null;
+  insurancePaymentDays?: number | null;
   createdAt: string;
 };
 
